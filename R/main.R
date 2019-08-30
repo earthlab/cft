@@ -1,21 +1,23 @@
-#' Just testing the getData function
+#' This will get all data for any one set of parameters, stack them, and save to s3
 library(aws.s3)
 library(climateR)
+library(readtext)
 source('R/getScenario.R')
 source('R/makeNC.R')
 
-main <- function(park = "Death Valley", startDate = "1950-01-01", endDate = "2099-12-31",
+main <- function(location = "Death Valley", startDate = "1950-01-01", endDate = "2099-12-31",
                  method = "maca", param = "tmax", model = "CCSM4", scenario = "rcp45",
-                 plotSample = FALSE){
+                 year_range = 4, plotSample = FALSE){
   '
-  park = "Death Valley"
+  location = "Rocky Mountain"
   method = "maca"
   param = "tmax"
   model = "CCSM4"
-  scenario = "rcp85"
+  scenario = "rcp45"
   startDate = "1950-01-01"
   endDate =  "2099-12-31"
   timeRes = "daily"
+  year_range = 4
   plotsample = TRUE
   '
   # Subsetting by National Parks
@@ -23,13 +25,42 @@ main <- function(park = "Death Valley", startDate = "1950-01-01", endDate = "209
     parks <- rgdal::readOGR("data/shapefiles/nps_boundary.shp")
   }
 
-  # Query data and save to disk (returning data may not be necessary, perhaps return directory)
-  AOI <- parks[grepl(park, parks$UNIT_NAME),]
-  folder <- getScenario(AOI,  method = method, param = param, model = model, scenario = scenario,
-                        startDate = startDate, endDate = endDate, timeRes = timeRes, plotsample = FALSE)
+  # Query data and save to disk and return directory
+  AOI <- parks[grepl(tolower(location), tolower(parks$UNIT_NAME)),]  # <----------------There will cometimes be two (e.g. "X park" and "X preserve") so fix that
+  folder <- getScenario(AOI, method = method, param = param, model = model,
+                        scenario = scenario, startDate = startDate, endDate = endDate,
+                        timeRes = timeRes, year_range = year_range, plotsample = FALSE)
 
-  # Merge into one file
-  files <- file.path(folder, "????????_????????.nc")
-  call <- paste0("ncrcat ", files, " ", folder, ".nc")
+  # folder <- getScenario2(AOI, method = method, param = param, model = model,
+  #                        scenario = scenario, startDate = startDate, endDate = endDate,
+  #                        timeRes = timeRes, year_range = year_range, plotsample = FALSE)
+
+  # Merge into one file - might need to sort first when downloaded in parallel
+  files <- file.path(folder, "????????_????????.nc")  # <------------------------------- Silly syntax, but this works rather quickly
+  call <- paste0("ncrcat --hst ", files, " ", folder, ".nc")
   system(call)
+  outfile <- paste0(folder, '.nc')
+
+  # Push file to s3
+  creds <- readtext("~/.aws/credentials.txt")[[2]]
+  creds = strsplit(creds, "\n")
+  key = substr(creds[[1]][2], 14, 33)
+  skey = substr(creds[[1]][3], 14, 53)
+  region = substr(creds[[1]][4], 11, 19)
+
+  # Sign in to the account
+  Sys.setenv("AWS_ACCESS_KEY_ID" = key,
+             "AWS_SECRET_ACCESS_KEY" = skey,
+             "AWS_DEFAULT_REGION" = region)
+
+  # Put the file in the bucket
+  bucket_name <- "cstdata-test"
+  location_folder <- gsub(" ", "_", tolower(as.character(AOI$UNIT_NAME)))
+  object <- file.path(location_folder, basename(outfile))
+  put_folder(location_folder, bucket_name)
+  put_object(file = outfile, object = object, bucket = bucket_name)
+
+  # Example retrieval from bucket
+  # aws.s3::save_object(object, bucket_name, file = "/home/travis/Desktop/test.nc")
 }
+
