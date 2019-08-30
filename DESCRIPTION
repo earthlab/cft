@@ -1,0 +1,10 @@
+Package: cstdata
+Type: Package
+Title: Subset and Download Downscaled Global Circulation Model Data
+Version: 0.1.0
+Author: Travis Williams and Max Joseph
+Maintainer: Travis Williams <travis.williams@colorado.edu>
+Description: 
+License: 
+Encoding: UTF-8
+LazyData: true
