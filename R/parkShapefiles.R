@@ -6,15 +6,12 @@
 #'
 #'IRMA: https://irma.nps.gov/Portal
 
-
-library(sf) # where to load/install dependencies
+library(sf)
 
 # create directory if not present
 if (!file.exists('data/shapefiles')) {
   dir.create(file.path('data', 'shapefiles'), recursive = TRUE, showWarnings = FALSE)
 }
-
-
 
 # Download if not already preset
 nps_boundary <- "data/shapefiles/nps_boundary.shp"

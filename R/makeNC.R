@@ -3,14 +3,11 @@ library(aws.s3)
 library(climateR)
 library(ncdf4)
 library(raster)
-source('R/getData.R')
-
-
 
 # netcdf method
-toNC <- function(rasterbrick, savepath='data/rasters/tests/temp3.nc', method = "maca",
-                 model = "CCSM4", param = "tmax", location = "Death Valley National Park",
-                 scenario = "rcp85", naval = -9999){
+makeNC <- function(rasterbrick, savepath='data/rasters/tests/temp3.nc', method = "maca",
+                   model = "CCSM4", param = "tmax", location = "Death Valley National Park",
+                   scenario = "rcp85", naval = -9999){
   '
   parks <- rgdal::readOGR("data/shapefiles/nps_boundary.shp")
   method = "maca"
@@ -67,7 +64,7 @@ toNC <- function(rasterbrick, savepath='data/rasters/tests/temp3.nc', method = "
 
   # Create variables
   varout <- ncvar_def(name = param, units = units, dim = list(dlon, dlat, dtime),
-                     longname = longname, missval = naval, compression = 9)
+                      longname = longname, missval = naval, compression = 9)
 
   # Add variables to the file
   ncout <- nc_create(savepath, varout, force_v4 = FALSE, verbose = FALSE)
@@ -84,13 +81,5 @@ toNC <- function(rasterbrick, savepath='data/rasters/tests/temp3.nc', method = "
   # Finally, write the file
   ncvar_put(ncout, varout, data)
   nc_close(ncout)
-
-  # Let the user know where to find their object
-  print(paste("File saved to:",  savepath))
 }
 
-
-
-# toNC(rasterbrick, savepath = 'data/rasters/tests/temp3.nc', method = "maca",
-#      model = "CCSM4", param = "tmax", location = "Death Valley National Park",
-#      scenario = "rcp85", naval = -9999)

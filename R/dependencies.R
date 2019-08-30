@@ -7,9 +7,10 @@ loadInstall <- function(packages){
     install.packages(new_packages, dependencies = TRUE)
 }
 
-# cran packages
+# cran packages (sometimes requires some user input in linux)
 packages <- c('aws.s3', 'devtools', 'leaflet', 'leaflet.opacity', 'lubridate', 'lwgeom',
-              'ncdf4', 'progress', 'rasterVis', 'reprex', 'rgdal', 'rgeos', 'sf', 'tidync')
+              'ncdf4', 'progress', 'rasterVis', 'readtext', 'reprex', 'rgdal', 'rgeos',
+              'sf', 'tidync')
 loadInstall(packages)
 
 # not-cran packages
