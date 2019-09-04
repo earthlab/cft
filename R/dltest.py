@@ -77,7 +77,7 @@ def subsetBar(aoi, urls, dst):
 
 # CCSM4, rcp85, huss, 1950 to 2099
 urls = open('data/macav2metdata_urls.txt', 'r').readlines()
-urls = [str(u.replace(' \n', '')) for u in urls if 'http' in u]
+urls = [str(u.replace(' \n', '')) for u in urls if 'http' in u and 'rcp85' not in u]
 urls = [u.replace('fileServer', 'dodsC') for u in urls]
 
 # get bounding box of AOI 
@@ -85,5 +85,5 @@ parks = gpd.read_file('data/shapefiles/nps_boundary.shp')
 aoi = parks[parks['UNIT_NAME'] == 'Death Valley National Park']
 
 # Test functions
-subsetBar(aoi, urls, 'data/dvnp_huss4.nc')
-#subset(aoi, urls, 'data/dvnp_huss3.nc')
+subsetBar(aoi, urls, dst='data/dvnp_huss4.nc')
+subset(aoi, urls, 'data/dvnp_huss3.nc')
