@@ -40,12 +40,17 @@ urls <- unlist(lapply(urls, function(x) gsub('fileServer', 'dodsC', x)))
 
 # Experimenting with this THREDDS package
 bbox = c()
-bbox[['xmin']] = bb[1,1]
-bbox[['xmax']] = bb[1,2]
+bbox[['xmin']] = bb[1,1] + 360
+bbox[['xmax']] = bb[1,2] + 360
 bbox[['ymin']] = bb[2,1]
 bbox[['ymax']] = bb[2,2]
-tds_ncss_download(ncss_url = urls[1], vars = 'specific_humidity', bbox = bbox, overwrite = TRUE, out_file = "data/thredds.nc")
-
+tds_ncss_download(ncss_url = urls[1], vars = c('specific_humidity'), bbox = bbox, overwrite = TRUE, out_file = "data/thredds.nc")
+loca_ncss <-  "https://cida.usgs.gov/thredds/ncss/loca_future/dataset.html"
+CCSM4 <- tds_ncss_download(ncss_url = loca_ncss,
+                           out_file ="data/CCSM4.nc",
+                           bbox = sf::st_bbox(c(xmin = -116.5, xmax = -115, ymin = 44.5, ymax = 45)),
+                           vars = c("tasmax_CCSM4_r6i1p1_rcp45", "tasmax_CCSM4_r6i1p1_rcp85"),
+                           ncss_args = list(temporal = "all"))
 
 # Now get lat/lon index positions of bounding box
 # Get bounding box of aoi

@@ -68,4 +68,3 @@ main <- function(location = "Death Valley", startDate = "1950-01-01", endDate = 
   # Example retrieval from bucket
   # aws.s3::save_object(object, bucket_name, file = "/home/travis/Desktop/test.nc")
 }
-
