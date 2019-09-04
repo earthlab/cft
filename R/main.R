@@ -3,30 +3,35 @@ library(aws.s3)
 library(climateR)
 library(readtext)
 source('R/getScenario.R')
+source('R/getScenario2.R')
 source('R/makeNC.R')
 
 main <- function(location = "Death Valley", startDate = "1950-01-01", endDate = "2099-12-31",
-                 method = "maca", param = "tmax", model = "CCSM4", scenario = "rcp45",
-                 year_range = 4, plotSample = FALSE){
+                 method = "maca", param = "prcp", model = "CCSM4", scenario = "rcp45",
+                 timeRes = "daily", year_range = 5, plotSample = FALSE){
   '
-  location = "Rocky Mountain"
+  location = "Wind Cave"
   method = "maca"
-  param = "tmax"
+  param = "tmin"
   model = "CCSM4"
   scenario = "rcp45"
   startDate = "1950-01-01"
   endDate =  "2099-12-31"
   timeRes = "daily"
   year_range = 4
-  plotsample = TRUE
+  plotsample = FALSE
   '
   # Subsetting by National Parks
   if (!exists("parks")){
-    parks <- rgdal::readOGR("data/shapefiles/nps_boundary.shp")
+    parks <- rgdal::readOGR("data/shapefiles/nps_boundary.shp", verbose = FALSE)
   }
 
-  # Query data and save to disk and return directory
+  # Get the perimeter and signal that it's working
   AOI <- parks[grepl(tolower(location), tolower(parks$UNIT_NAME)),]  # <----------------There will cometimes be two (e.g. "X park" and "X preserve") so fix that
+  loc <- as.character(AOI$UNIT_NAME)
+  print(paste0("Retrieving requested data for ", loc))
+
+  # Query data and save to disk and return directory
   folder <- getScenario(AOI, method = method, param = param, model = model,
                         scenario = scenario, startDate = startDate, endDate = endDate,
                         timeRes = timeRes, year_range = year_range, plotsample = FALSE)
