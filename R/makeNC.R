@@ -5,9 +5,12 @@ library(ncdf4)
 library(raster)
 
 # netcdf method
-makeNC <- function(rasterbrick, savepath='data/rasters/tests/temp3.nc', method = "maca",
-                   model = "CCSM4", param = "tmax", location = "Death Valley National Park",
-                   scenario = "rcp85", naval = -9999){
+makeNC <- function(rasterbrick, savepath='data/rasters/tests/temp3.nc',
+                   # method = "maca",
+                   # model = "CCSM4", param = "tmax", location = "Death Valley National Park",
+                   # scenario = "rcp85",
+                   naval = -9999
+                   ){
   '
   parks <- rgdal::readOGR("data/shapefiles/nps_boundary.shp")
   method = "maca"
@@ -71,10 +74,10 @@ makeNC <- function(rasterbrick, savepath='data/rasters/tests/temp3.nc', method =
 
   # Add attributes to the file
   ncatt_put(ncout, 0, "Title", "Title describing parameters here")
-  ncatt_put(ncout, 0, "Location", location)
-  ncatt_put(ncout, 0, "GCM_Model", paste0(model, ": ", model_agency))
-  ncatt_put(ncout, 0, "Downscaling_Method", method)
-  ncatt_put(ncout, 0, "Climate_Scenario", scenario)
+  # ncatt_put(ncout, 0, "Location", location)
+  # ncatt_put(ncout, 0, "GCM_Model", paste0(model, ": ", model_agency))
+  # ncatt_put(ncout, 0, "Downscaling_Method", method)
+  # ncatt_put(ncout, 0, "Climate_Scenario", scenario)
   ncatt_put(ncout, 0, "Created_On", as.character(Sys.time()))
   ncatt_put(ncout, 0, "References", "References and acknowledgements here?")
 

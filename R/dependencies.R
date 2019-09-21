@@ -7,12 +7,10 @@ loadInstall <- function(packages){
     install.packages(new_packages, dependencies = TRUE)
 }
 
-# cran packages (sometimes requires some user input in linux)
+# cran packages
 packages <- c('aws.s3', 'devtools', 'leaflet', 'leaflet.opacity', 'lubridate', 'lwgeom',
-              'ncdf4', 'progress', 'rasterVis', 'readtext', 'reprex', 'rgdal', 'rgeos',
-              'sf', 'tidync', 'tidyverse')
+              'ncdf4', 'progress', 'rasterVis', 'reprex', 'rgdal', 'rgeos', 'sf', 'tidync')
 loadInstall(packages)
 
 # not-cran packages
 devtools::install_github("mikejohnson51/climateR", force=TRUE)
-devtools::install_github("bocinsky/thredds")
