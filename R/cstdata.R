@@ -23,27 +23,23 @@
 #' https://climate.northwestknowledge.net/MACA/data_portal.php
 #'
 #' We also have mean vapor pressure deficit (vpd) in both data sets.
-#'
-#'
-#'
 
 library(aws.s3)
 library(glue)
 library(progress)
-library(reticulate)
-source('R/parameters.R')  # imports arguments (url pieces)
-reticulate::use_condaenv("dict")
+library(reticulate)  # <-------------------------------------------------------------------- Read: https://rstudio.github.io/reticulate/articles/package.html
+source('R/parameters.R')
+reticulate::use_condaenv("dict")  # <------------------------------------------------------- Set up with conda yaml
 xr <- reticulate::import("xarray")
-nc <- reticulate::import("netCDF4")
-
-# Park Shapefile and Sample AOI
-parks <- rgdal::readOGR("data/shapefiles/nps_boundary.shp")
-aoi <- parks[grepl("Yellowstone National Park", parks$UNIT_NAME),]
 
 
-getParkpy <- function(aoi, historical_years = "1950_2005", model_years = "2006_2099"){  # <- I think it would be best to require a path to a shapefile to get the aoi, though that would require the park managers to subset their own files.
+get_cstdata <- function(parkname="Yellowstone National Park"){  # <------------------------- I think it would be best to require a path to a shapefile to get the aoi, though that would require the park managers to subset their own files.
+  # Park Shapefile and Area of Interest
+  parks <- rgdal::readOGR("data/shapefiles/nps_boundary.shp")
+  aoi <- parks[grepl(parkname, parks$UNIT_NAME),]
+
   # First we need a destination folder
-  location <- gsub(" ", "_", tolower(aoi$UNIT_NAME))  # <----------------------------------- This won't be consistent
+  location <- gsub(" ", "_", tolower(aoi$UNIT_NAME))  # <----------------------------------- This won't be consistent for other shapefiles
   print(paste("Retrieving climate data for", location))
   dst_folder <- file.path('data', 'netcdfs', location) # <---------------------------------- Could, optionally, be a temp file
   if (!dir.exists(dst_folder)) dir.create(dst_folder, recursive = TRUE)
@@ -56,9 +52,9 @@ getParkpy <- function(aoi, historical_years = "1950_2005", model_years = "2006_2
     scenarios <- arguments[[model]]$scenarios
     ensemble <- arguments[[model]]$ensemble
     for (param in params){
-      for (scenario in scenarios){  # No scenarios, but we need repeats when pairing with modeled data sets
+      for (scenario in scenarios){  # <----------------------------------------------------- No scenarios, but we need repeats when pairing with modeled data sets
         attachment <- paste(c(urlbase, param, model, ensemble, "historical",
-                              historical_years, "CONUS_daily.nc?"), collapse = "_")
+                              "1950_2005", "CONUS_daily.nc?"), collapse = "_")
         var <- variables[param]
         query <- paste0(var, glue("[{0}:{1}:{ntime_hist}][{lat1}:{1}:{lat2}][{lon1}:{1}:{lon2}]"))
         url <- paste0(attachment, query)
@@ -76,7 +72,7 @@ getParkpy <- function(aoi, historical_years = "1950_2005", model_years = "2006_2
     for (param in params){
       for (scenario in scenarios){  # No scenarios, but we need repeats when pairing with modeled data sets
         attachment <- paste(c(urlbase, param, model, ensemble, scenario,
-                              model_years, "CONUS_daily.nc?"), collapse = "_")
+                              "2006_2099", "CONUS_daily.nc?"), collapse = "_")
         var <- variables[param]
         query <- paste0(var, glue("[{0}:{1}:{ntime_hist}][{lat1}:{1}:{lat2}][{lon1}:{1}:{lon2}]"))
         url <- paste0(attachment, query)
@@ -98,8 +94,8 @@ getParkpy <- function(aoi, historical_years = "1950_2005", model_years = "2006_2
   # Let's base the grid (used for subset queries) of a sample file
   grid =
 
-    # Get the extent coordinates  # <--------------------------------------------------------- Here we could distinguish between simple extent coordinates and a spatial object
-    lonmin <- aoi@bbox[1,1]
+  # Get the extent coordinates  # <--------------------------------------------------------- Here we could distinguish between simple extent coordinates and a spatial object
+  lonmin <- aoi@bbox[1,1]
   lonmax <- aoi@bbox[1,2]
   latmin <- aoi@bbox[2,1]
   latmax <- aoi@bbox[2,2]
