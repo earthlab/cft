@@ -1,28 +1,24 @@
 #' Get climate future scenarios for the Contiguous United States using the
 #' Multivariate Adaptive Constructed Analogs (MACA) technique.
 #'
-#' This function will take an area of interest (with extent coordinates or as a shapefile),
-#' and return a spatial of subset of retrieves NetCDFs files and
+#' This package retrieves daily gridded data sets of General Climate Models (GCM) clipped to
+#' specified National Parks. Each of these data sets represent a single GCM, climate variable,
+#' and Representative Concentration Pathway (RCP) from 1950 to 2099. The 1950 to 2005 portion
+#' of this time period represent historical data while the 2006 to 2099 portion represents
+#' modeled data. These can be stored as NetCDF files either locally or on an Amazon Web Service
+#' S3 bucket. The original data sets may be found at
+#' \url{ http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_catalog.html}
 #'
-#' ...
 #'
-#' This function reticulates Python's Xarray and netCDF4 packages to do the job.
-#' It might not be pure R code, but it is much more stable and faster than anything
-#' I could manage in R.
+#' Production Notes:
+#' The use of reticulate may enable us to use Zarr arrays, which are accessible directly
+#' from an s3 bucket.
 #'
-#' This strategy may also enable us to use Zarr arrays, which are accessible directly
-#' from an s3 bucket, according to Will.
-#'
-#' We are using this catalog:
-#' http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_catalog.html
-#'
-#' There is also the non-aggregated catalog:
-#' http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_macav2_catalog2.html
-#' These files come in 5 year chunks but have windspeed (was) and potential evapotranspiration (PotEvap)
-#' in addition to the other variables. This could be done with url list files from here:
-#' https://climate.northwestknowledge.net/MACA/data_portal.php
-#'
-#' We also have mean vapor pressure deficit (vpd) in both data sets.
+#' There is also a non-aggregated catalog:
+#' \url{http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_macav2_catalog2.html}
+#' These files come in 5 year chunks but have daily windspeed (was) and monthly potential
+#' evapotranspiration (PotEvap) in addition to the other variables. Consider this data portal
+#' for a full list of url queries: \url{https://climate.northwestknowledge.net/MACA/data_portal.php}
 
 library(aws.s3)
 library(glue)
@@ -31,9 +27,16 @@ library(raster)
 library(reticulate)  # <-------------------------------------------------------------------- Read: https://rstudio.github.io/reticulate/articles/package.html
 reticulate::use_condaenv("dict")
 xr <- reticulate::import("xarray")
+np <- reticulate::import("numpy")
 
-# Methods
+#' @export
 get_cstdata <- function(parkname="Yellowstone National Park"){
+  # Initialize AWS access
+  creds <- readRDS("~/.aws/credentials.RDS")
+  Sys.setenv("AWS_ACCESS_KEY_ID" = creds['key'],
+             "AWS_SECRET_ACCESS_KEY" = creds['skey'],
+             "AWS_DEFAULT_REGION" = creds['region'])
+
   # Make sure we have the national park shapefile
   if (!file.exists("data/shapefiles/nps_boundary.shp")){
     get_park_boundaries()
@@ -54,6 +57,7 @@ get_cstdata <- function(parkname="Yellowstone National Park"){
   arg_ref = Argument_Reference()
 
   # Get the extent coordinates
+  aoi <- sp::spTransform(aoi, grid$crs)
   lonmin <- aoi@bbox[1,1]
   lonmax <- aoi@bbox[1,2]
   latmin <- aoi@bbox[2,1]
@@ -72,14 +76,15 @@ get_cstdata <- function(parkname="Yellowstone National Park"){
   # Now rasterize shape to get coordinates within boundaries (check output, move to function)
   ny <- (y2 - y1) + 1
   nx <- (x2 - x1) + 1
+  aoilats <- sapply(0:(ny - 1), function(x) latmin + x*grid$resolution)
+  aoilons <- sapply(0:(nx - 1), function(x) lonmin + x*grid$resolution)
   r <- raster::raster(ncol=nx, nrow=ny)
   raster::extent(r) <- raster::extent(aoi)
   r <- rasterize(aoi, r, 'UNIT_CODE')  # Not generalizable
-  r <- raster::projectRaster(r, crs = grid$crs, res = grid$resolution)
-  aoi_pnts <- rasterToPoints(r)
-  # I could get all lat/lons and set that attribute in the xarray then use the points above to select. That would probably be good to do regardless!
-  # mask <- r * 0 + 1
-  # aoi_pnts <- data.frame(rasterToPoints(mask, function(x) x == 1))
+  mask <- r * 0 + 1
+  bnd_crds <- data.frame(rasterToPoints(mask, function(x) x == 1))
+  bndy <- bnd_crds$y
+  bndx <- bnd_crds$x
 
   # Get some time information
   ntime_hist <- grid$ntime_hist
@@ -138,18 +143,24 @@ get_cstdata <- function(parkname="Yellowstone National Park"){
     if (!file.exists(dst)) {
       # Save a local file
       ds <- xr$open_mfdataset(purl, concat_dim="time")
-      ds$lats <-
+
+      # add coordinates
+      # ds <- ds$assign_coords(lat = c('lat' = as.matrix(aoilats)),
+      #                        lon = c('lon' = as.matrix(aoilons)))
+
       # Mask by boundary ...
+      # dsmask <- xr$DataArray(as.matrix(mask))
+      # dsmask <- dsmask$fillna(0)
+      # ds <- ds$where(dsmask$data == 1)
+
+      # Test if anything was masked
+      # ds$air_temperature[[1]]$values
 
       # Add location attribute (The park name) ...
       # Add time attribute (Daily, 1950 - 2099, historical until 2006, modeled after) ...
-      ds$to_netcdf(dst)
 
-      # Send local file to s3 bucket
-      creds <- readRDS("~/.aws/credentials.RDS")
-      Sys.setenv("AWS_ACCESS_KEY_ID" = creds['key'],
-                 "AWS_SECRET_ACCESS_KEY" = creds['skey'],
-                 "AWS_DEFAULT_REGION" = creds['region'])
+      # Save to local file
+      ds$to_netcdf(dst)
 
       # Put the file in the bucket
       bucket_name <- "cstdata-test"
