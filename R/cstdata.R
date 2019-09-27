@@ -27,6 +27,7 @@
 library(aws.s3)
 library(glue)
 library(progress)
+library(raster)
 library(reticulate)  # <-------------------------------------------------------------------- Read: https://rstudio.github.io/reticulate/articles/package.html
 reticulate::use_condaenv("dict")
 xr <- reticulate::import("xarray")
@@ -63,16 +64,22 @@ get_cstdata <- function(parkname="Yellowstone National Park"){
   lonmaxdiffs <- abs(grid$lons - lonmax)
   latmindiffs <- abs(grid$lats - latmin)
   latmaxdiffs <- abs(grid$lats - latmax)
-  lon1 <- match(lonmindiffs[lonmindiffs == min(lonmindiffs)], lonmindiffs)
-  lon2 <- match(lonmaxdiffs[lonmaxdiffs == min(lonmaxdiffs)], lonmaxdiffs)
-  lat1 <- match(latmindiffs[latmindiffs == min(latmindiffs)], latmindiffs)
-  lat2 <- match(latmaxdiffs[latmaxdiffs == min(latmaxdiffs)], latmaxdiffs)
+  x1 <- match(lonmindiffs[lonmindiffs == min(lonmindiffs)], lonmindiffs)
+  x2 <- match(lonmaxdiffs[lonmaxdiffs == min(lonmaxdiffs)], lonmaxdiffs)
+  y1 <- match(latmindiffs[latmindiffs == min(latmindiffs)], latmindiffs)
+  y2 <- match(latmaxdiffs[latmaxdiffs == min(latmaxdiffs)], latmaxdiffs)
 
-  # Now rasterize shape to get grid locations of boundaries
-  sapply(0:(nlat - 1), function(x) extent["latmin"][[1]] + x*resolution)
-  r <- raster(ncol=180, nrow=180)
-  extent(r) <- extent(poly)
-  rp <- rasterize(poly, r, 'AREA')
+  # Now rasterize shape to get coordinates within boundaries (check output, move to function)
+  ny <- (y2 - y1) + 1
+  nx <- (x2 - x1) + 1
+  r <- raster::raster(ncol=nx, nrow=ny)
+  raster::extent(r) <- raster::extent(aoi)
+  r <- rasterize(aoi, r, 'UNIT_CODE')  # Not generalizable
+  r <- raster::projectRaster(r, crs = grid$crs, res = grid$resolution)
+  aoi_pnts <- rasterToPoints(r)
+  # I could get all lat/lons and set that attribute in the xarray then use the points above to select. That would probably be good to do regardless!
+  # mask <- r * 0 + 1
+  # aoi_pnts <- data.frame(rasterToPoints(mask, function(x) x == 1))
 
   # Get some time information
   ntime_hist <- grid$ntime_hist
@@ -97,8 +104,8 @@ get_cstdata <- function(parkname="Yellowstone National Park"){
         mattachment <- paste(c(urlbase, param, model, ensemble, scenario,
                                model_years, "CONUS_daily.nc?"), collapse = "_")
         var <- variables[param]
-        hquery <- paste0(var, glue("[{0}:{1}:{ntime_hist}][{lat1}:{1}:{lat2}][{lon1}:{1}:{lon2}]"))
-        mquery <- paste0(var, glue("[{0}:{1}:{ntime_model}][{lat1}:{1}:{lat2}][{lon1}:{1}:{lon2}]"))
+        hquery <- paste0(var, glue::glue("[{0}:{1}:{ntime_hist}][{y1}:{1}:{y2}][{x1}:{1}:{x2}]"))
+        mquery <- paste0(var, glue::glue("[{0}:{1}:{ntime_model}][{y1}:{1}:{y2}][{x1}:{1}:{x2}]"))
         hurl <- paste0(hattachment, hquery)
         murl <- paste0(mattachment, mquery)
         hurls <- append(hurls, hurl)
@@ -131,8 +138,8 @@ get_cstdata <- function(parkname="Yellowstone National Park"){
     if (!file.exists(dst)) {
       # Save a local file
       ds <- xr$open_mfdataset(purl, concat_dim="time")
+      ds$lats <-
       # Mask by boundary ...
-      aoi
 
       # Add location attribute (The park name) ...
       # Add time attribute (Daily, 1950 - 2099, historical until 2006, modeled after) ...
