@@ -31,18 +31,24 @@ library(reticulate)  # <--------------------------------------------------------
 reticulate::use_condaenv("dict")
 xr <- reticulate::import("xarray")
 
+# Methods
 get_cstdata <- function(parkname="Yellowstone National Park"){
-  # Park Shapefile and Area of Interest
+  # Make sure we have the national park shapefile
+  if (!file.exists("data/shapefiles/nps_boundary.shp")){
+    get_park_boundaries()
+  }
+
+  # Get the boundaries of the chosen national park
   parks <- rgdal::readOGR("data/shapefiles/nps_boundary.shp")
   aoi <- parks[grepl(parkname, parks$UNIT_NAME),]
 
-  # First we need a destination folder
+  # Make sure we a park-specific destination folder
   location <- gsub(" ", "_", tolower(aoi$UNIT_NAME))
   print(paste("Retrieving climate data for", location))
   dst_folder <- file.path('data', 'netcdfs', location)
   if (!dir.exists(dst_folder)) dir.create(dst_folder, recursive = TRUE)
 
-  # Reference Objects
+  # Instatiate reference objects
   grid = Grid_Reference()
   arg_ref = Argument_Reference()
 
@@ -62,22 +68,17 @@ get_cstdata <- function(parkname="Yellowstone National Park"){
   lat1 <- match(latmindiffs[latmindiffs == min(latmindiffs)], latmindiffs)
   lat2 <- match(latmaxdiffs[latmaxdiffs == min(latmaxdiffs)], latmaxdiffs)
 
+  # Now rasterize shape to get grid locations of boundaries
+  sapply(0:(nlat - 1), function(x) extent["latmin"][[1]] + x*resolution)
+  r <- raster(ncol=180, nrow=180)
+  extent(r) <- extent(poly)
+  rp <- rasterize(poly, r, 'AREA')
+
   # Get some time information
   ntime_hist <- grid$ntime_hist
   ntime_model <- grid$ntime_model
   historical_years <- "1950_2005"
   model_years <- "2006_2099"
-  # h1 <- strsplit(historical_years, "_")[[1]][1]
-  # h2 <- strsplit(historical_years, "_")[[1]][2]
-  # m1 <- strsplit(model_years, "_")[[1]][1]
-  # m2 <- strsplit(model_years, "_")[[1]][2]
-  # hd1 <- as.Date(paste(c(h1, "01", "01"), collapse = "-"))
-  # hd2 <- as.Date(paste(c(h2, "12", "31"), collapse = "-"))
-  # md1 <- as.Date(paste(c(m1, "01", "01"), collapse = "-"))
-  # md2 <- as.Date(paste(c(m2, "12", "31"), collapse = "-"))
-  # historical_dates <- seq(hd1, hd2, "days")
-  # model_dates <- seq(md1, md2, "days")
-  # ntime_hist <- length(historical_dates)
 
   # Now we can get the historical and model years together
   urlbase = "http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_macav2metdata"
@@ -114,7 +115,7 @@ get_cstdata <- function(parkname="Yellowstone National Park"){
   # ncores <- parallel::detectCores() - 1
   # doParallel::registerDoParallel(ncores)
   # purls2 <- split(purls, ceiling(seq_along(purls)/ncores))
-  # # Finish getURL to accept this
+  # Now the urls are in groups of 7 (on my computer) that may be dl'ed at once
 
   # Let's leave parallelization aside for now, merge and download each pair
   pb <- progress_bar$new(total = length(purls))
@@ -124,16 +125,20 @@ get_cstdata <- function(parkname="Yellowstone National Park"){
     content <- purl[2]  # 2 for the modeled set, it has more information
     query <- basename(content)
     cutoff <- regexpr("CONUS", query)[1] - 12  # to get to the scenario
-    file_name <- paste0(substr(query, 1, cutoff), ".nc")
+    file_name <- paste0(substr(query, 1, cutoff), ".nc") # <--------------------------------- Incorporate the naming convention Imtiaz requested
     dst <-file.path(dst_folder, file_name)
-    pb$tick()
 
     if (!file.exists(dst)) {
-      # Save a local file - (replace with getURL for more options)
+      # Save a local file
       ds <- xr$open_mfdataset(purl, concat_dim="time")
+      # Mask by boundary ...
+      aoi
+
+      # Add location attribute (The park name) ...
+      # Add time attribute (Daily, 1950 - 2099, historical until 2006, modeled after) ...
       ds$to_netcdf(dst)
 
-      # Send to s3 bucket
+      # Send local file to s3 bucket
       creds <- readRDS("~/.aws/credentials.RDS")
       Sys.setenv("AWS_ACCESS_KEY_ID" = creds['key'],
                  "AWS_SECRET_ACCESS_KEY" = creds['skey'],
@@ -145,11 +150,29 @@ get_cstdata <- function(parkname="Yellowstone National Park"){
       put_folder(location, bucket_name)
       put_object(file = dst, object = object, bucket = bucket_name)
     }
+    pb$tick()
   }
 }
 
 
+get_park_boundaries <- function(){
+  # create directory if not present
+  if (!file.exists('data/shapefiles')) {
+    dir.create(file.path('data', 'shapefiles'), recursive = TRUE, showWarnings = FALSE)
+  }
 
+  # Download if not already preset
+  nps_boundary <- "data/shapefiles/nps_boundary.shp"
+  file <- "data/shapefiles/nps_boundary.zip"
+  if(!file.exists(nps_boundary)){
+    url <- "https://irma.nps.gov/DataStore/DownloadFile/627620"
+    download.file(url = url, destfile = file, method = "curl")  # Check this, not stable yet
+    unzip(file, exdir = "data/shapefiles")
+  }
+}
+
+
+# Reference Classes
 Grid_Reference <- setRefClass(
   "reference_grid",
 
@@ -195,8 +218,32 @@ Argument_Reference <- setRefClass(
     units = "list"),
 
   methods = list(
-    initialize = function(models = cst_models, parameters = cst_params, scenarios = cst_scenarios,
-                          variables = cst_variables, units = cst_units) {
+    initialize = function(
+      models = c("bcc-csm1-1", "bcc-csm1-1-m", "BNU-ESM", "CanESM2", "CCSM4", "CNRM-CM5",
+                 "CSIRO-Mk3-6-0", "GFDL-ESM2M", "GFDL-ESM2G", "HadGEM2-ES365",
+                 "HadGEM2-CC365", "inmcm4", "IPSL-CM5A-LR", "IPSL-CM5A-MR", "IPSL-CM5B-LR",
+                 "MIROC5", "MIROC-ESM", "MIROC-ESM-CHEM", "MRI-CGCM3", "NorESM1-M"),
+      parameters = c("tasmin", "tasmax", "rhsmin", "rhsmax", "pr", "rsds", "uas", "vas",
+                     "huss", "vpd"),
+      scenarios = c("rcp45", "rcp85"),
+      variables = list("tasmin" = "air_temperature",
+                      "tasmax" = "air_temperature",
+                      "rhsmin" = "relative_humidity",
+                      "rhsmax" = "relative_humidity",
+                      "pr" = "precipitation",
+                      "rsds" = "surface_downwelling_shortwave_flux_in_air",
+                      "uas" = "eastward_wind",
+                      "vas" = "northward_wind",
+                      "huss" = "specific_humidity",
+                      "vpd" = "vpd"),
+      units = list("air_temperature" = "K",
+                   "relative_humidity" = "%",
+                   "precipitation" = "mm",
+                   "surface_downwelling_shortwave_flux_in_air" = "W m-2",
+                   "eastward_wind" = "m s-1",
+                   "northward_wind" = "m s-1",
+                   "specific_humidity" = "kg kg-1",
+                   "vpd" = "kPa")) {
       models <<- models
       parameters <<- parameters
       scenarios <<- scenarios
@@ -218,8 +265,7 @@ Argument_Reference <- setRefClass(
     },
 
     get_query = function(model, aoi) {
-      print("Got Query")
+      print("Maybe we could build the url queries here?")
     }
   )
 )
-

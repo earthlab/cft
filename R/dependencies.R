@@ -8,5 +8,5 @@ loadInstall <- function(packages){
 }
 
 # cran packages
-packages <- c('aws.s3', 'devtools', 'glue', 'ncdf4', 'progress', 'rgdal')
+packages <- c('aws.s3', 'devtools', 'glue', 'progress', 'reticulate', 'rgdal')
 loadInstall(packages)
