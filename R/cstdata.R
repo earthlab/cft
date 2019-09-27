@@ -27,15 +27,13 @@ library(raster)
 library(reticulate)  # <-------------------------------------------------------------------- Read: https://rstudio.github.io/reticulate/articles/package.html
 reticulate::use_condaenv("dict")
 xr <- reticulate::import("xarray")
-np <- reticulate::import("numpy")
 
-#' @export
-get_cstdata <- function(parkname="Yellowstone National Park"){
+cstdata <- function(parkname="Yellowstone National Park"){
   # Initialize AWS access
-  creds <- readRDS("~/.aws/credentials.RDS")
-  Sys.setenv("AWS_ACCESS_KEY_ID" = creds['key'],
-             "AWS_SECRET_ACCESS_KEY" = creds['skey'],
-             "AWS_DEFAULT_REGION" = creds['region'])
+  # creds <- readRDS("~/.aws/credentials.RDS")
+  # Sys.setenv("AWS_ACCESS_KEY_ID" = creds['key'],
+  #            "AWS_SECRET_ACCESS_KEY" = creds['skey'],
+  #            "AWS_DEFAULT_REGION" = creds['region'])
 
   # Make sure we have the national park shapefile
   if (!file.exists("data/shapefiles/nps_boundary.shp")){
@@ -76,15 +74,12 @@ get_cstdata <- function(parkname="Yellowstone National Park"){
   # Now rasterize shape to get coordinates within boundaries (check output, move to function)
   ny <- (y2 - y1) + 1
   nx <- (x2 - x1) + 1
-  aoilats <- sapply(0:(ny - 1), function(x) latmin + x*grid$resolution)
-  aoilons <- sapply(0:(nx - 1), function(x) lonmin + x*grid$resolution)
+  # aoilats <- sapply(0:(ny - 1), function(x) latmin + x*grid$resolution)
+  # aoilons <- sapply(0:(nx - 1), function(x) lonmin + x*grid$resolution)
   r <- raster::raster(ncol=nx, nrow=ny)
   raster::extent(r) <- raster::extent(aoi)
   r <- rasterize(aoi, r, 'UNIT_CODE')  # Not generalizable
   mask <- r * 0 + 1
-  bnd_crds <- data.frame(rasterToPoints(mask, function(x) x == 1))
-  bndy <- bnd_crds$y
-  bndx <- bnd_crds$x
 
   # Get some time information
   ntime_hist <- grid$ntime_hist
@@ -149,9 +144,9 @@ get_cstdata <- function(parkname="Yellowstone National Park"){
       #                        lon = c('lon' = as.matrix(aoilons)))
 
       # Mask by boundary ...
-      # dsmask <- xr$DataArray(as.matrix(mask))
-      # dsmask <- dsmask$fillna(0)
-      # ds <- ds$where(dsmask$data == 1)
+      dsmask <- xr$DataArray(as.matrix(mask))
+      dsmask <- dsmask$fillna(0)
+      ds <- ds$where(dsmask$data == 1)
 
       # Test if anything was masked
       # ds$air_temperature[[1]]$values
@@ -163,10 +158,10 @@ get_cstdata <- function(parkname="Yellowstone National Park"){
       ds$to_netcdf(dst)
 
       # Put the file in the bucket
-      bucket_name <- "cstdata-test"
-      object <- file.path(location, file_name)
-      put_folder(location, bucket_name)
-      put_object(file = dst, object = object, bucket = bucket_name)
+      # bucket_name <- "cstdata-test"
+      # object <- file.path(location, file_name)
+      # put_folder(location, bucket_name)
+      # put_object(file = dst, object = object, bucket = bucket_name)
     }
     pb$tick()
   }
