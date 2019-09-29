@@ -24,15 +24,10 @@
 #' Consider this data portal for a full list of these url queries:
 #' \url{https://climate.northwestknowledge.net/MACA/data_portal.php}
 
-library(aws.s3)
-library(glue)
-library(progress)
-library(raster)
-library(reticulate)  # <-------------------------------------------------------- Read: https://rstudio.github.io/reticulate/articles/package.html
 reticulate::use_condaenv("dict")
 xr <- reticulate::import("xarray")
 
-cstdata <- function(parkname="Yellowstone National Park"){
+cstdata <- function(parkname="Rocky Mountain National Park"){
   # Initialize AWS access
   creds <- readRDS("~/.aws/credentials.RDS")
   Sys.setenv("AWS_ACCESS_KEY_ID" = creds['key'],
@@ -76,15 +71,19 @@ cstdata <- function(parkname="Yellowstone National Park"){
   y2 <- match(latmaxdiffs[latmaxdiffs == min(latmaxdiffs)], latmaxdiffs)
   ny <- (y2 - y1) + 1
   nx <- (x2 - x1) + 1
+  aoilats <- sapply(1:ny, function(x) latmin + x*grid$resolution)
+  aoilons <- sapply(1:nx, function(x) lonmin + x*grid$resolution)
 
   # Now create a mask for later
-  mask <- make_mask(aoi, grid, ny, nx) 
+  r <- raster::raster(ncols=length(aoilons), nrows=length(aoilats))
+  raster::extent(r) <- raster::extent(aoi)
+  r <- raster::rasterize(aoi, r, 'UNIT_CODE')  # <------------------------------ Not generalizable
+  mask <- r * 0 + 1
+  mask <- as.matrix(mask)
 
   # Get some time information
   ntime_hist <- grid$ntime_hist
   ntime_model <- grid$ntime_model
-  historical_years <- "1950_2005"
-  model_years <- "2006_2099"
 
   # Now we can get the historical and model years together
   urlbase = paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
@@ -102,10 +101,10 @@ cstdata <- function(parkname="Yellowstone National Park"){
                             "macav2metdata_1950_2099_daily.nc"),
                            collapse = "_")
         hattachment <- paste(c(urlbase, param, model, ensemble, "historical",
-                               historical_years, "CONUS_daily.nc?"),
+                               "1950_2005", "CONUS_daily.nc?"),
                              collapse = "_")
         mattachment <- paste(c(urlbase, param, model, ensemble, scenario,
-                               model_years, "CONUS_daily.nc?"), collapse = "_")
+                               "2006_2099", "CONUS_daily.nc?"), collapse = "_")
         var <- variables[param]
         hquery <- paste0(var, glue::glue("[{0}:{1}:{ntime_hist}][{y1}:{1}:{y2}]
                                          [{x1}:{1}:{x2}]"))
@@ -119,98 +118,28 @@ cstdata <- function(parkname="Yellowstone National Park"){
     }
   }
 
-  # # If we want to parallelize, we could group the pairs further
-  # purls2 <- split(purls, ceiling(seq_along(purls)/ncores))
-  # `%dopar%` <- foreach::`%dopar%`
-  # ncores <- parallel::detectCores() - 1
-  # doParallel::registerDoParallel(ncores)
-  # purls2 <- split(purls, ceiling(seq_along(purls)/ncores))
-  # Now the urls are in groups of 7 (on my computer) that may be dl'ed at once
+  # If we want to parallelize, we could group the pairs further
+  ncores <- parallel::detectCores() - 1
+  gqueries <- split(queries, ceiling(seq_along(queries)/ncores))
+  `%dopar%` <- foreach::`%dopar%`
+  cl <- parallel::makeCluster(ncores)
+  doParallel::registerDoParallel(cl)
+  parallel::clusterExport(cl, c("retrieve_subset"), envir = environment())
 
-  # Let's leave parallelization aside for now, merge and download each pair
-  pb <- progress_bar$new(total = length(queries))
-  for (q in queries){
-    pb$tick(0)
-
-    # Get the local destination file
-    file_name <-q[[2]]
-    dst <-file.path(dst_folder, file_name)
-
-    if (!file.exists(dst)) {
-      # Combine historical and modeled url queries
-      purl <- q[[1]]
-
-      # Save a local file
-      ds <- xr$open_mfdataset(purl, concat_dim="time")
-
-      # add coordinates
-      ds <- ds$assign_coords(lat = c('lat' = as.matrix(aoilats)),
-                             lon = c('lon' = as.matrix(aoilons)))
-
-      # Mask by boundary
-      dsmask <- xr$DataArray(as.matrix(mask))
-      dsmask <- dsmask$fillna(0)
-      ds <- ds$where(dsmask$data == 1)
-
-      # Update Attributes  <---------------------------------------------------- Standards: https://www.unidata.ucar.edu/software/netcdf-java/current/metadata/DataDiscoveryAttConvention.html
-      attrs1 <- ds$attrs
-      attrs2 <- list(
-                  "title" = attrs1$title,
-                  "id" = attrs1$id,
-                  "naming_authority" = attrs1$naming_authority,
-                  "comment" = paste0("Subsetted to ", parkname, "by the North ",
-                                     "Central Climate Adaption Science Center"),
-                  "description" = attrs1$description,
-                  "keywords" = attrs1$keywords,
-                  "cdm_data_type" = attrs1$cdm_data_type,
-                  "Metadata_Conventions" = attrs1$Metadata_Conventions,
-                  "standard_name_vocabulary" = attrs1$standard_name_vocabulary,
-                  "geospatial_lat_min" = latmin,
-                  "geospatial_lat_max" = latmax,
-                  "geospatial_lon_min" = lonmin,
-                  "geospatial_lon_max" = lonmax,
-                  "geospatial_lat_units" = attrs1$geospatial_lat_units,
-                  "geospatial_lon_units" = attrs1$geospatial_lon_units,
-                  "geospatial_lat_resolution" = grid$resolution,
-                  "geospatial_lon_resolution" = grid$resolution,
-                  "geospatial_vertical_min" = '0',
-                  "geospatial_vertical_min" = '0',
-                  "geospatial_vertical_resolution" = '0',
-                  "geospatial_vertical_positive" = '0',
-                  "time_coverage_start" = "1950-01-01T00:0",
-                  "time_coverage_end" = "2099-12-31T00:0",
-                  "time_coverage_duration" = "P150Y",
-                  "time_coverage_resolution" = "P1D",
-                  "date_created" = attrs1$date_created,
-                  "date_issued" = attrs1$date_issued,
-                  "creator_name" = attrs1$creator_name,
-                  "creator_url" = attrs1$creator_url,
-                  "creater_email" = attrs1$creator_email,
-                  "institution" = attrs1$institution,
-                  "processing_level" = attrs1$processing_level,
-                  "contributor_name" = attrs1$contributor_name,
-                  "contributor_role" = attrs1$contributor_role,
-                  "publisher_name" = attrs1$publisher_name,
-                  "publisher_url" = attrs1$publisher_url,
-                  "license" = attrs1$license,
-                  "coordinate_system" = attrs1$coordinate_system
-                  )
-      ds$attrs <- attrs2
-
-      # Save to local file
-      start <- Sys.time()
-      ds$to_netcdf(dst)
-      end <- Sys.time()
-      print(end - start)
-
-      # Put the file in the bucket
-      bucket_name <- "cstdata-test"
-      object <- file.path(location, file_name)
-      put_folder(location, bucket_name)
-      put_object(file = dst, object = object, bucket = bucket_name)
-    }
-    pb$tick()
+  # With parallelization
+  for (gq in gqueries) {
+      t <- foreach::foreach(i=1:length(gq), .packages = "reticulate") %dopar% {
+            retrieve_subset(gq[[i]], aoilats, aoilons, dst_folder, mask,
+                            parkname, latmin, latmax, lonmin, lonmax)
+      }
   }
+  parallel::stopCluster(cl)
+
+  # Without parallelization
+  # for (q in queries){
+  #   retrieve_subset(q, aoilats, aoilons, dst_folder, mask, parkname, latmin,
+  #                   latmax, lonmin, lonmax)
+  # }
 }
 
 
@@ -230,15 +159,93 @@ get_park_boundaries <- function(){
 }
 
 
-make_mask <- function(aoi, grid, ny, nx){
-  aoilats <- sapply(1:(ny), function(x) latmin + x*grid$resolution)
-  aoilons <- sapply(1:(nx), function(x) lonmin + x*grid$resolution)
-  r <- raster::raster(ncol=nx, nrow=ny)
-  raster::extent(r) <- raster::extent(aoi)
-  r <- rasterize(aoi, r, 'UNIT_CODE')  # <-------------------------------------- Not generalizable
-  mask <- r * 0 + 1
+retrieve_subset <- function(query, aoilats, aoilons, dst_folder, mask, parkname,
+                            latmin, latmax, lonmin, lonmax){
+  xr <- reticulate::import("xarray")
+
+  # Get the local destination file
+  file_name <- query[[2]]
+  dst <- file.path(dst_folder, file_name)
   
-  return(mask)
+  if (!file.exists(dst)) {
+    # Combine historical and modeled url queries
+    purl <- query[[1]]
+    
+    # Save a local file
+    print("Opening mfdataset...")
+    ds <- xr$open_mfdataset(purl, concat_dim="time")
+    
+    # add coordinate
+    print("Assigning coordinates...")
+    ds <- ds$assign_coords(lat = c('lat' = as.matrix(aoilats)),
+                           lon = c('lon' = as.matrix(aoilons)))
+    
+    # Mask by boundary
+    print("Masking grid...")
+    dsmask <- xr$DataArray(mask)
+    dsmask <- dsmask$fillna(0)
+    ds <- ds$where(dsmask$data == 1)
+    
+    # Update Attributes  <---------------------------------------------------- Standards: https://www.unidata.ucar.edu/software/netcdf-java/current/metadata/DataDiscoveryAttConvention.html
+    attrs1 <- ds$attrs
+    attrs2 <- list(
+      "title" = attrs1$title,
+      "id" = attrs1$id,
+      "naming_authority" = attrs1$naming_authority,
+      "comment" = paste0("Subsetted to ", parkname, "by the North ",
+                         "Central Climate Adaption Science Center"),
+      "description" = attrs1$description,
+      "keywords" = attrs1$keywords,
+      "cdm_data_type" = attrs1$cdm_data_type,
+      "Metadata_Conventions" = attrs1$Metadata_Conventions,
+      "standard_name_vocabulary" = attrs1$standard_name_vocabulary,
+      "geospatial_lat_min" = latmin,
+      "geospatial_lat_max" = latmax,
+      "geospatial_lon_min" = lonmin,
+      "geospatial_lon_max" = lonmax,
+      "geospatial_lat_units" = attrs1$geospatial_lat_units,
+      "geospatial_lon_units" = attrs1$geospatial_lon_units,
+      "geospatial_lat_resolution" = grid$resolution,
+      "geospatial_lon_resolution" = grid$resolution,
+      "geospatial_vertical_min" = '0',
+      "geospatial_vertical_min" = '0',
+      "geospatial_vertical_resolution" = '0',
+      "geospatial_vertical_positive" = '0',
+      "time_coverage_start" = "1950-01-01T00:0",
+      "time_coverage_end" = "2099-12-31T00:0",
+      "time_coverage_duration" = "P150Y",
+      "time_coverage_resolution" = "P1D",
+      "date_created" = attrs1$date_created,
+      "date_issued" = attrs1$date_issued,
+      "creator_name" = attrs1$creator_name,
+      "creator_url" = attrs1$creator_url,
+      "creater_email" = attrs1$creator_email,
+      "institution" = attrs1$institution,
+      "processing_level" = attrs1$processing_level,
+      "contributor_name" = attrs1$contributor_name,
+      "contributor_role" = attrs1$contributor_role,
+      "publisher_name" = attrs1$publisher_name,
+      "publisher_url" = attrs1$publisher_url,
+      "license" = attrs1$license,
+      "coordinate_system" = attrs1$coordinate_system
+    )
+    print("Assigning new attributes...")
+    ds$attrs <- attrs2
+    
+    # Save to local file
+    start <- Sys.time()
+    print("Saving file locally...")
+    ds$to_netcdf(dst)
+    end <- Sys.time()
+    print(end - start)
+    
+    # Put the file in the bucket
+    print("Saving file to cloud...")
+    bucket_name <- "cstdata-test"
+    object <- file.path(location, file_name)
+    aws.s3::put_folder(location, bucket_name)
+    aws.s3::put_object(file = dst, object = object, bucket = bucket_name)
+  }
 }
 
 
@@ -348,3 +355,4 @@ Argument_Reference <- setRefClass(
     }
   )
 )
+

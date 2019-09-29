@@ -2,5 +2,6 @@
 cstdata.proj
 .RData
 .Rhistory
+/R/.Rhistory
 .Rproj.user
 .Rproj.user/*
