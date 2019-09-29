@@ -27,8 +27,9 @@
 library(raster)
 reticulate::use_condaenv("dict")
 xr <- reticulate::import("xarray")
+parkname="Acadia National Park"
 
-cstdata <- function(parkname="Rocky Mountain National Park"){
+cstdata <- function(parkname="Acadia National Park"){
   # Initialize AWS access
   creds <- readRDS("~/.aws/credentials.RDS")
   Sys.setenv("AWS_ACCESS_KEY_ID" = creds['key'],
@@ -74,13 +75,14 @@ cstdata <- function(parkname="Rocky Mountain National Park"){
   nx <- (x2 - x1) + 1
   aoilats <- sapply(1:ny, function(x) latmin + x*grid$resolution)
   aoilons <- sapply(1:nx, function(x) lonmin + x*grid$resolution)
+  resolution <- grid$resolution
 
   # Now create a mask for later
   r <- raster::raster(ncols=length(aoilons), nrows=length(aoilats))
   raster::extent(r) <- raster::extent(aoi)
   r <- raster::rasterize(aoi, r, 'UNIT_CODE')  # <------------------------------ Not generalizable
-  mask <- r * 0 + 1
-  mask <- as.matrix(mask)
+  mask_grid <- r * 0 + 1
+  mask_mat <- as.matrix(mask_grid)
 
   # Get some time information
   ntime_hist <- grid$ntime_hist
@@ -119,28 +121,29 @@ cstdata <- function(parkname="Rocky Mountain National Park"){
     }
   }
 
-  # # If we want to parallelize, we could group the pairs further
-  # ncores <- parallel::detectCores() - 1
-  # gqueries <- split(queries, ceiling(seq_along(queries)/ncores))
-  # `%dopar%` <- foreach::`%dopar%`
-  # cl <- parallel::makeCluster(ncores)
-  # doParallel::registerDoParallel(cl)
-  # parallel::clusterExport(cl, "retrieve_subset", envir = environment())
-  # 
-  # # With parallelization
-  # for (gq in gqueries) {
-  #     t <- foreach::foreach(i=1:length(gq)) %dopar% {
-  #           retrieve_subset(gq[[i]], aoilats, aoilons, dst_folder, mask,
-  #                           parkname, latmin, latmax, lonmin, lonmax)
-  #     }
-  # }
-  # parallel::stopCluster(cl)
+  # If we want to parallelize, we could group the pairs further
+  ncores <- parallel::detectCores() - 1
+  gqueries <- split(queries, ceiling(seq_along(queries)/ncores))
+  `%dopar%` <- foreach::`%dopar%`
+  cl <- parallel::makeCluster(ncores)
+  doParallel::registerDoParallel(cl)
+  parallel::clusterExport(cl, "retrieve_subset", envir = environment())
+
+  # With parallelization
+  for (gq in gqueries) {
+      t <- foreach::foreach(i=1:length(gq)) %dopar% {
+            retrieve_subset(gq[[i]], dst_folder, parkname, aoilats, aoilons,
+                            mask_mat, latmin, latmax, lonmin, lonmax,
+                            resolution)
+      }
+  }
+  parallel::stopCluster(cl)
 
   # Without parallelization
-  for (q in queries){
-    retrieve_subset(q, aoilats, aoilons, dst_folder, mask, parkname, latmin,
-                    latmax, lonmin, lonmax)
-  }
+  # for (query in queries){
+  #   retrieve_subset(query, aoilats, aoilons, dst_folder, mask_mat, parkname,
+  #                   latmin, latmax, lonmin, lonmax, resolution)
+  # }
 }
 
 
@@ -160,35 +163,36 @@ get_park_boundaries <- function(){
 }
 
 
-retrieve_subset <- function(query, aoilats, aoilons, dst_folder, mask, parkname,
-                            latmin, latmax, lonmin, lonmax){
+retrieve_subset <- function(query, dst_folder, parkname, aoilats, aoilons,
+                            mask_mat, latmin, latmax, lonmin, lonmax,
+                            resolution){
   xr <- reticulate::import("xarray")
 
   # Get the local destination file
   file_name <- query[[2]]
   dst <- file.path(dst_folder, file_name)
+  location <- gsub(" ", "_", tolower(parkname))
   
   if (!file.exists(dst)) {
     # Combine historical and modeled url queries
     purl <- query[[1]]
-    
+
     # Save a local file
-    print("Opening mfdataset...")
     ds <- xr$open_mfdataset(purl, concat_dim="time")
-    
+
     # add coordinate
-    print("Assigning coordinates...")
     ds <- ds$assign_coords(lat = c('lat' = as.matrix(aoilats)),
                            lon = c('lon' = as.matrix(aoilons)))
-    
+
     # Mask by boundary
-    print("Masking grid...")
-    dsmask <- xr$DataArray(mask)
+    dsmask <- xr$DataArray(mask_mat)
     dsmask <- dsmask$fillna(0)
     ds <- ds$where(dsmask$data == 1)
-    
-    # Update Attributes  <---------------------------------------------------- Standards: https://www.unidata.ucar.edu/software/netcdf-java/current/metadata/DataDiscoveryAttConvention.html
+
+    # Update Attributes  <------------------------------------------------------ Standards: https://www.unidata.ucar.edu/software/netcdf-java/current/metadata/DataDiscoveryAttConvention.html
+    print("Retrieving old attributes...")
     attrs1 <- ds$attrs
+    print("Creating list of new attributes...")
     attrs2 <- list(
       "title" = attrs1$title,
       "id" = attrs1$id,
@@ -206,8 +210,8 @@ retrieve_subset <- function(query, aoilats, aoilons, dst_folder, mask, parkname,
       "geospatial_lon_max" = lonmax,
       "geospatial_lat_units" = attrs1$geospatial_lat_units,
       "geospatial_lon_units" = attrs1$geospatial_lon_units,
-      "geospatial_lat_resolution" = grid$resolution,
-      "geospatial_lon_resolution" = grid$resolution,
+      "geospatial_lat_resolution" = resolution,
+      "geospatial_lon_resolution" = resolution,
       "geospatial_vertical_min" = '0',
       "geospatial_vertical_min" = '0',
       "geospatial_vertical_resolution" = '0',
