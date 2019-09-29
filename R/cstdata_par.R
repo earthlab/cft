@@ -24,6 +24,7 @@
 #' Consider this data portal for a full list of these url queries:
 #' \url{https://climate.northwestknowledge.net/MACA/data_portal.php}
 
+library(raster)
 reticulate::use_condaenv("dict")
 xr <- reticulate::import("xarray")
 
@@ -118,28 +119,28 @@ cstdata <- function(parkname="Rocky Mountain National Park"){
     }
   }
 
-  # If we want to parallelize, we could group the pairs further
-  ncores <- parallel::detectCores() - 1
-  gqueries <- split(queries, ceiling(seq_along(queries)/ncores))
-  `%dopar%` <- foreach::`%dopar%`
-  cl <- parallel::makeCluster(ncores)
-  doParallel::registerDoParallel(cl)
-  parallel::clusterExport(cl, c("retrieve_subset"), envir = environment())
-
-  # With parallelization
-  for (gq in gqueries) {
-      t <- foreach::foreach(i=1:length(gq), .packages = "reticulate") %dopar% {
-            retrieve_subset(gq[[i]], aoilats, aoilons, dst_folder, mask,
-                            parkname, latmin, latmax, lonmin, lonmax)
-      }
-  }
-  parallel::stopCluster(cl)
+  # # If we want to parallelize, we could group the pairs further
+  # ncores <- parallel::detectCores() - 1
+  # gqueries <- split(queries, ceiling(seq_along(queries)/ncores))
+  # `%dopar%` <- foreach::`%dopar%`
+  # cl <- parallel::makeCluster(ncores)
+  # doParallel::registerDoParallel(cl)
+  # parallel::clusterExport(cl, "retrieve_subset", envir = environment())
+  # 
+  # # With parallelization
+  # for (gq in gqueries) {
+  #     t <- foreach::foreach(i=1:length(gq)) %dopar% {
+  #           retrieve_subset(gq[[i]], aoilats, aoilons, dst_folder, mask,
+  #                           parkname, latmin, latmax, lonmin, lonmax)
+  #     }
+  # }
+  # parallel::stopCluster(cl)
 
   # Without parallelization
-  # for (q in queries){
-  #   retrieve_subset(q, aoilats, aoilons, dst_folder, mask, parkname, latmin,
-  #                   latmax, lonmin, lonmax)
-  # }
+  for (q in queries){
+    retrieve_subset(q, aoilats, aoilons, dst_folder, mask, parkname, latmin,
+                    latmax, lonmin, lonmax)
+  }
 }
 
 
