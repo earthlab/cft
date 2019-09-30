@@ -155,19 +155,17 @@ cstdata <- function(parkname="Acadia National Park"){
 }
 
 
-get_park_boundaries <- function(){
+get_park_boundaries <- function(dir = "data") {
   # Create directory if not present
-  if (!file.exists('data/shapefiles')) {
-    dir.create(file.path('data', 'shapefiles'), recursive = TRUE,
-               showWarnings = FALSE)
-  }
+  prefix <- file.path(dir, "shapefiles")
+  dir.create(prefix, recursive = TRUE, showWarnings = FALSE)
 
   # Download
-  nps_boundary <- "data/shapefiles/nps_boundary.shp"
-  file <- "data/shapefiles/nps_boundary.zip"
+  nps_boundary <- file.path(prefix, "nps_boundary.shp")
+  file <- file.path(prefix, "nps_boundary.zip")
   url <- "https://irma.nps.gov/DataStore/DownloadFile/627620"
   download.file(url = url, destfile = file, method = "curl")
-  unzip(file, exdir = "data/shapefiles")
+  unzip(file, exdir = prefix)
 }
 
 
