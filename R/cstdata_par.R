@@ -130,7 +130,7 @@ cstdata <- function(parkname="Acadia National Park"){
   }
 
   # If we want to parallelize, we could group the pairs further
-  ncores <- parallel::detectCores() - 1
+  ncores <- parallel::detectCores() / 2
   gqueries <- split(queries, ceiling(seq_along(queries)/ncores))
   `%dopar%` <- foreach::`%dopar%`
   cl <- parallel::makeCluster(ncores)
