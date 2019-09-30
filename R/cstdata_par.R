@@ -10,24 +10,34 @@
 #' bucket. The original data sets may be found at
 #' \url{ http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_
 #' CMIP5_aggregated_macav2_catalog.html}
-#'
-#'
-#' Production Notes:
-#' The use of reticulate may enable us to use Zarr arrays, which are accessible
-#' directly from an s3 bucket.
-#'
-#' There is also a non-aggregated catalog:
-#' \url{http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_
-#' macav2_catalog2.html}
-#' These files come in 5 year chunks but have daily windspeed (was) and monthly
-#' potential evapotranspiration (PotEvap) in addition to the other variables.
-#' Consider this data portal for a full list of these url queries:
-#' \url{https://climate.northwestknowledge.net/MACA/data_portal.php}
+#
+# Production Notes:
+# - The use of reticulate may enable us to use Zarr arrays, which are accessible
+#   directly from an s3 bucket.
+#
+# - There is also a non-aggregated catalog:
+#   \url{http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_
+#   macav2_catalog2.html}
+#   These files come in 5 year chunks but have daily windspeed (was) and monthly
+#   potential evapotranspiration (PotEvap) in addition to the other variables.
+#   Imtiaz would like the monthl PotEvap.
+# 
+# - The Vapor Pressure Deficit products in the aggregated catalog has an issue
+#   with fill values. I've seen this before and it is easily fixed by appending
+#   "#fillmistmatch" to the end of the query, which I will do when I get the
+#   computer back from a test run.
+#
+# - This currently saves everything to disk first, which can be a problem. The
+#   alternative is to save each file to a tempfile and overwrite. We'll have to
+#   be careful when parallelizing. Now, Imtiaz has expressed interest in the
+#   ability to save locally. For small parks this is fine, so perhaps an option.
+#
+# - For Death Valley using 7 cores with 15.6 GB of RAM and 2GB of SWAP, it
+#   crashed about 275 files in. 
 
-library(raster)
-reticulate::use_condaenv("dict")
-xr <- reticulate::import("xarray")
-parkname="Acadia National Park"
+
+library(raster)  #<------------------------------------------------------------- Had an issue where raster needed to be loaded explicity
+reticulate::use_condaenv("dict")  # <------------------------------------------- Load in function or out?
 
 cstdata <- function(parkname="Acadia National Park"){
   # Initialize AWS access
@@ -45,7 +55,7 @@ cstdata <- function(parkname="Acadia National Park"){
   parks <- rgdal::readOGR("data/shapefiles/nps_boundary.shp")
   aoi <- parks[grepl(parkname, parks$UNIT_NAME),]
 
-  # Make sure we a park-specific destination folder
+  # Make sure we a park-specific destination folder  
   location <- gsub(" ", "_", tolower(aoi$UNIT_NAME))
   print(paste("Retrieving climate data for", location))
   dst_folder <- file.path('data', 'netcdfs', location)
@@ -55,14 +65,12 @@ cstdata <- function(parkname="Acadia National Park"){
   grid = Grid_Reference()
   arg_ref = Argument_Reference()
 
-  # Get the extent coordinates
+  # Get relative index positions to full grid  # <------------------------------ This can be wrapped in a function, but I currently some of the parts generated here.
   aoi <- sp::spTransform(aoi, grid$crs)
   lonmin <- aoi@bbox[1,1]
   lonmax <- aoi@bbox[1,2]
   latmin <- aoi@bbox[2,1]
   latmax <- aoi@bbox[2,2]
-
-  # Now use these from the lat/lons of the full grid to get index positions
   lonmindiffs <- abs(grid$lons - lonmin)
   lonmaxdiffs <- abs(grid$lons - lonmax)
   latmindiffs <- abs(grid$lats - latmin)
@@ -139,7 +147,7 @@ cstdata <- function(parkname="Acadia National Park"){
   }
   parallel::stopCluster(cl)
 
-  # Without parallelization
+  # Without parallelization # <------------------------------------------------- Should we leave this as an option?
   # for (query in queries){
   #   retrieve_subset(query, aoilats, aoilons, dst_folder, mask_mat, parkname,
   #                   latmin, latmax, lonmin, lonmax, resolution)
@@ -163,7 +171,7 @@ get_park_boundaries <- function(){
 }
 
 
-retrieve_subset <- function(query, dst_folder, parkname, aoilats, aoilons,
+retrieve_subset <- function(query, dst_folder, parkname, aoilats, aoilons,  # <- Simplify inputs somehow
                             mask_mat, latmin, latmax, lonmin, lonmax,
                             resolution){
   xr <- reticulate::import("xarray")
@@ -283,9 +291,9 @@ Grid_Reference <- setRefClass(
       crs <<- crs
       resolution <<- resolution
       extent <<- extent
-      lats <<- sapply(0:(nlat - 1),
+      lats <<- sapply(1:(nlat),
                       function(x) extent["latmin"][[1]] + x*resolution)
-      lons <<- sapply(0:(nlon - 1),
+      lons <<- sapply(1:(nlon),
                       function(x) extent["lonmin"][[1]] + x*resolution)
       ntime_hist <<- ntime_hist
       ntime_model <<- ntime_model
