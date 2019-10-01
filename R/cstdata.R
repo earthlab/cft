@@ -269,20 +269,38 @@ retrieve_subset <- function(query, start_year, end_year, dst_folder, parkname,
     ds <- ds$where(dsmask$data == 1)
 
     # Update Attributes  <------------------------------------------------------ Standards: https://www.unidata.ucar.edu/software/netcdf-java/current/metadata/DataDiscoveryAttConvention.html
+    summary = paste0(
+      "This archive contains daily downscaled meteorological and hydrological ",
+      "projections for the Conterminous United States at 1/24-deg resolution ",
+      "utilizing the Multivariate Adaptive Constructed Analogs (MACA, ",
+      "Abatzoglou, 2012) statistical downscaling method with the METDATA ",
+      "(Abatzoglou,2013) training dataset. The downscaled meteorological ",
+      "variables are maximum/minimum temperature(tasmax/tasmin), ",
+      "maximum/minimum relative humidity(rhsmax/rhsmin) precipitation ",
+      "amount(pr), downward shortwave solar radiation(rsds), eastward ",
+      "wind(uas), northward wind(vas), and specific humidity(huss). The ",
+      "downscaling is based on the 365-day model outputs from different ",
+      "global climate models (GCMs) from Phase 5 of the Coupled Model ",
+      "Inter-comparison Project (CMIP3) utlizing the historical (1950-2005) ",
+      "and future RCP4.5/8.5(2006-2099) scenarios. Leap days have been added ",
+      "to the dataset from the average values between Feb 28 and Mar 1 in ",
+      "order to aid modellers. Daily vapor pressure deficit is calculate from ",
+      "downscaled daily minimum and maximum temperatures for saturated vapor ",
+      "pressure and daily dew point temperature for actual vapor pressure. ",
+      "The dew point temperature is estimated by converting downscaled daily ",
+      "mean specific humidity to partial pressure of moisture in the ",
+      "atmosphere and estimating pressure from elevation using the barometric ",
+      "formula.")
     print("Retrieving old attributes...")
     attrs1 <- ds$attrs
     print("Creating list of new attributes...")
     attrs2 <- list(
       "title" = attrs1$title,
-      "id" = attrs1$id,
-      "naming_authority" = attrs1$naming_authority,
-      "comment" = paste0("Subsetted to ", parkname, "by the North ",
-                         "Central Climate Adaption Science Center"),
-      "description" = attrs1$description,
-      "keywords" = attrs1$keywords,
-      "cdm_data_type" = attrs1$cdm_data_type,
-      "Metadata_Conventions" = attrs1$Metadata_Conventions,
-      "standard_name_vocabulary" = attrs1$standard_name_vocabulary,
+      "author" = "John Abatzoglou-University of Idaho, jabatzoglou@uidaho.edu",
+      "comment" = paste0("Subsetted to ", parkname, "by the North Central ",
+                         "Climate Adaption Science Center"),
+      "summary" = summary,
+      "coordinate_system" = attrs1$coordinate_system,
       "geospatial_lat_min" = latmin,
       "geospatial_lat_max" = latmax,
       "geospatial_lon_min" = lonmin,
@@ -298,31 +316,37 @@ retrieve_subset <- function(query, start_year, end_year, dst_folder, parkname,
       "time_coverage_start" = glue::glue("{start_year}-01-01T00:0"),
       "time_coverage_end" = glue::glue("{end_year}-12-31T00:0"),
       "time_coverage_duration" = glue::glue("P{end_year - start_year + 1}Y"),
-      "time_coverage_resolution" = "P1D",
-      "date_created" = attrs1$date_created,
-      "date_issued" = attrs1$date_issued,
-      "creator_name" = attrs1$creator_name,
-      "creator_url" = attrs1$creator_url,
-      "creater_email" = attrs1$creator_email,
-      "institution" = attrs1$institution,
-      "processing_level" = attrs1$processing_level,
-      "contributor_name" = attrs1$contributor_name,
-      "contributor_role" = attrs1$contributor_role,
-      "publisher_name" = attrs1$publisher_name,
-      "publisher_url" = attrs1$publisher_url,
-      "license" = attrs1$license,
-      "coordinate_system" = attrs1$coordinate_system
+      "time_coverage_resolution" = "P1D"
+      # "id" = attrs1$id,  # <-------------------------------------------------- Old attributes, these have changed since vapor pressure deficit came out recently
+      # "naming_authority" = attrs1$naming_authority,
+      # "description" = attrs1$description,
+      # "keywords" = attrs1$keywords,
+      # "cdm_data_type" = attrs1$cdm_data_type,
+      # "Metadata_Conventions" = attrs1$Metadata_Conventions,
+      # "standard_name_vocabulary" = attrs1$standard_name_vocabulary,
+      # "date_created" = attrs1$date_created,
+      # "date_issued" = attrs1$date_issued,
+      # "creator_name" = attrs1$creator_name,
+      # "creator_url" = attrs1$creator_url,
+      # "creater_email" = attrs1$creator_email,
+      # "institution" = attrs1$institution,
+      # "processing_level" = attrs1$processing_level,
+      # "contributor_name" = attrs1$contributor_name,
+      # "contributor_role" = attrs1$contributor_role,
+      # "publisher_name" = attrs1$publisher_name,
+      # "publisher_url" = attrs1$publisher_url,
+      # "license" = attrs1$license,
     )
     print("Assigning new attributes...")
     ds$attrs <- attrs2
-    
+
     # Save to local file
     start <- Sys.time()
     print("Saving file locally...")
     ds$to_netcdf(dst)
     end <- Sys.time()
     print(end - start)
-    
+
     # Put the file in the bucket
     print("Saving file to cloud...")
     bucket_name <- "cstdata-test"
@@ -331,7 +355,6 @@ retrieve_subset <- function(query, start_year, end_year, dst_folder, parkname,
     aws.s3::put_object(file = dst, object = object, bucket = bucket_name)
   }
 }
-
 
 
 # Reference Classes
