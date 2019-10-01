@@ -40,8 +40,8 @@ library(raster)  #<-------------------------------------------------------------
 reticulate::use_condaenv("dict")  # <------------------------------------------- Load in function or out?
 
 cstdata <- function(parkname="Acadia National Park",
-                    start_date = "1950-01-01",
-                    end_date = "2099-12-31"){
+                    start_year = 1950,
+                    end_year = 2099){
   # Initialize AWS access
   creds <- readRDS("~/.aws/credentials.RDS")
   Sys.setenv("AWS_ACCESS_KEY_ID" = creds['key'],
@@ -98,17 +98,6 @@ cstdata <- function(parkname="Acadia National Park",
   ntime_hist <- grid$ntime_hist
   ntime_model <- grid$ntime_model
 
-  # Find date indices (Because slicing xarrays with reticulate is beyond me)
-  hdates <- filter_dates(start_date = "1950-01-01",
-                         end_date = "2005-12-31",
-                         available_start = "1950-01-01",
-                         available_end = "2005-12-31")
-  mdates <- filter_dates(start_date = "2006-01-01",
-                         end_date = "2099-12-31",
-                         available_start = "2006-01-01",
-                         available_end = "2099-12-31")
-
-
   # Now we can get the historical and model years together
   urlbase = paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
                    "agg_macav2metdata")
@@ -122,7 +111,8 @@ cstdata <- function(parkname="Acadia National Park",
     for (param in params){
       for (scenario in scenarios){
         file_name <- paste(c(param, location, model, ensemble, scenario,
-                            "macav2metdata_1950_2099_daily.nc"),
+                            "macav2metdata", as.character(start_year),
+                            as.character(end_year), "daily.nc"),
                            collapse = "_")
         hattachment <- paste(c(urlbase, param, model, ensemble, "historical",
                                "1950_2005", "CONUS_daily.nc?"),
@@ -148,14 +138,15 @@ cstdata <- function(parkname="Acadia National Park",
   `%dopar%` <- foreach::`%dopar%`
   cl <- parallel::makeCluster(ncores)
   doParallel::registerDoParallel(cl)
-  parallel::clusterExport(cl, "retrieve_subset", envir = environment())
+  parallel::clusterExport(cl, c("retrieve_subset", "filter_years"),
+                          envir = environment())
 
   # With parallelization
   for (gq in gqueries) {
       t <- foreach::foreach(i=1:length(gq)) %dopar% {
-            retrieve_subset(gq[[i]], dst_folder, parkname, aoilats, aoilons,
-                            mask_mat, latmin, latmax, lonmin, lonmax,
-                            resolution)
+            retrieve_subset(gq[[i]], start_year, end_year, dst_folder, parkname,
+                            aoilats, aoilons, mask_mat, latmin, latmax, lonmin,
+                            lonmax, resolution)
       }
   }
   parallel::stopCluster(cl)
@@ -168,7 +159,8 @@ cstdata <- function(parkname="Acadia National Park",
 }
 
 
-filter_dates <- function(start_date = "1950-01-01", end_date = "2099-12-31",
+filter_dates <- function(start_date = "1950-01-01",
+                         end_date = "2099-12-31",
                          available_start = "1950-01-01",
                          available_end = "2099-12-31") {
   # Available date range
@@ -182,14 +174,7 @@ filter_dates <- function(start_date = "1950-01-01", end_date = "2099-12-31",
   }, error = function(e) {
     print("Date format not recognized, try 'YYYY-MM-DD'.")
   })
-  
-  # Make sure the chosen dates are within the available dates
-  # tryCatch({
-  #   stopifnot(d1 >= h1 & d2 <= h2)
-  # }, error = function(e) {
-  #   print("Specified date range is not available")
-  # })
-  
+
   # If the end date is before the start date, go ahead and switch them
   if (d2 < d1) {
     d1 <- tmp1
@@ -197,15 +182,47 @@ filter_dates <- function(start_date = "1950-01-01", end_date = "2099-12-31",
     d2 <- tmp1
     rm(tmp1)
   }
+
+  # Now, if they asked for more than is available, truncate
+  if (d1 < h1) d1 = h1
+  if (d2 > h2) d2 = h2
+
+  # Return the difference between the target and start dates
+  t1 <- as.integer(d1 - h1)
+  t2 <- as.integer(d2 - h1)
+
+  # Return these as a pair
+  return(c(t1, t2))
+}
+
+
+filter_years <- function(start_year = 1950, end_year = 2099, 
+                         available_start = 1950, available_end = 2099) {
+  # Turn these into strings, then dates
+  h1 <- as.Date(glue::glue("{available_start}-01-01"))
+  h2 <- as.Date(glue::glue("{available_end}-12-31"))
+  d1 <- as.Date(glue::glue("{start_year}-01-01"))
+  d2 <- as.Date(glue::glue("{end_year}-12-31"))
+
+  # If the end year is before the start year, go ahead and switch them
+  if (d2 < d1) {
+    d1 <- tmp1
+    d1 <- d2
+    d2 <- tmp1
+    rm(tmp1)
+  }
   
-  # Okay, now, starting from 1950
+  # Now, if they asked for more than is available, truncate
+  if (d1 < h1) d1 = h1
+  if (d2 > h2) d2 = h2
+  
+  # Return the difference between the target and start dates
   t1 <- as.integer(d1 - h1)
   t2 <- as.integer(d2 - h1)
   
   # Return these as a pair
   return(c(t1, t2))
 }
-
 
 get_park_boundaries <- function(dir = "data") {
   # Create directory if not present
@@ -221,22 +238,26 @@ get_park_boundaries <- function(dir = "data") {
 }
 
 
-retrieve_subset <- function(query, dst_folder, parkname, aoilats, aoilons,  # <- Simplify inputs somehow
-                            mask_mat, latmin, latmax, lonmin, lonmax,
-                            resolution){
+retrieve_subset <- function(query, start_year, end_year, dst_folder, parkname,
+                            aoilats, aoilons, mask_mat, latmin, latmax, lonmin,
+                            lonmax, resolution){
   xr <- reticulate::import("xarray")
 
   # Get the local destination file
   file_name <- query[[2]]
   dst <- file.path(dst_folder, file_name)
   location <- gsub(" ", "_", tolower(parkname))
-  
+
   if (!file.exists(dst)) {
-    # Combine historical and modeled url queries
+    # Get the combined historical and modeled url query
     purl <- query[[1]]
 
     # Save a local file
     ds <- xr$open_mfdataset(purl, concat_dim="time")
+
+    # Filter dates
+    didx <- filter_years(start_year, end_year)
+    ds <- ds$sel(time = c(didx[[1]]: didx[[-1]]))
 
     # add coordinate
     ds <- ds$assign_coords(lat = c('lat' = as.matrix(aoilats)),
@@ -274,8 +295,8 @@ retrieve_subset <- function(query, dst_folder, parkname, aoilats, aoilons,  # <-
       "geospatial_vertical_min" = '0',
       "geospatial_vertical_resolution" = '0',
       "geospatial_vertical_positive" = '0',
-      "time_coverage_start" = "1950-01-01T00:0",
-      "time_coverage_end" = "2099-12-31T00:0",
+      "time_coverage_start" = glue::glue("{start_year}-01-01T00:0"),
+      "time_coverage_end" = glue::glue("{end_year}-12-31T00:0"),
       "time_coverage_duration" = "P150Y",
       "time_coverage_resolution" = "P1D",
       "date_created" = attrs1$date_created,
