@@ -39,7 +39,9 @@
 library(raster)  #<------------------------------------------------------------- Had an issue where raster needed to be loaded explicity
 reticulate::use_condaenv("dict")  # <------------------------------------------- Load in function or out?
 
-cstdata <- function(parkname="Acadia National Park"){
+cstdata <- function(parkname="Acadia National Park",
+                    start_date = "1950-01-01",
+                    end_date = "2099-12-31"){
   # Initialize AWS access
   creds <- readRDS("~/.aws/credentials.RDS")
   Sys.setenv("AWS_ACCESS_KEY_ID" = creds['key'],
@@ -95,6 +97,17 @@ cstdata <- function(parkname="Acadia National Park"){
   # Get some time information
   ntime_hist <- grid$ntime_hist
   ntime_model <- grid$ntime_model
+
+  # Find date indices (Because slicing xarrays with reticulate is beyond me)
+  hdates <- filter_dates(start_date = "1950-01-01",
+                         end_date = "2005-12-31",
+                         available_start = "1950-01-01",
+                         available_end = "2005-12-31")
+  mdates <- filter_dates(start_date = "2006-01-01",
+                         end_date = "2099-12-31",
+                         available_start = "2006-01-01",
+                         available_end = "2099-12-31")
+
 
   # Now we can get the historical and model years together
   urlbase = paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
@@ -152,6 +165,45 @@ cstdata <- function(parkname="Acadia National Park"){
   #   retrieve_subset(query, aoilats, aoilons, dst_folder, mask_mat, parkname,
   #                   latmin, latmax, lonmin, lonmax, resolution)
   # }
+}
+
+
+filter_dates <- function(start_date = "1950-01-01", end_date = "2099-12-31",
+                         available_start = "1950-01-01",
+                         available_end = "2099-12-31") {
+  # Available date range
+  h1 <- as.Date(available_start)
+  h2 <- as.Date(available_end)
+  
+  # Make sure they entered the right date format
+  tryCatch({
+    d1 <- as.Date(start_date)
+    d2 <- as.Date(end_date)
+  }, error = function(e) {
+    print("Date format not recognized, try 'YYYY-MM-DD'.")
+  })
+  
+  # Make sure the chosen dates are within the available dates
+  # tryCatch({
+  #   stopifnot(d1 >= h1 & d2 <= h2)
+  # }, error = function(e) {
+  #   print("Specified date range is not available")
+  # })
+  
+  # If the end date is before the start date, go ahead and switch them
+  if (d2 < d1) {
+    d1 <- tmp1
+    d1 <- d2
+    d2 <- tmp1
+    rm(tmp1)
+  }
+  
+  # Okay, now, starting from 1950
+  t1 <- as.integer(d1 - h1)
+  t2 <- as.integer(d2 - h1)
+  
+  # Return these as a pair
+  return(c(t1, t2))
 }
 
 
@@ -260,6 +312,7 @@ retrieve_subset <- function(query, dst_folder, parkname, aoilats, aoilons,  # <-
 }
 
 
+
 # Reference Classes
 Grid_Reference <- setRefClass(
   "reference_grid",
@@ -360,7 +413,7 @@ Argument_Reference <- setRefClass(
       args[["CCSM4"]]$ensemble <- "r6i1p1"
 
       return(args[[model]])
-    },
+    }
   )
 )
 
