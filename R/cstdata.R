@@ -410,8 +410,8 @@ Argument_Reference <- setRefClass(
                    "surface_downwelling_shortwave_flux_in_air" = "W m-2",
                    "eastward_wind" = "m s-1",
                    "northward_wind" = "m s-1",
-                   "specific_humidity" = "kg kg-1"
-                   # "vpd" = "kPa"  # vpd breaks
+                   "specific_humidity" = "kg kg-1",
+                   "vpd" = "kPa"
                    )) {
       models <<- models
       parameters <<- parameters
