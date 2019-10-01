@@ -10,29 +10,36 @@
 #' bucket. The original data sets may be found at
 #' \url{ http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_
 #' CMIP5_aggregated_macav2_catalog.html}
-#'
-#'
-#' Production Notes:
-#' The use of reticulate may enable us to use Zarr arrays, which are accessible
-#' directly from an s3 bucket.
-#'
-#' There is also a non-aggregated catalog:
-#' \url{http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_
-#' macav2_catalog2.html}
-#' These files come in 5 year chunks but have daily windspeed (was) and monthly
-#' potential evapotranspiration (PotEvap) in addition to the other variables.
-#' Consider this data portal for a full list of these url queries:
-#' \url{https://climate.northwestknowledge.net/MACA/data_portal.php}
+#
+# Production Notes:
+# - The use of reticulate may enable us to use Zarr arrays, which are accessible
+#   directly from an s3 bucket.
+#
+# - There is also a non-aggregated catalog:
+#   \url{http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_
+#   macav2_catalog2.html}
+#   These files come in 5 year chunks but have daily windspeed (was) and monthly
+#   potential evapotranspiration (PotEvap) in addition to the other variables.
+#   Imtiaz would like the monthl PotEvap.
+# 
+# - The Vapor Pressure Deficit products in the aggregated catalog has an issue
+#   with fill values. I've seen this before and it is easily fixed by appending
+#   "#fillmistmatch" to the end of the query, which I will do when I get the
+#   computer back from a test run.
+#
+# - This currently saves everything to disk first, which can be a problem. The
+#   alternative is to save each file to a tempfile and overwrite. We'll have to
+#   be careful when parallelizing. Now, Imtiaz has expressed interest in the
+#   ability to save locally. For small parks this is fine, so perhaps an option.
+#
+# - For Death Valley using 7 cores with 15.6 GB of RAM and 2GB of SWAP, it
+#   crashed about 275 files in. 
 
-library(aws.s3)
-library(glue)
-library(progress)
-library(raster)
-library(reticulate)  # <-------------------------------------------------------- Read: https://rstudio.github.io/reticulate/articles/package.html
-reticulate::use_condaenv("dict")
-xr <- reticulate::import("xarray")
 
-cstdata <- function(parkname="Yellowstone National Park"){
+library(raster)  #<------------------------------------------------------------- Had an issue where raster needed to be loaded explicity
+reticulate::use_condaenv("dict")  # <------------------------------------------- Load in function or out?
+
+cstdata <- function(parkname="Acadia National Park"){
   # Initialize AWS access
   creds <- readRDS("~/.aws/credentials.RDS")
   Sys.setenv("AWS_ACCESS_KEY_ID" = creds['key'],
@@ -48,7 +55,7 @@ cstdata <- function(parkname="Yellowstone National Park"){
   parks <- rgdal::readOGR("data/shapefiles/nps_boundary.shp")
   aoi <- parks[grepl(parkname, parks$UNIT_NAME),]
 
-  # Make sure we a park-specific destination folder
+  # Make sure we a park-specific destination folder  
   location <- gsub(" ", "_", tolower(aoi$UNIT_NAME))
   print(paste("Retrieving climate data for", location))
   dst_folder <- file.path('data', 'netcdfs', location)
@@ -58,14 +65,12 @@ cstdata <- function(parkname="Yellowstone National Park"){
   grid = Grid_Reference()
   arg_ref = Argument_Reference()
 
-  # Get the extent coordinates
+  # Get relative index positions to full grid  # <------------------------------ This can be wrapped in a function, but I currently some of the parts generated here.
   aoi <- sp::spTransform(aoi, grid$crs)
   lonmin <- aoi@bbox[1,1]
   lonmax <- aoi@bbox[1,2]
   latmin <- aoi@bbox[2,1]
   latmax <- aoi@bbox[2,2]
-
-  # Now use these from the lat/lons of the full grid to get index positions
   lonmindiffs <- abs(grid$lons - lonmin)
   lonmaxdiffs <- abs(grid$lons - lonmax)
   latmindiffs <- abs(grid$lats - latmin)
@@ -76,15 +81,20 @@ cstdata <- function(parkname="Yellowstone National Park"){
   y2 <- match(latmaxdiffs[latmaxdiffs == min(latmaxdiffs)], latmaxdiffs)
   ny <- (y2 - y1) + 1
   nx <- (x2 - x1) + 1
+  aoilats <- sapply(1:ny, function(x) latmin + x*grid$resolution)
+  aoilons <- sapply(1:nx, function(x) lonmin + x*grid$resolution)
+  resolution <- grid$resolution
 
   # Now create a mask for later
-  mask <- make_mask(aoi, grid, ny, nx) 
+  r <- raster::raster(ncols=length(aoilons), nrows=length(aoilats))
+  raster::extent(r) <- raster::extent(aoi)
+  r <- raster::rasterize(aoi, r, 'UNIT_CODE')  # <------------------------------ Not generalizable
+  mask_grid <- r * 0 + 1
+  mask_mat <- as.matrix(mask_grid)
 
   # Get some time information
   ntime_hist <- grid$ntime_hist
   ntime_model <- grid$ntime_model
-  historical_years <- "1950_2005"
-  model_years <- "2006_2099"
 
   # Now we can get the historical and model years together
   urlbase = paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
@@ -102,15 +112,15 @@ cstdata <- function(parkname="Yellowstone National Park"){
                             "macav2metdata_1950_2099_daily.nc"),
                            collapse = "_")
         hattachment <- paste(c(urlbase, param, model, ensemble, "historical",
-                               historical_years, "CONUS_daily.nc?"),
+                               "1950_2005", "CONUS_daily.nc?"),
                              collapse = "_")
         mattachment <- paste(c(urlbase, param, model, ensemble, scenario,
-                               model_years, "CONUS_daily.nc?"), collapse = "_")
+                               "2006_2099", "CONUS_daily.nc?"), collapse = "_")
         var <- variables[param]
         hquery <- paste0(var, glue::glue("[{0}:{1}:{ntime_hist}][{y1}:{1}:{y2}]
-                                         [{x1}:{1}:{x2}]"))
+                                         [{x1}:{1}:{x2}]#fillmismatch"))
         mquery <- paste0(var, glue::glue("[{0}:{1}:{ntime_model}][{y1}:{1}:{y2}]
-                                         [{x1}:{1}:{x2}]"))
+                                         [{x1}:{1}:{x2}]#fillmismatch"))
         hurl <- paste0(hattachment, hquery)
         murl <- paste0(mattachment, mquery)
         purl <- c(hurl, murl)
@@ -119,126 +129,134 @@ cstdata <- function(parkname="Yellowstone National Park"){
     }
   }
 
-  # # If we want to parallelize, we could group the pairs further
-  # purls2 <- split(purls, ceiling(seq_along(purls)/ncores))
-  # `%dopar%` <- foreach::`%dopar%`
-  # ncores <- parallel::detectCores() - 1
-  # doParallel::registerDoParallel(ncores)
-  # purls2 <- split(purls, ceiling(seq_along(purls)/ncores))
-  # Now the urls are in groups of 7 (on my computer) that may be dl'ed at once
+  # If we want to parallelize, we could group the pairs further
+  ncores <- parallel::detectCores() / 2
+  gqueries <- split(queries, ceiling(seq_along(queries)/ncores))
+  `%dopar%` <- foreach::`%dopar%`
+  cl <- parallel::makeCluster(ncores)
+  doParallel::registerDoParallel(cl)
+  parallel::clusterExport(cl, "retrieve_subset", envir = environment())
 
-  # Let's leave parallelization aside for now, merge and download each pair
-  pb <- progress_bar$new(total = length(queries))
-  for (q in queries){
-    pb$tick(0)
-
-    # Get the local destination file
-    file_name <-q[[2]]
-    dst <-file.path(dst_folder, file_name)
-
-    if (!file.exists(dst)) {
-      # Combine historical and modeled url queries
-      purl <- q[[1]]
-
-      # Save a local file
-      ds <- xr$open_mfdataset(purl, concat_dim="time")
-
-      # add coordinates
-      ds <- ds$assign_coords(lat = c('lat' = as.matrix(aoilats)),
-                             lon = c('lon' = as.matrix(aoilons)))
-
-      # Mask by boundary
-      dsmask <- xr$DataArray(as.matrix(mask))
-      dsmask <- dsmask$fillna(0)
-      ds <- ds$where(dsmask$data == 1)
-
-      # Update Attributes  <---------------------------------------------------- Standards: https://www.unidata.ucar.edu/software/netcdf-java/current/metadata/DataDiscoveryAttConvention.html
-      attrs1 <- ds$attrs
-      attrs2 <- list(
-                  "title" = attrs1$title,
-                  "id" = attrs1$id,
-                  "naming_authority" = attrs1$naming_authority,
-                  "comment" = paste0("Subsetted to ", parkname, "by the North ",
-                                     "Central Climate Adaption Science Center"),
-                  "description" = attrs1$description,
-                  "keywords" = attrs1$keywords,
-                  "cdm_data_type" = attrs1$cdm_data_type,
-                  "Metadata_Conventions" = attrs1$Metadata_Conventions,
-                  "standard_name_vocabulary" = attrs1$standard_name_vocabulary,
-                  "geospatial_lat_min" = latmin,
-                  "geospatial_lat_max" = latmax,
-                  "geospatial_lon_min" = lonmin,
-                  "geospatial_lon_max" = lonmax,
-                  "geospatial_lat_units" = attrs1$geospatial_lat_units,
-                  "geospatial_lon_units" = attrs1$geospatial_lon_units,
-                  "geospatial_lat_resolution" = grid$resolution,
-                  "geospatial_lon_resolution" = grid$resolution,
-                  "geospatial_vertical_min" = '0',
-                  "geospatial_vertical_min" = '0',
-                  "geospatial_vertical_resolution" = '0',
-                  "geospatial_vertical_positive" = '0',
-                  "time_coverage_start" = "1950-01-01T00:0",
-                  "time_coverage_end" = "2099-12-31T00:0",
-                  "time_coverage_duration" = "P150Y",
-                  "time_coverage_resolution" = "P1D",
-                  "date_created" = attrs1$date_created,
-                  "date_issued" = attrs1$date_issued,
-                  "creator_name" = attrs1$creator_name,
-                  "creator_url" = attrs1$creator_url,
-                  "creater_email" = attrs1$creator_email,
-                  "institution" = attrs1$institution,
-                  "processing_level" = attrs1$processing_level,
-                  "contributor_name" = attrs1$contributor_name,
-                  "contributor_role" = attrs1$contributor_role,
-                  "publisher_name" = attrs1$publisher_name,
-                  "publisher_url" = attrs1$publisher_url,
-                  "license" = attrs1$license,
-                  "coordinate_system" = attrs1$coordinate_system
-                  )
-      ds$attrs <- attrs2
-
-      # Save to local file
-      start <- Sys.time()
-      ds$to_netcdf(dst)
-      end <- Sys.time()
-      print(end - start)
-
-      # Put the file in the bucket
-      bucket_name <- "cstdata-test"
-      object <- file.path(location, file_name)
-      put_folder(location, bucket_name)
-      put_object(file = dst, object = object, bucket = bucket_name)
-    }
-    pb$tick()
+  # With parallelization
+  for (gq in gqueries) {
+      t <- foreach::foreach(i=1:length(gq)) %dopar% {
+            retrieve_subset(gq[[i]], dst_folder, parkname, aoilats, aoilons,
+                            mask_mat, latmin, latmax, lonmin, lonmax,
+                            resolution)
+      }
   }
+  parallel::stopCluster(cl)
+
+  # Without parallelization # <------------------------------------------------- Should we leave this as an option?
+  # for (query in queries){
+  #   retrieve_subset(query, aoilats, aoilons, dst_folder, mask_mat, parkname,
+  #                   latmin, latmax, lonmin, lonmax, resolution)
+  # }
 }
 
 
-get_park_boundaries <- function(){
+get_park_boundaries <- function(dir = "data") {
   # Create directory if not present
-  if (!file.exists('data/shapefiles')) {
-    dir.create(file.path('data', 'shapefiles'), recursive = TRUE,
-               showWarnings = FALSE)
-  }
+  prefix <- file.path(dir, "shapefiles")
+  dir.create(prefix, recursive = TRUE, showWarnings = FALSE)
 
   # Download
-  nps_boundary <- "data/shapefiles/nps_boundary.shp"
-  file <- "data/shapefiles/nps_boundary.zip"
+  nps_boundary <- file.path(prefix, "nps_boundary.shp")
+  file <- file.path(prefix, "nps_boundary.zip")
   url <- "https://irma.nps.gov/DataStore/DownloadFile/627620"
   download.file(url = url, destfile = file, method = "curl")
-  unzip(file, exdir = "data/shapefiles")
+  unzip(file, exdir = prefix)
 }
 
 
-make_mask <- function(aoi, grid, ny, nx){
-  aoilats <- sapply(1:(ny), function(x) latmin + x*grid$resolution)
-  aoilons <- sapply(1:(nx), function(x) lonmin + x*grid$resolution)
-  r <- raster::raster(ncol=nx, nrow=ny)
-  raster::extent(r) <- raster::extent(aoi)
-  r <- rasterize(aoi, r, 'UNIT_CODE')  # <-------------------------------------- Not generalizable
-  mask <- r * 0 + 1
+retrieve_subset <- function(query, dst_folder, parkname, aoilats, aoilons,  # <- Simplify inputs somehow
+                            mask_mat, latmin, latmax, lonmin, lonmax,
+                            resolution){
+  xr <- reticulate::import("xarray")
+
+  # Get the local destination file
+  file_name <- query[[2]]
+  dst <- file.path(dst_folder, file_name)
+  location <- gsub(" ", "_", tolower(parkname))
   
-  return(mask)
+  if (!file.exists(dst)) {
+    # Combine historical and modeled url queries
+    purl <- query[[1]]
+
+    # Save a local file
+    ds <- xr$open_mfdataset(purl, concat_dim="time")
+
+    # add coordinate
+    ds <- ds$assign_coords(lat = c('lat' = as.matrix(aoilats)),
+                           lon = c('lon' = as.matrix(aoilons)))
+
+    # Mask by boundary
+    dsmask <- xr$DataArray(mask_mat)
+    dsmask <- dsmask$fillna(0)
+    ds <- ds$where(dsmask$data == 1)
+
+    # Update Attributes  <------------------------------------------------------ Standards: https://www.unidata.ucar.edu/software/netcdf-java/current/metadata/DataDiscoveryAttConvention.html
+    print("Retrieving old attributes...")
+    attrs1 <- ds$attrs
+    print("Creating list of new attributes...")
+    attrs2 <- list(
+      "title" = attrs1$title,
+      "id" = attrs1$id,
+      "naming_authority" = attrs1$naming_authority,
+      "comment" = paste0("Subsetted to ", parkname, "by the North ",
+                         "Central Climate Adaption Science Center"),
+      "description" = attrs1$description,
+      "keywords" = attrs1$keywords,
+      "cdm_data_type" = attrs1$cdm_data_type,
+      "Metadata_Conventions" = attrs1$Metadata_Conventions,
+      "standard_name_vocabulary" = attrs1$standard_name_vocabulary,
+      "geospatial_lat_min" = latmin,
+      "geospatial_lat_max" = latmax,
+      "geospatial_lon_min" = lonmin,
+      "geospatial_lon_max" = lonmax,
+      "geospatial_lat_units" = attrs1$geospatial_lat_units,
+      "geospatial_lon_units" = attrs1$geospatial_lon_units,
+      "geospatial_lat_resolution" = resolution,
+      "geospatial_lon_resolution" = resolution,
+      "geospatial_vertical_min" = '0',
+      "geospatial_vertical_min" = '0',
+      "geospatial_vertical_resolution" = '0',
+      "geospatial_vertical_positive" = '0',
+      "time_coverage_start" = "1950-01-01T00:0",
+      "time_coverage_end" = "2099-12-31T00:0",
+      "time_coverage_duration" = "P150Y",
+      "time_coverage_resolution" = "P1D",
+      "date_created" = attrs1$date_created,
+      "date_issued" = attrs1$date_issued,
+      "creator_name" = attrs1$creator_name,
+      "creator_url" = attrs1$creator_url,
+      "creater_email" = attrs1$creator_email,
+      "institution" = attrs1$institution,
+      "processing_level" = attrs1$processing_level,
+      "contributor_name" = attrs1$contributor_name,
+      "contributor_role" = attrs1$contributor_role,
+      "publisher_name" = attrs1$publisher_name,
+      "publisher_url" = attrs1$publisher_url,
+      "license" = attrs1$license,
+      "coordinate_system" = attrs1$coordinate_system
+    )
+    print("Assigning new attributes...")
+    ds$attrs <- attrs2
+    
+    # Save to local file
+    start <- Sys.time()
+    print("Saving file locally...")
+    ds$to_netcdf(dst)
+    end <- Sys.time()
+    print(end - start)
+    
+    # Put the file in the bucket
+    print("Saving file to cloud...")
+    bucket_name <- "cstdata-test"
+    object <- file.path(location, file_name)
+    aws.s3::put_folder(location, bucket_name)
+    aws.s3::put_object(file = dst, object = object, bucket = bucket_name)
+  }
 }
 
 
@@ -271,9 +289,9 @@ Grid_Reference <- setRefClass(
       crs <<- crs
       resolution <<- resolution
       extent <<- extent
-      lats <<- sapply(0:(nlat - 1),
+      lats <<- sapply(1:(nlat),
                       function(x) extent["latmin"][[1]] + x*resolution)
-      lons <<- sapply(0:(nlon - 1),
+      lons <<- sapply(1:(nlon),
                       function(x) extent["lonmin"][[1]] + x*resolution)
       ntime_hist <<- ntime_hist
       ntime_model <<- ntime_model
@@ -283,7 +301,7 @@ Grid_Reference <- setRefClass(
 
 
 Argument_Reference <- setRefClass(
-  "maca_options",
+  "argument_options",
 
   fields = list(
     models = "character",
@@ -300,7 +318,7 @@ Argument_Reference <- setRefClass(
                  "IPSL-CM5A-MR", "IPSL-CM5B-LR", "MIROC5", "MIROC-ESM",
                  "MIROC-ESM-CHEM", "MRI-CGCM3", "NorESM1-M"),
       parameters = c("tasmin", "tasmax", "rhsmin", "rhsmax", "pr", "rsds",
-                     "uas", "vas", "huss"),
+                     "uas", "vas", "huss", "vpd"),
       scenarios = c("rcp45", "rcp85"),
       variables = list("tasmin" = "air_temperature",
                       "tasmax" = "air_temperature",
@@ -310,7 +328,8 @@ Argument_Reference <- setRefClass(
                       "rsds" = "surface_downwelling_shortwave_flux_in_air",
                       "uas" = "eastward_wind",
                       "vas" = "northward_wind",
-                      "huss" = "specific_humidity"),
+                      "huss" = "specific_humidity",
+                      "vpd" = "vpd"),
       units = list("air_temperature" = "K",
                    "relative_humidity" = "%",
                    "precipitation" = "mm",
@@ -342,9 +361,6 @@ Argument_Reference <- setRefClass(
 
       return(args[[model]])
     },
-
-    get_query = function(model, aoi) {
-      print("Maybe we could build the url queries here?")
-    }
   )
 )
+
