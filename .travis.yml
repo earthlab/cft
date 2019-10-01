@@ -1,0 +1,18 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+
+language: r
+sudo: false
+cache: packages
+
+addons:
+  apt:
+    packages:
+      - libproj-dev
+      - libgeos-dev
+      - libgdal-dev
+      - netcdf-bin
+      - libnetcdf-dev
+      - python3-pip
+
+before_install:
+  - pip3 install xarray
