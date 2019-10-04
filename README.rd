@@ -1,6 +1,6 @@
 cstdata
 
-[![Travis build status](https://travis-ci.org/williamstravis/cstdata.svg?branch=master)](https://travis-ci.org/williamstravis/cstdata)
+[![Travis build status](https://travis-ci.com/WilliamsTravis/cstdata.svg?branch=master)](https://travis-ci.org/WilliamsTravis/cstdata)
 
 This is a collection of methods for quickly downloading downscaled global climate model (GCM) data covering specified areas for 
 use in the USGS NCCASC Climate Scenario Toolbox.
