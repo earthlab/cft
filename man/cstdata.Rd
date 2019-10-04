@@ -5,15 +5,33 @@
 \title{Climate Scenario Toolkit Data}
 \usage{
 cstdata(parkname = "Acadia National Park", start_year = 1950,
-  end_year = 2099)
+  end_year = 2099, store_locally = TRUE, local_dir = "cstdata",
+  store_remotely = TRUE, aws_config_dir = "~/.aws")
 }
 \arguments{
-\item{parkname}{The name of the U.S. National Park for which download data
-(character), e.g., "Yellowstone National Park"}
+\item{parkname}{The name of the U.S. National Park for which to download data
+, e.g., "Yellowstone National Park". (character)}
 
-\item{start_year}{The first year of the desired period (integer).}
+\item{start_year}{The first year of the desired period. (integer)}
 
-\item{end_year}{The last year of the desired period (integer).}
+\item{end_year}{The last year of the desired period. (integer)}
+
+\item{store_locally}{If `TRUE` this function will store the results in a
+local directory as NetCDF files. This options may be set to `FALSE` to save
+disk space, but the `store_remotely` option must be set to `TRUE` in this
+case. (boolean)}
+
+\item{local_dir}{The local directory in which to save files if
+`store_locally` is set to `TRUE`. (boolean)}
+
+\item{store_remotely}{If `TRUE` this function will store the results in an
+Amazon Web Services S3 bucket. This will require the user to store an S3
+credentials file on their local machine. (boolean)}
+
+\item{aws_config_dir}{The local directory in which to save the configuration
+file needed for storing data in an AWS S3 bucket. If the file is not yet
+present in this directory, the user will be prompted for the information
+needed to build the file.}
 }
 \description{
 Retrieves subsetted data of climate future scenarios for National Parks in
