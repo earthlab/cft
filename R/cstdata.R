@@ -40,9 +40,7 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
              "AWS_DEFAULT_REGION" = creds['region'])
 
   # Make sure we have the national park shapefile
-  if (!file.exists("data/shapefiles/nps_boundary.shp")){
-    get_park_boundaries()
-  }
+  get_park_boundaries()
 
   # Get the boundaries of the chosen national park
   parks <- rgdal::readOGR("data/shapefiles/nps_boundary.shp")
@@ -134,50 +132,13 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
 
   # With parallelization
   for (gq in gqueries) {
-      t <- foreach::foreach(i=1:length(gq)) %dopar% {
+      t <- foreach::foreach(i=1:length(gq)) %dopar% {  # <---------------------- Build note "no visible binding for global variable ‘i’"
             retrieve_subset(gq[[i]], start_year, end_year, dst_folder, parkname,
                             aoilats, aoilons, mask_mat, latmin, latmax, lonmin,
                             lonmax, resolution)
       }
   }
   parallel::stopCluster(cl)
-}
-
-
-filter_dates <- function(start_date = "1950-01-01",
-                         end_date = "2099-12-31",
-                         available_start = "1950-01-01",
-                         available_end = "2099-12-31") {
-  # Available date range
-  h1 <- as.Date(available_start)
-  h2 <- as.Date(available_end)
-  
-  # Make sure they entered the right date format
-  tryCatch({
-    d1 <- as.Date(start_date)
-    d2 <- as.Date(end_date)
-  }, error = function(e) {
-    print("Date format not recognized, try 'YYYY-MM-DD'.")
-  })
-
-  # If the end date is before the start date, go ahead and switch them
-  if (d2 < d1) {
-    d1 <- tmp1
-    d1 <- d2
-    d2 <- tmp1
-    rm(tmp1)
-  }
-
-  # Now, if they asked for more than is available, truncate
-  if (d1 < h1) d1 = h1
-  if (d2 > h2) d2 = h2
-
-  # Return the difference between the target and start dates
-  t1 <- as.integer(d1 - h1)
-  t2 <- as.integer(d2 - h1)
-
-  # Return these as a pair
-  return(c(t1, t2))
 }
 
 
@@ -191,7 +152,7 @@ filter_years <- function(start_year = 1950, end_year = 2099,
 
   # If the end year is before the start year, go ahead and switch them
   if (d2 < d1) {
-    d1 <- tmp1
+    tmp1 <- d1
     d1 <- d2
     d2 <- tmp1
     rm(tmp1)
@@ -213,13 +174,15 @@ get_park_boundaries <- function(dir = "data") {
   # Create directory if not present
   prefix <- file.path(dir, "shapefiles")
   dir.create(prefix, recursive = TRUE, showWarnings = FALSE)
-
-  # Download
   nps_boundary <- file.path(prefix, "nps_boundary.shp")
-  file <- file.path(prefix, "nps_boundary.zip")
-  url <- "https://irma.nps.gov/DataStore/DownloadFile/627620"
-  utils::download.file(url = url, destfile = file, method = "curl")
-  utils::unzip(file, exdir = prefix)
+
+  # Download if needed
+  if (!file.exists(nps_boundary)){
+    file <- file.path(prefix, "nps_boundary.zip")
+    url <- "https://irma.nps.gov/DataStore/DownloadFile/629794"  # <------------ This url is not consistent!
+    utils::download.file(url = url, destfile = file, method = "curl")
+    utils::unzip(file, exdir = prefix)
+  }
 }
 
 
