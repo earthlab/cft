@@ -10,34 +10,34 @@
 #' bucket. The original data sets may be found at
 #' \url{ http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_
 #' CMIP5_aggregated_macav2_catalog.html}
-#
-# Production Notes:
-# - The use of reticulate may enable us to use Zarr arrays, which are accessible
-#   directly from an s3 bucket.
-#
-# - There is also a non-aggregated catalog:
-#   \url{http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_
-#   macav2_catalog2.html}
-#   These files come in 5 year chunks but have daily windspeed (was) and monthly
-#   potential evapotranspiration (PotEvap) in addition to the other variables.
-#   Imtiaz would like the monthl PotEvap.
-# 
-# - The Vapor Pressure Deficit products in the aggregated catalog has an issue
-#   with fill values. I've seen this before and it is easily fixed by appending
-#   "#fillmistmatch" to the end of the query, which I will do when I get the
-#   computer back from a test run.
-#
-# - This currently saves everything to disk first, which can be a problem. The
-#   alternative is to save each file to a tempfile and overwrite. We'll have to
-#   be careful when parallelizing. Now, Imtiaz has expressed interest in the
-#   ability to save locally. For small parks this is fine, so perhaps an option.
-#
-# - For Death Valley using 7 cores with 15.6 GB of RAM and 2GB of SWAP, it
-#   crashed about 275 files in. 
-
-
-library(raster)  #<------------------------------------------------------------- Had an issue where raster needed to be loaded explicity
-reticulate::use_condaenv("dict")  # <------------------------------------------- Load in function or out?
+#'
+#' Production Notes:
+#' - The use of reticulate may enable us to use Zarr arrays, which are accessible
+#'   directly from an s3 bucket.
+#'
+#' - There is also a non-aggregated catalog:
+#'   \url{http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_
+#'   macav2_catalog2.html}
+#'   These files come in 5 year chunks but have daily windspeed (was) and monthly
+#'   potential evapotranspiration (PotEvap) in addition to the other variables.
+#'   Imtiaz would like the monthl PotEvap.
+#' 
+#' - The Vapor Pressure Deficit products in the aggregated catalog has an issue
+#'   with fill values. I've seen this before and it is easily fixed by appending
+#'   "#fillmistmatch" to the end of the query, which I will do when I get the
+#'   computer back from a test run.
+#'
+#' - This currently saves everything to disk first, which can be a problem. The
+#'   alternative is to save each file to a tempfile and overwrite. We'll have to
+#'   be careful when parallelizing. Now, Imtiaz has expressed interest in the
+#'   ability to save locally. For small parks this is fine, so perhaps an option.
+#'
+#' - For Death Valley using 7 cores with 15.6 GB of RAM and 2GB of SWAP, it
+#'  crashed about 275 files in.
+#' 
+#' @param parkname The name of the U.S. National Park for which download data
+#' (character), e.g., "Yellowstone National Park"
+#' @importFrom methods new
 
 cstdata <- function(parkname="Acadia National Park",
                     start_year = 1950,
@@ -150,12 +150,6 @@ cstdata <- function(parkname="Acadia National Park",
       }
   }
   parallel::stopCluster(cl)
-
-  # Without parallelization # <------------------------------------------------- Should we leave this as an option?
-  # for (query in queries){
-  #   retrieve_subset(query, aoilats, aoilons, dst_folder, mask_mat, parkname,
-  #                   latmin, latmax, lonmin, lonmax, resolution)
-  # }
 }
 
 
@@ -233,8 +227,8 @@ get_park_boundaries <- function(dir = "data") {
   nps_boundary <- file.path(prefix, "nps_boundary.shp")
   file <- file.path(prefix, "nps_boundary.zip")
   url <- "https://irma.nps.gov/DataStore/DownloadFile/627620"
-  download.file(url = url, destfile = file, method = "curl")
-  unzip(file, exdir = prefix)
+  utils::download.file(url = url, destfile = file, method = "curl")
+  utils::unzip(file, exdir = prefix)
 }
 
 
@@ -358,7 +352,7 @@ retrieve_subset <- function(query, start_year, end_year, dst_folder, parkname,
 
 
 # Reference Classes
-Grid_Reference <- setRefClass(
+Grid_Reference <- methods::setRefClass(
   "reference_grid",
 
   fields = list(
@@ -397,7 +391,7 @@ Grid_Reference <- setRefClass(
 )
 
 
-Argument_Reference <- setRefClass(
+Argument_Reference <- methods::setRefClass(
   "argument_options",
 
   fields = list(
