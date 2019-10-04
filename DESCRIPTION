@@ -22,3 +22,4 @@ Imports:
    rgdal,
    sp,
    utils
+RoxygenNote: 6.1.1
