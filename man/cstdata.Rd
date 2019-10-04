@@ -2,8 +2,7 @@
 % Please edit documentation in R/cstdata.R
 \name{cstdata}
 \alias{cstdata}
-\title{Get climate future scenarios for the Contiguous United States using the
-Multivariate Adaptive Constructed Analogs (MACA) technique.}
+\title{Climate Scenario Toolkit Data}
 \usage{
 cstdata(parkname = "Acadia National Park", start_year = 1950,
   end_year = 2099)
@@ -11,8 +10,17 @@ cstdata(parkname = "Acadia National Park", start_year = 1950,
 \arguments{
 \item{parkname}{The name of the U.S. National Park for which download data
 (character), e.g., "Yellowstone National Park"}
+
+\item{start_year}{The first year of the desired period (integer).}
+
+\item{end_year}{The last year of the desired period (integer).}
 }
 \description{
+Retrieves subsetted data of climate future scenarios for National Parks in
+the Contiguous United States. This data is downscaled using the Multivariate
+Adaptive Constructed Analogs (MACA) technique.
+}
+\details{
 This package retrieves daily gridded data sets of General Climate Models
 (GCM) clipped to specified National Parks. Each of these data sets represent
 a single GCM, climate variable and Representative Concentration Pathway (RCP)
@@ -22,29 +30,15 @@ can be stored as NetCDF files either locally or on an Amazon Web Service S3
 bucket. The original data sets may be found at
 \url{ http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_
 CMIP5_aggregated_macav2_catalog.html}
-}
-\details{
+
 Production Notes:
+
 - The use of reticulate may enable us to use Zarr arrays, which are accessible
   directly from an s3 bucket.
 
-- There is also a non-aggregated catalog:
-  \url{http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_
-  macav2_catalog2.html}
-  These files come in 5 year chunks but have daily windspeed (was) and monthly
-  potential evapotranspiration (PotEvap) in addition to the other variables.
-  Imtiaz would like the monthl PotEvap.
-
-- The Vapor Pressure Deficit products in the aggregated catalog has an issue
-  with fill values. I've seen this before and it is easily fixed by appending
-  "#fillmistmatch" to the end of the query, which I will do when I get the
-  computer back from a test run.
-
 - This currently saves everything to disk first, which can be a problem. The
   alternative is to save each file to a tempfile and overwrite. We'll have to
-  be careful when parallelizing. Now, Imtiaz has expressed interest in the
-  ability to save locally. For small parks this is fine, so perhaps an option.
-
-- For Death Valley using 7 cores with 15.6 GB of RAM and 2GB of SWAP, it
- crashed about 275 files in.
+  be careful when parallelizing. However, there has been interest in the
+  ability to save locally, and for small parks this is fine, so let's an
+  build in an option to save locally and to the s3 bucket.
 }
