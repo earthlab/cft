@@ -54,7 +54,7 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
   parkname="Theodore Roosevelt National Park"
   start_year = 1990
   end_year = 2000
-  store_locally = FALSE
+  store_locally = TRUE
   local_dir = "cstdata"
   store_remotely = TRUE
   aws_config_dir = "~/.aws"
@@ -63,7 +63,7 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
   # Make sure user is choosing to store somewhere
   if (store_locally == FALSE & store_remotely == FALSE) {
     msg <- "Choose to store either locally, remotely, or both"
-    stop(message)
+    stop(msg)
   }
   
   # Set up AWS access
@@ -112,7 +112,7 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
   raster::extent(r) <- raster::extent(aoi)
   r <- raster::rasterize(aoi, r, 'UNIT_CODE')  # <------------------------------ Not generalizable
   mask_grid <- r * 0 + 1
-  mask_mat <- as(mask_grid, "matrix")
+  mask_mat <- methods::as(mask_grid, "matrix")
   
   # Get some time information
   ntime_hist <- grid$ntime_hist
@@ -164,10 +164,9 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
   # With parallelization
   for (gq in gqueries) {
     t <- foreach::foreach(i=1:length(gq)) %dopar% {  # <---------------------- Build note: "no visible binding for global variable ‘i’"  
-      retrieve_subset(gq[[i]], start_year, end_year, dst_folder, parkname,
-                      aoilats, aoilons, mask_mat, latmin, latmax, lonmin,
-                      lonmax, resolution, bucket, local_dir,
-                      store_locally = store_locally,
+      retrieve_subset(gq[[i]], start_year, end_year, parkname, aoilats, aoilons,
+                      mask_mat, latmin, latmax, lonmin, lonmax, resolution,
+                      bucket, local_dir, store_locally = store_locally,
                       store_remotely = store_remotely)
     }
   }
@@ -245,10 +244,10 @@ get_park_boundaries <- function(dir = "data") {
 }
 
 
-retrieve_subset <- function(query, start_year, end_year, dst_folder, parkname,
-                            aoilats, aoilons, mask_mat, latmin, latmax, lonmin,
-                            lonmax, resolution, bucket, local_dir,
-                            store_locally = TRUE, store_remotely = TRUE){
+retrieve_subset <- function(query, start_year, end_year, parkname, aoilats,
+                            aoilons, mask_mat, latmin, latmax, lonmin, lonmax,
+                            resolution, bucket, local_dir, store_locally = TRUE,
+                            store_remotely = TRUE){
   xr <- reticulate::import("xarray")
   
   # Get the destination file
@@ -260,16 +259,15 @@ retrieve_subset <- function(query, start_year, end_year, dst_folder, parkname,
       dir.create(dst_folder, recursive = TRUE)
     }
     file_name <- query[[2]]
+    store_name <- query[[2]]
     dst <- file.path(dst_folder, file_name)
-  } 
-  
-  if (store_remotely == TRUE) {
+  } else {
     store_name <- query[[2]]
     dst <- tempfile(fileext = '.nc')
     file_name <- basename(dst)
     dst_folder <- dirname(dst)
   }
-  
+
   if (!file.exists(dst)) {
     # Get the combined historical and modeled url query
     purl <- query[[1]]
@@ -363,13 +361,10 @@ retrieve_subset <- function(query, start_year, end_year, dst_folder, parkname,
     ds$attrs <- attrs2
     
     # Save to local file
-    if (store_locally == TRUE) {
-      ds$to_netcdf(dst)
-    }
+    ds$to_netcdf(dst)
     
     # Put the file in the bucket
     if (store_remotely == TRUE) {
-      print("Saving file to cloud...")
       object <- file.path(location, store_name)
       aws.s3::put_folder(location, bucket)
       aws.s3::put_object(file = dst, object = object, bucket = bucket)
