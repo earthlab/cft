@@ -37,7 +37,7 @@
 #' present in this directory, the user will be prompted for the information
 #' needed to build the file. (character)
 #'
-#' @importFrom methods new  # <------------------------------------------------- What's this?
+#' @importFrom methods new
 
 
 # Main Function
@@ -59,15 +59,15 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
   if (store_remotely == TRUE) {
     bucket <- config_aws(aws_config_dir)
   } else{
-    bucket = "na"
+    bucket <- "na"
   }
 
   # Get national park area of interest
   aoi <- get_park_boundaries(parkname)
 
   # Generate reference objects
-  grid_ref = Grid_Reference()
-  arg_ref = Argument_Reference()
+  grid_ref <- Grid_Reference()
+  arg_ref <- Argument_Reference()
 
   # Get geographic information about the aoi
   aoi_info <- get_aoi_info(aoi, grid_ref)
