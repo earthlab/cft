@@ -22,16 +22,16 @@ disk space, but the `store_remotely` option must be set to `TRUE` in this
 case. (boolean)}
 
 \item{local_dir}{The local directory in which to save files if
-`store_locally` is set to `TRUE`. (boolean)}
+`store_locally` is set to `TRUE`. (character)}
 
 \item{store_remotely}{If `TRUE` this function will store the results in an
 Amazon Web Services S3 bucket. This will require the user to store an S3
-credentials file on their local machine. (boolean)}
+configuration file on their local machine. (boolean)}
 
 \item{aws_config_dir}{The local directory in which to save the configuration
 file needed for storing data in an AWS S3 bucket. If the file is not yet
 present in this directory, the user will be prompted for the information
-needed to build the file.}
+needed to build the file. (character)}
 }
 \description{
 Retrieves subsetted data of climate future scenarios for National Parks in
@@ -51,8 +51,8 @@ CMIP5_aggregated_macav2_catalog.html}
 
 Production Notes:
 
-- The use of reticulate may enable us to use Zarr arrays, which are accessible
-  directly from an s3 bucket.
+- The use of reticulate may enable us to use Zarr arrays, which are
+  accessible directly from an s3 bucket.
 
 - This currently saves everything to disk first, which can be a problem. The
   alternative is to save each file to a tempfile and overwrite. We'll have to
