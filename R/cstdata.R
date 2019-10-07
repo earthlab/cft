@@ -1,5 +1,5 @@
 #' Climate Scenario Toolkit Data
-#' 
+#'
 #' Retrieves subsetted data of climate future scenarios for National Parks in
 #' the Contiguous United States. This data is downscaled using the Multivariate
 #' Adaptive Constructed Analogs (MACA) technique.
@@ -13,11 +13,17 @@
 #' bucket. The original data sets may be found at
 #' \url{ http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_
 #' CMIP5_aggregated_macav2_catalog.html}
-#' 
+#'
 #' Production Notes:
 #'
 #' - The use of reticulate may enable us to use Zarr arrays, which are
 #'   accessible directly from an s3 bucket.
+#' - This command apparently install python packages automatically through
+#'   conda: "reticulate::conda_install(envname, packages)"
+#' - The R Packages book suggests that we don't put all of these functions into
+#'   file (why not?). It looks like we should split them up and use
+#'   devtools::load_all() instead.
+#' - Where should the default local data storage go? Tmp?
 #'
 #' @param parkname The name of the U.S. National Park for which to download data
 #' , e.g., "Yellowstone National Park". (character)
@@ -41,10 +47,11 @@
 
 
 # Main Function
+#' @export
 cstdata <- function(parkname="Acadia National Park", start_year = 1950,
                     end_year = 2099, store_locally = TRUE,
                     local_dir = "cstdata", store_remotely = TRUE,
-                    aws_config_dir = "~/.aws"){
+                    aws_config_dir = "~/.aws") {
 
   # Make sure user is choosing to store somewhere
   if (store_locally == FALSE & store_remotely == FALSE) {
@@ -52,7 +59,7 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
     stop(msg)
   }
 
-  # If that works, tell them whats happening  <--------------------------------- Tell them installation folder, too
+  # If that works, tell them whats happening  <--------------------------------- Tell them installation folder, too. So we might have to move the print statement down.
   print(paste("Retrieving climate data for", parkname))
 
   # Set up AWS access
@@ -85,15 +92,15 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
 
   # Retrieve Subsets
   pb <- utils::txtProgressBar(min = 0, max = length(gqueries), style = 3)
-  utils::setTxtProgressBar(pb, 0) 
+  utils::setTxtProgressBar(pb, 0)
   for (g in seq(length(gqueries))) {
     gq <- gqueries[[g]]
-    t <- foreach::foreach(i=1:length(gq)) %dopar% {  # <------------------------ Build note: "no visible binding for global variable ‘i’"  
+    t <- foreach::foreach(i = seq_len(length(gq))) %dopar% {  # <------------------------ Build note: "no visible binding for global variable ‘i’".
       retrieve_subset(gq[[i]], start_year, end_year, parkname, aoi_info,
                       bucket, local_dir, store_locally = store_locally,
                       store_remotely = store_remotely)
     }
-    utils::setTxtProgressBar(pb, g) 
+    utils::setTxtProgressBar(pb, g)
   }
 
   # Done
@@ -103,7 +110,7 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
 
 
 # Sub functions
-config_aws <- function(aws_config_dir){
+config_aws <- function(aws_config_dir) {
   aws_config_file <- file.path(aws_config_dir, "cstdata_config.RDS")
 
   # Build configuration file if needed
@@ -119,17 +126,17 @@ config_aws <- function(aws_config_dir){
 
   # Initialize AWS access
   creds <- readRDS(aws_config_file)
-  Sys.setenv("AWS_ACCESS_KEY_ID" = creds['key'],
-             "AWS_SECRET_ACCESS_KEY" = creds['skey'],
-             "AWS_DEFAULT_REGION" = creds['region'])
-  bucket_name <- creds['bucket']
+  Sys.setenv("AWS_ACCESS_KEY_ID" = creds["key"],
+             "AWS_SECRET_ACCESS_KEY" = creds["skey"],
+             "AWS_DEFAULT_REGION" = creds["region"])
+  bucket_name <- creds["bucket"]
 
   # Done.
   return(bucket_name)
 }
 
 
-filter_years <- function(start_year = 1950, end_year = 2099, 
+filter_years <- function(start_year = 1950, end_year = 2099,
                          available_start = 1950, available_end = 2099) {
   # Turn these into strings, then dates
   h1 <- as.Date(glue::glue("{available_start}-01-01"))
@@ -146,8 +153,8 @@ filter_years <- function(start_year = 1950, end_year = 2099,
   }
 
   # Now, if they asked for more than is available, truncate
-  if (d1 < h1) d1 = h1
-  if (d2 > h2) d2 = h2
+  if (d1 < h1) d1 <- h1
+  if (d2 > h2) d2 <- h2
 
   # Return the difference between the target and start dates
   t1 <- as.integer(d1 - h1)
@@ -158,11 +165,11 @@ filter_years <- function(start_year = 1950, end_year = 2099,
 }
 
 
-get_aoi_indexes <- function(aoi, grid_ref){
-  lonmin <- aoi@bbox[1,1]
-  lonmax <- aoi@bbox[1,2]
-  latmin <- aoi@bbox[2,1]
-  latmax <- aoi@bbox[2,2]
+get_aoi_indexes <- function(aoi, grid_ref) {
+  lonmin <- aoi@bbox[1, 1]
+  lonmax <- aoi@bbox[1, 2]
+  latmin <- aoi@bbox[2, 1]
+  latmax <- aoi@bbox[2, 2]
   lonmindiffs <- abs(grid_ref$lons - lonmin)
   lonmaxdiffs <- abs(grid_ref$lons - lonmax)
   latmindiffs <- abs(grid_ref$lats - latmin)
@@ -191,22 +198,22 @@ get_aoi_info <- function(aoi, grid_ref) {
   res <- grid_ref$resolution
   ny <- (y2 - y1)
   nx <- (x2 - x1)
-  latmin <- aoi@bbox[2,1]
-  lonmin <- aoi@bbox[1,1]
-  aoilats <- sapply(0:ny, function(x) latmin + x*res)
-  aoilons <- sapply(0:nx, function(x) lonmin + x*res)
+  latmin <- aoi@bbox[2, 1]
+  lonmin <- aoi@bbox[1, 1]
+  aoilats <- sapply(0:ny, function(x) latmin + x * res)
+  aoilons <- sapply(0:nx, function(x) lonmin + x * res)
 
   # Now create a mask as a matrix
-  r <- raster::raster(ncols=length(aoilons), nrows=length(aoilats))
+  r <- raster::raster(ncols = length(aoilons), nrows = length(aoilats))
   raster::extent(r) <- raster::extent(aoi)
-  r <- raster::rasterize(aoi, r, 'UNIT_CODE')  # <------------------------------ Not generalizable
+  r <- raster::rasterize(aoi, r, "UNIT_CODE")  # <------------------------------ Not generalizable
   mask_grid <- r * 0 + 1
   mask_mat <- methods::as(mask_grid, "matrix")
 
   # Package all of this into one object
   aoi_info <- list("aoilats" = aoilats,
                    "aoilons" = aoilons,
-                   "mask_mat" = mask_mat, 
+                   "mask_mat" = mask_mat,
                    "resolution" = res)
 
   # Done.
@@ -214,9 +221,9 @@ get_aoi_info <- function(aoi, grid_ref) {
 }
 
 
-get_grouped_queries <- function(aoi, start_year, end_year, arg_ref, grid_ref){
+get_grouped_queries <- function(aoi, start_year, end_year, arg_ref, grid_ref) {
   # We are building url queries from this base
-  urlbase = paste0("http://thredds.northwestknowledge.net:8080/thredds/",
+  urlbase <- paste0("http://thredds.northwestknowledge.net:8080/thredds/",
                    "dodsC/agg_macav2metdata")
 
   # This will be the folder name for this park
@@ -235,14 +242,14 @@ get_grouped_queries <- function(aoi, start_year, end_year, arg_ref, grid_ref){
 
   # Build a list of vectors with historical and modeled queries and a filename
   queries <- list()
-  for (model in arg_ref$models){
-    args = arg_ref$get_args(model)
+  for (model in arg_ref$models) {
+    args <- arg_ref$get_args(model)
     params <- args$parameters
     scenarios <- args$scenarios
     ensemble <- args$ensemble
     variables <- arg_ref$variables
-    for (param in params){
-      for (scenario in scenarios){
+    for (param in params) {
+      for (scenario in scenarios) {
         file_name <- paste(c(param, location, model, ensemble, scenario,
                              "macav2metdata", as.character(start_year),
                              as.character(end_year), "daily.nc"),
@@ -262,17 +269,17 @@ get_grouped_queries <- function(aoi, start_year, end_year, arg_ref, grid_ref){
         hurl <- paste0(hattachment, hquery)
         murl <- paste0(mattachment, mquery)
         purl <- c(hurl, murl)
-        queries[[length(queries)+1]] <- list(purl, file_name)
+        queries[[length(queries) + 1]] <- list(purl, file_name)
       }
     }
   }
 
   # Group these queries into groups based on the number of physical cpus
   ncores <- parallel::detectCores() / 2
-  gqueries <- split(queries, ceiling(seq_along(queries)/ncores))
+  gqueries <- split(queries, ceiling(seq_along(queries) / ncores))
 
   # Done.
-  return(gqueries)  
+  return(gqueries)
 }
 
 
@@ -283,7 +290,7 @@ get_park_boundaries <- function(parkname, dir = "data") {
   nps_boundary <- file.path(prefix, "nps_boundary.shp")
 
   # Download if needed
-  if (!file.exists(nps_boundary)){
+  if (!file.exists(nps_boundary)) {
     file <- file.path(prefix, "nps_boundary.zip")
     url <- "https://irma.nps.gov/DataStore/DownloadFile/629794"  # <------------ This url is not consistent!
     utils::download.file(url = url, destfile = file, method = "curl")
@@ -292,7 +299,7 @@ get_park_boundaries <- function(parkname, dir = "data") {
 
   # Get the boundaries of the chosen national park
   parks <- rgdal::readOGR(nps_boundary)
-  aoi <- parks[grepl(parkname, parks$UNIT_NAME),]
+  aoi <- parks[grepl(parkname, parks$UNIT_NAME), ]
 
   return(aoi)
 }
@@ -300,7 +307,7 @@ get_park_boundaries <- function(parkname, dir = "data") {
 
 retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
                             bucket, local_dir, store_locally = TRUE,
-                            store_remotely = TRUE){
+                            store_remotely = TRUE) {
   # Load xarray
   xr <- reticulate::import("xarray")
 
@@ -315,7 +322,7 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
   local_park_dir <- file.path(local_dir, location)
   if (store_locally == TRUE) {
     dst_folder <- local_park_dir
-    if (!dir.exists(dst_folder)){
+    if (!dir.exists(dst_folder)) {
       dir.create(dst_folder, recursive = TRUE)
     }
     file_name <- query[[2]]
@@ -323,7 +330,7 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
     dst <- file.path(dst_folder, file_name)
   } else {
     store_name <- query[[2]]
-    dst <- tempfile(fileext = '.nc')
+    dst <- tempfile(fileext = ".nc")
     file_name <- basename(dst)
     dst_folder <- dirname(dst)
   }
@@ -334,15 +341,15 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
     purl <- query[[1]]
 
     # Save a local file
-    ds <- xr$open_mfdataset(purl, concat_dim="time")
+    ds <- xr$open_mfdataset(purl, concat_dim = "time")
 
     # Filter dates
     didx <- filter_years(start_year, end_year)
     ds <- ds$sel(time = c(didx[[1]]: didx[[-1]]))
 
     # add coordinate
-    ds <- ds$assign_coords(lat = c('lat' = as.matrix(aoilats)),
-                           lon = c('lon' = as.matrix(aoilons)))
+    ds <- ds$assign_coords(lat = c("lat" = as.matrix(aoilats)),
+                           lon = c("lon" = as.matrix(aoilons)))
 
     # Mask by boundary
     dsmask <- xr$DataArray(mask_mat)
@@ -350,7 +357,7 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
     ds <- ds$where(dsmask$data == 1)
 
     # Update Attributes  <------------------------------------------------------ Standards: https://www.unidata.ucar.edu/software/netcdf-java/current/metadata/DataDiscoveryAttConvention.html
-    summary = paste0(
+    summary <- paste0(
       "This archive contains daily downscaled meteorological and hydrological ",
       "projections for the Conterminous United States at 1/24-deg resolution ",
       "utilizing the Multivariate Adaptive Constructed Analogs (MACA, ",
@@ -390,10 +397,10 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
       "geospatial_lon_units" = attrs1$geospatial_lon_units,
       "geospatial_lat_resolution" = resolution,
       "geospatial_lon_resolution" = resolution,
-      "geospatial_vertical_min" = '0',
-      "geospatial_vertical_min" = '0',
-      "geospatial_vertical_resolution" = '0',
-      "geospatial_vertical_positive" = '0',
+      "geospatial_vertical_min" = "0",
+      "geospatial_vertical_min" = "0",
+      "geospatial_vertical_resolution" = "0",
+      "geospatial_vertical_positive" = "0",
       "time_coverage_start" = glue::glue("{start_year}-01-01T00:0"),
       "time_coverage_end" = glue::glue("{end_year}-12-31T00:0"),
       "time_coverage_duration" = glue::glue("P{end_year - start_year + 1}Y"),
@@ -416,7 +423,7 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
       # "contributor_role" = attrs1$contributor_role,
       # "publisher_name" = attrs1$publisher_name,
       # "publisher_url" = attrs1$publisher_url,
-      # "license" = attrs1$license,
+      # "license" = attrs1$license
     )
     print("Assigning new attributes...")
     ds$attrs <- attrs2
@@ -460,14 +467,14 @@ Grid_Reference <- methods::setRefClass(
                           nlat = 585,
                           nlon = 1386,
                           ntime_hist = 20453,
-                          ntime_model = 34332){
+                          ntime_model = 34332) {
       crs <<- crs
       resolution <<- resolution
       extent <<- extent
       lats <<- sapply(1:(nlat),
-                      function(x) extent["latmin"][[1]] + x*resolution)
+                      function(x) extent["latmin"][[1]] + x * resolution)
       lons <<- sapply(1:(nlon),
-                      function(x) extent["lonmin"][[1]] + x*resolution)
+                      function(x) extent["lonmin"][[1]] + x * resolution)
       ntime_hist <<- ntime_hist
       ntime_model <<- ntime_model
     }
@@ -521,16 +528,16 @@ Argument_Reference <- methods::setRefClass(
       units <<- units
     },
 
-    get_args = function(model){
+    get_args = function(model) {
       args <- list()
-      for (m in models){
+      for (m in models) {
         args[[m]] <- list("parameters" = parameters, "scenarios" = scenarios,
                           "ensemble" =  "r1i1p1")
       }
 
       # Exceptions
       param_red <-  c("tasmin", "tasmax", "pr", "rsds", "uas", "vas", "huss")
-      args[["NorESM1-M"]]$parameters = param_red
+      args[["NorESM1-M"]]$parameters <- param_red
       args[["CCSM4"]]$parameters <- param_red
       args[["CCSM4"]]$ensemble <- "r6i1p1"
 
