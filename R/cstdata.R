@@ -62,12 +62,15 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
     bucket <- "na"
   }
 
-  # Get national park area of interest
-  aoi <- get_park_boundaries(parkname)
-
   # Generate reference objects
   grid_ref <- Grid_Reference()
   arg_ref <- Argument_Reference()
+
+  # Get national park area of interest
+  aoi <- get_park_boundaries(parkname)
+
+  # Match coordinate systems
+  aoi <- sp::spTransform(aoi, grid_ref$crs)
 
   # Get geographic information about the aoi
   aoi_info <- get_aoi_info(aoi, grid_ref)
@@ -177,9 +180,6 @@ get_aoi_indexes <- function(aoi, grid_ref){
 
 
 get_aoi_info <- function(aoi, grid_ref) {
-  # Match coordinate systems
-  aoi <- sp::spTransform(aoi, grid_ref$crs)
-
   # Get relative index positions to full grid
   index_pos <- get_aoi_indexes(aoi, grid_ref)
   y1 <- index_pos[["y1"]]
