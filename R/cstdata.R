@@ -67,11 +67,11 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
                     aws_config_dir = "~/.aws", verbose = FALSE) {
   '
   parkname="Acadia National Park"
-  start_year = 1950
-  end_year = 2099
+  start_year = 1995
+  end_year = 2000
   store_locally = TRUE
   local_dir = "cstdata"
-  store_remotely = TRUE
+  store_remotely = FALSE
   aws_config_dir = "~/.aws"
   verbose = FALSE
   '
@@ -122,8 +122,9 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
                           envir = environment())
 
   # Retrieve Subsets from grouped queries
+  file_refs <- list()
   for (queries in grouped_queries) {
-    out <- pbapply::pblapply(queries, 
+    file_ref <- pbapply::pblapply(queries, 
                              FUN = retrieve_subset, 
                              start_year = start_year, 
                              end_year = end_year,
@@ -134,6 +135,7 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
                              store_locally = store_locally,
                              store_remotely = store_remotely,
                              cl = cl)
+    # file_refs[[length(file_refs) + 1]]
   }
 
   # for (g in seq(length(grouped_queries))) {
