@@ -32,38 +32,39 @@
 #' @param store_locally If `TRUE` this function will store the results in a
 #' local directory as NetCDF files. This options may be set to `FALSE` to save
 #' disk space, but the `store_remotely` option must be set to `TRUE` in this
-#' case. (boolean)
+#' case. (logical)
 #' @param local_dir The local directory in which to save files if
 #' `store_locally` is set to `TRUE`. (character)
 #' @param store_remotely If `TRUE` this function will store the results in an
 #' Amazon Web Services S3 bucket. This will require the user to store an S3
-#' configuration file on their local machine. (boolean)
+#' configuration file on their local machine. (logical)
 #' @param aws_config_dir The local directory in which to save the configuration
 #' file needed for storing data in an AWS S3 bucket. If the file is not yet
 #' present in this directory, the user will be prompted for the information
 #' needed to build the file. (character)
+#' @param verbose Print verbose output. (logical)
 #'
 #' @importFrom methods new
-
-
-# Main Function
 #' @export
 cstdata <- function(parkname="Acadia National Park", start_year = 1950,
                     end_year = 2099, store_locally = TRUE,
                     local_dir = "cstdata", store_remotely = TRUE,
-                    aws_config_dir = "~/.aws") {
+                    aws_config_dir = "~/.aws", verbose = FALSE) {
 
   # Make sure user is choosing to store somewhere
-  if (store_locally == FALSE & store_remotely == FALSE) {
-    msg <- "Choose to store either locally, remotely, or both"
+  if (!store_locally & !store_remotely) {
+    msg <- paste("Please set the store_locally and/or the store_remotely", 
+                 "arguments equal to TRUE.")
     stop(msg)
   }
 
   # If that works, tell them whats happening  <--------------------------------- Tell them installation folder, too. So we might have to move the print statement down.
-  print(paste("Retrieving climate data for", parkname))
+  if (verbose) {
+    print(paste("Retrieving climate data for", parkname))
+  }
 
   # Set up AWS access
-  if (store_remotely == TRUE) {
+  if (store_remotely) {
     bucket <- config_aws(aws_config_dir)
   } else{
     bucket <- "na"
@@ -80,32 +81,45 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
   aoi_info <- get_aoi_info(aoi, grid_ref)
 
   # Now we can get the historical and model years together
-  gqueries <- get_grouped_queries(aoi, start_year, end_year, arg_ref, grid_ref)
+  grouped_queries <- get_grouped_queries(aoi, start_year, end_year, arg_ref, 
+                                         grid_ref)
 
   # Setup parallelization
   ncores <- parallel::detectCores() / 2
-  `%dopar%` <- foreach::`%dopar%`
   cl <- parallel::makeCluster(ncores)
   doParallel::registerDoParallel(cl)
   parallel::clusterExport(cl, c("retrieve_subset", "filter_years"),
                           envir = environment())
 
-  # Retrieve Subsets
-  pb <- utils::txtProgressBar(min = 0, max = length(gqueries), style = 3)
-  utils::setTxtProgressBar(pb, 0)
-  for (g in seq(length(gqueries))) {
-    gq <- gqueries[[g]]
-    t <- foreach::foreach(i = seq_len(length(gq))) %dopar% {  # <------------------------ Build note: "no visible binding for global variable ‘i’".
-      retrieve_subset(gq[[i]], start_year, end_year, parkname, aoi_info,
-                      bucket, local_dir, store_locally = store_locally,
-                      store_remotely = store_remotely)
-    }
-    utils::setTxtProgressBar(pb, g)
+  # Retrieve Subsets from grouped queries
+  for (queries in grouped_queries) {
+    out <- pbapply::pblapply(queries, 
+                             FUN = retrieve_subset, 
+                             start_year = start_year, 
+                             end_year = end_year, parkname = parkname, 
+                             aoi_info = aoi_info, bucket = bucket,
+                             local_dir = local_dir, 
+                             store_locally = store_locally,
+                             store_remotely = store_remotely, 
+                             cl = cl)
   }
 
+  # for (g in seq(length(grouped_queries))) {
+  #   gq <- grouped_queries[[g]]
+  #   t <- foreach::foreach(i = seq_len(length(gq))) %dopar% {  # <------------------------ Build note: "no visible binding for global variable ‘i’".
+  #     retrieve_subset(gq[[i]], start_year, end_year, parkname, aoi_info,
+  #                     bucket, local_dir, store_locally = store_locally,
+  #                     store_remotely = store_remotely)
+  #   }
+  # }
+
   # Done
-  close(pb)
+
   parallel::stopCluster(cl)
+  # TODO: return a data frame with columns: 
+  # - file name
+  # - local path (NA if DNE locally)
+  # - S3 path (NA if not pushed to S3)
 }
 
 
@@ -145,6 +159,7 @@ filter_years <- function(start_year = 1950, end_year = 2099,
   d2 <- as.Date(glue::glue("{end_year}-12-31"))
 
   # If the end year is before the start year, go ahead and switch them
+  # TODO: raise error if dates don't make sense
   if (d2 < d1) {
     tmp1 <- d1
     d1 <- d2
@@ -153,6 +168,7 @@ filter_years <- function(start_year = 1950, end_year = 2099,
   }
 
   # Now, if they asked for more than is available, truncate
+  # TODO: Raise error
   if (d1 < h1) d1 <- h1
   if (d2 > h2) d2 <- h2
 
@@ -164,6 +180,7 @@ filter_years <- function(start_year = 1950, end_year = 2099,
   return(c(t1, t2))
 }
 
+# TODO: docs
 
 get_aoi_indexes <- function(aoi, grid_ref) {
   lonmin <- aoi@bbox[1, 1]
@@ -182,7 +199,7 @@ get_aoi_indexes <- function(aoi, grid_ref) {
   return(index_pos)
 }
 
-
+# TODO: docs
 get_aoi_info <- function(aoi, grid_ref) {
   # Match coordinate systems
   aoi <- sp::spTransform(aoi, grid_ref$crs)
@@ -206,6 +223,7 @@ get_aoi_info <- function(aoi, grid_ref) {
   # Now create a mask as a matrix
   r <- raster::raster(ncols = length(aoilons), nrows = length(aoilats))
   raster::extent(r) <- raster::extent(aoi)
+  # TODO: write tests for this function. Then, try to run without "UNIT_CODE" below.
   r <- raster::rasterize(aoi, r, "UNIT_CODE")  # <------------------------------ Not generalizable
   mask_grid <- r * 0 + 1
   mask_mat <- methods::as(mask_grid, "matrix")
@@ -224,7 +242,7 @@ get_aoi_info <- function(aoi, grid_ref) {
 get_grouped_queries <- function(aoi, start_year, end_year, arg_ref, grid_ref) {
   # We are building url queries from this base
   urlbase <- paste0("http://thredds.northwestknowledge.net:8080/thredds/",
-                   "dodsC/agg_macav2metdata")
+                    "dodsC/agg_macav2metdata")
 
   # This will be the folder name for this park
   location <- gsub(" ", "_", tolower(aoi$UNIT_NAME))
@@ -260,6 +278,8 @@ get_grouped_queries <- function(aoi, start_year, end_year, arg_ref, grid_ref) {
         mattachment <- paste(c(urlbase, param, model, ensemble, scenario,
                                "2006_2099", "CONUS_daily.nc?"), collapse = "_")
         var <- variables[param]
+        # TODO: Consolidate query construction? 
+        # e.g., include "var" in the definitions of query 1 and 2
         q1 <- paste0("[{0}:{1}:{ntime_hist}][{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
                      "#fillmismatch")
         q2 <- paste0("[{0}:{1}:{ntime_model}][{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
@@ -276,10 +296,10 @@ get_grouped_queries <- function(aoi, start_year, end_year, arg_ref, grid_ref) {
 
   # Group these queries into groups based on the number of physical cpus
   ncores <- parallel::detectCores() / 2
-  gqueries <- split(queries, ceiling(seq_along(queries) / ncores))
+  grouped_queries <- split(queries, ceiling(seq_along(queries) / ncores))
 
   # Done.
-  return(gqueries)
+  return(grouped_queries)
 }
 
 
@@ -345,7 +365,8 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
 
     # Filter dates
     didx <- filter_years(start_year, end_year)
-    ds <- ds$sel(time = c(didx[[1]]: didx[[-1]]))
+    stopifnot(length(didx) == 2)
+    ds <- ds$sel(time = c(didx[[1]]: didx[[2]]))
 
     # add coordinate
     ds <- ds$assign_coords(lat = c("lat" = as.matrix(aoilats)),
@@ -379,9 +400,7 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
       "mean specific humidity to partial pressure of moisture in the ",
       "atmosphere and estimating pressure from elevation using the barometric ",
       "formula.")
-    print("Retrieving old attributes...")
     attrs1 <- ds$attrs
-    print("Creating list of new attributes...")
     attrs2 <- list(
       "title" = attrs1$title,
       "author" = "John Abatzoglou-University of Idaho, jabatzoglou@uidaho.edu",
@@ -425,7 +444,6 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
       # "publisher_url" = attrs1$publisher_url,
       # "license" = attrs1$license
     )
-    print("Assigning new attributes...")
     ds$attrs <- attrs2
 
     # Save to local file

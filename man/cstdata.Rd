@@ -6,7 +6,7 @@
 \usage{
 cstdata(parkname = "Acadia National Park", start_year = 1950,
   end_year = 2099, store_locally = TRUE, local_dir = "cstdata",
-  store_remotely = TRUE, aws_config_dir = "~/.aws")
+  store_remotely = TRUE, aws_config_dir = "~/.aws", verbose = FALSE)
 }
 \arguments{
 \item{parkname}{The name of the U.S. National Park for which to download data
@@ -19,19 +19,21 @@ cstdata(parkname = "Acadia National Park", start_year = 1950,
 \item{store_locally}{If `TRUE` this function will store the results in a
 local directory as NetCDF files. This options may be set to `FALSE` to save
 disk space, but the `store_remotely` option must be set to `TRUE` in this
-case. (boolean)}
+case. (logical)}
 
 \item{local_dir}{The local directory in which to save files if
 `store_locally` is set to `TRUE`. (character)}
 
 \item{store_remotely}{If `TRUE` this function will store the results in an
 Amazon Web Services S3 bucket. This will require the user to store an S3
-configuration file on their local machine. (boolean)}
+configuration file on their local machine. (logical)}
 
 \item{aws_config_dir}{The local directory in which to save the configuration
 file needed for storing data in an AWS S3 bucket. If the file is not yet
 present in this directory, the user will be prompted for the information
 needed to build the file. (character)}
+
+\item{verbose}{Print verbose output. (logical)}
 }
 \description{
 Retrieves subsetted data of climate future scenarios for National Parks in
@@ -53,10 +55,10 @@ Production Notes:
 
 - The use of reticulate may enable us to use Zarr arrays, which are
   accessible directly from an s3 bucket.
-
-- This currently saves everything to disk first, which can be a problem. The
-  alternative is to save each file to a tempfile and overwrite. We'll have to
-  be careful when parallelizing. However, there has been interest in the
-  ability to save locally, and for small parks this is fine, so let's an
-  build in an option to save locally and to the s3 bucket.
+- This command apparently install python packages automatically through
+  conda: "reticulate::conda_install(envname, packages)"
+- The R Packages book suggests that we don't put all of these functions into
+  file (why not?). It looks like we should split them up and use
+  devtools::load_all() instead.
+- Where should the default local data storage go? Tmp?
 }
