@@ -24,6 +24,21 @@
 #'   file (why not?). It looks like we should split them up and use
 #'   devtools::load_all() instead.
 #' - Where should the default local data storage go? Tmp?
+#' - The builds work find with reticulate, but we will need to take a few more
+#'   steps:
+#'    1) I've not had luck with python 2, though this will more often be the default
+#'       I had to create a .Renviron file with the line:
+#'      
+#'           RETICULATE_PYTHON="/usr/bin/python3"
+#'
+#'       This won't do, though, its always different
+#'
+#'    2) In addition to xarray, I needed to install netcdf4, dask, and toolz
+#'    3) We could better ensure that this functions by using a conda environment,
+#'       but that might require extra doing on the users part.
+#'    4) Xarray 0.14 will change the behaviour of open_mfdataset, 0.13 is giving 
+#'       deprecation warnings. Perhaps we pin xarray to 0.12 (same behavior,
+#'       no warnings). 
 #'
 #' @param parkname The name of the U.S. National Park for which to download data
 #' , e.g., "Yellowstone National Park". (character)
@@ -50,6 +65,18 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
                     end_year = 2099, store_locally = TRUE,
                     local_dir = "cstdata", store_remotely = TRUE,
                     aws_config_dir = "~/.aws", verbose = FALSE) {
+  '
+  parkname="Acadia National Park"
+  start_year = 1950
+  end_year = 2099
+  store_locally = TRUE
+  local_dir = "cstdata"
+  store_remotely = TRUE
+  aws_config_dir = "~/.aws"
+  verbose = FALSE
+  '
+  # Check that we're using python 3
+  reticulate::py_config()
 
   # Make sure user is choosing to store somewhere
   if (!store_locally & !store_remotely) {
@@ -99,11 +126,13 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
     out <- pbapply::pblapply(queries, 
                              FUN = retrieve_subset, 
                              start_year = start_year, 
-                             end_year = end_year, parkname = parkname, 
-                             aoi_info = aoi_info, bucket = bucket,
+                             end_year = end_year,
+                             parkname = parkname, 
+                             aoi_info = aoi_info,
                              local_dir = local_dir, 
+                             aws_config_dir = aws_config_dir,
                              store_locally = store_locally,
-                             store_remotely = store_remotely, 
+                             store_remotely = store_remotely,
                              cl = cl)
   }
 
@@ -117,9 +146,19 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
   # }
 
   # Done
-
   parallel::stopCluster(cl)
+
   # TODO: return a data frame with columns: 
+  if (store_locally) {
+    
+  }
+
+  local_park_dir <- file.path(local_dir, gsub(" ", "_", tolower(aoi$UNIT_NAME)))
+  local_file_names <- list.files(local_park_dir)
+  local_file_paths <- list.files(local_park_dir, full.names = TRUE)
+  local_file_paths <- lapply(local_file_paths, normalizePath)
+  file_df <- data.frame()
+
   # - file name
   # - local path (NA if DNE locally)
   # - S3 path (NA if not pushed to S3)
@@ -132,6 +171,9 @@ config_aws <- function(aws_config_dir) {
 
   # Build configuration file if needed
   if (!file.exists(aws_config_file)) {
+    if (!dir.exists(aws_config_dir)) {
+      dir.create(aws_config_dir)
+    }
     print("Build AWS Configuration File\n")
     bucket <- readline("s3 bucket name: ")
     key <- readline("aws key: ")
@@ -326,7 +368,7 @@ get_park_boundaries <- function(parkname, dir = "data") {
 
 
 retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
-                            bucket, local_dir, store_locally = TRUE,
+                            local_dir, aws_config_dir, store_locally = TRUE,
                             store_remotely = TRUE) {
   # Load xarray
   xr <- reticulate::import("xarray")
@@ -451,10 +493,25 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
 
     # Put the file in the bucket
     if (store_remotely == TRUE) {
+      creds <- readRDS(aws_config_file)
+      bucket <- creds["bucket"]
+      region <- creds["region"]
       object <- file.path(location, store_name)
       aws.s3::put_folder(location, bucket)
       aws.s3::put_object(file = dst, object = object, bucket = bucket)
+      aws_url <- paste0("https://s3.console.aws.amazon.com/s3/object/", bucket,
+                        "/", location, "/", store_name, "?region=", region,
+                        "&tab=overview")
+    } else {
+        aws_url <- "NA"
     }
+
+    # Keep track of file information
+    file_dir <- normalizePath(dst_folder)
+    file_name <- basename(dst)
+    reference <- list("local_file" = file_name, "local_path" = file_dir,
+                      "aws_url" = aws_url)
+    return(reference)
   }
 }
 
