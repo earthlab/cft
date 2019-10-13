@@ -58,8 +58,9 @@
 #' present in this directory, the user will be prompted for the information
 #' needed to build the file. (character)
 #' @param verbose Print verbose output. (logical)
-#'
+#' 
 #' @importFrom methods new
+#' 
 #' @export
 cstdata <- function(parkname="Acadia National Park", start_year = 1950,
                     end_year = 2099, store_locally = TRUE,
@@ -68,16 +69,13 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
   '
   parkname="Acadia National Park"
   start_year = 1950
-  end_year = 2099
+  end_year = 1952
   store_locally = TRUE
   local_dir = "cstdata"
   store_remotely = TRUE
   aws_config_dir = "~/.aws"
   verbose = FALSE
   '
-  # Check that we're using python 3
-  reticulate::py_config()
-
   # Make sure user is choosing to store somewhere
   if (!store_locally & !store_remotely) {
     msg <- paste("Please set the store_locally and/or the store_remotely", 
@@ -92,9 +90,9 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
 
   # Set up AWS access
   if (store_remotely) {
-    bucket <- config_aws(aws_config_dir)
-  } else{
-    bucket <- "na"
+    aws_config_file <- config_aws(aws_config_dir)
+  } else {
+    aws_config_file <- "na"
   }
 
   # Generate reference objects
@@ -110,58 +108,55 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
   # Get geographic information about the aoi
   aoi_info <- get_aoi_info(aoi, grid_ref)
 
-  # Now we can get the historical and model years together
+  # Build url queries and group by number of cpus
+  ncores <- parallel::detectCores() / 2
   grouped_queries <- get_grouped_queries(aoi, start_year, end_year, arg_ref, 
-                                         grid_ref)
+                                         grid_ref, ncores)
 
   # Setup parallelization
-  ncores <- parallel::detectCores() / 2
   cl <- parallel::makeCluster(ncores)
   doParallel::registerDoParallel(cl)
   parallel::clusterExport(cl, c("retrieve_subset", "filter_years"),
                           envir = environment())
 
-  # Retrieve Subsets from grouped queries
-  for (queries in grouped_queries) {
-    out <- pbapply::pblapply(queries, 
-                             FUN = retrieve_subset, 
-                             start_year = start_year, 
-                             end_year = end_year,
-                             parkname = parkname, 
-                             aoi_info = aoi_info,
-                             local_dir = local_dir, 
-                             aws_config_dir = aws_config_dir,
-                             store_locally = store_locally,
-                             store_remotely = store_remotely,
-                             cl = cl)
+  # Retrieve subsets from grouped queries and create file reference data frame
+  pbapply::pboptions(type="none")
+  file_references <- data.frame("local_file" = character(0),
+                                "local_path" = character(0),
+                                "aws_url" = character(0),
+                                stringsAsFactors = FALSE)
+  pb <- utils::txtProgressBar(min = 1, max = length(grouped_queries), style = 3)
+  for (i in seq_along(grouped_queries)) {
+
+    # Putting progress bar here to avoid delayed ticks
+    utils::setTxtProgressBar(pb, i)
+
+    # Retrieve, subset, and write the files
+    refs <- pbapply::pblapply(grouped_queries[[i]],
+                              FUN = retrieve_subset, 
+                              start_year = start_year, 
+                              end_year = end_year,
+                              parkname = parkname, 
+                              aoi_info = aoi_info,
+                              local_dir = local_dir, 
+                              aws_config_file = aws_config_file,
+                              store_locally = store_locally,
+                              store_remotely = store_remotely,
+                              cl = cl)
+
+    # Add the file reference outputs to data frame
+    refdf <- do.call(rbind.data.frame, refs)
+    file_references <- rbind(file_references, refdf)
   }
 
-  # for (g in seq(length(grouped_queries))) {
-  #   gq <- grouped_queries[[g]]
-  #   t <- foreach::foreach(i = seq_len(length(gq))) %dopar% {  # <------------------------ Build note: "no visible binding for global variable ‘i’".
-  #     retrieve_subset(gq[[i]], start_year, end_year, parkname, aoi_info,
-  #                     bucket, local_dir, store_locally = store_locally,
-  #                     store_remotely = store_remotely)
-  #   }
-  # }
-
-  # Done
+  # Close cluster
   parallel::stopCluster(cl)
 
-  # TODO: return a data frame with columns: 
-  if (store_locally) {
-    
-  }
+  # Reset index of file reference data frame
+  rownames(file_references) <- seq(nrow(file_references))
 
-  local_park_dir <- file.path(local_dir, gsub(" ", "_", tolower(aoi$UNIT_NAME)))
-  local_file_names <- list.files(local_park_dir)
-  local_file_paths <- list.files(local_park_dir, full.names = TRUE)
-  local_file_paths <- lapply(local_file_paths, normalizePath)
-  file_df <- data.frame()
-
-  # - file name
-  # - local path (NA if DNE locally)
-  # - S3 path (NA if not pushed to S3)
+  # Return file references
+  return(file_references)
 }
 
 
@@ -188,64 +183,72 @@ config_aws <- function(aws_config_dir) {
   Sys.setenv("AWS_ACCESS_KEY_ID" = creds["key"],
              "AWS_SECRET_ACCESS_KEY" = creds["skey"],
              "AWS_DEFAULT_REGION" = creds["region"])
-  bucket_name <- creds["bucket"]
 
-  # Done.
-  return(bucket_name)
+  # Return the file path
+  return(aws_config_file)
 }
 
 
 filter_years <- function(start_year = 1950, end_year = 2099,
                          available_start = 1950, available_end = 2099) {
   # Turn these into strings, then dates
-  h1 <- as.Date(glue::glue("{available_start}-01-01"))
-  h2 <- as.Date(glue::glue("{available_end}-12-31"))
-  d1 <- as.Date(glue::glue("{start_year}-01-01"))
-  d2 <- as.Date(glue::glue("{end_year}-12-31"))
+  available1 <- as.Date(glue::glue("{available_start}-01-01"))
+  available2 <- as.Date(glue::glue("{available_end}-12-31"))
+  date1 <- as.Date(glue::glue("{start_year}-01-01"))
+  date2 <- as.Date(glue::glue("{end_year}-12-31"))
 
-  # If the end year is before the start year, go ahead and switch them
-  # TODO: raise error if dates don't make sense
-  if (d2 < d1) {
-    tmp1 <- d1
-    d1 <- d2
-    d2 <- tmp1
-    rm(tmp1)
+  # Check that the end year is after the start year
+  if (date2 < date1) stop("end_year is set before start_year")
+
+  # Check that the requested years are available
+  if (date1 < available1) {
+    stop(paste0("start_year is unavailable. Please choose a year between ",
+                 available_start, " and ", available_end, "."))
+  }
+  if (date2 > available2) {
+    stop(paste0("end_year is unavailable. Please choose a year between ",
+                available_start, " and ", available_end, "."))
   }
 
-  # Now, if they asked for more than is available, truncate
-  # TODO: Raise error
-  if (d1 < h1) d1 <- h1
-  if (d2 > h2) d2 <- h2
-
-  # Return the difference between the target and start dates
-  t1 <- as.integer(d1 - h1)
-  t2 <- as.integer(d2 - h1)
+  # Return the difference in days between the first available and chosen dates
+  day1 <- as.integer(date1 - available1)
+  day2 <- as.integer(date2 - available1)
 
   # Return these as a pair
-  return(c(t1, t2))
+  return(c(day1, day2))
 }
 
-# TODO: docs
 
 get_aoi_indexes <- function(aoi, grid_ref) {
+
+  # Extract the bounding box of the area of interest
   lonmin <- aoi@bbox[1, 1]
   lonmax <- aoi@bbox[1, 2]
   latmin <- aoi@bbox[2, 1]
   latmax <- aoi@bbox[2, 2]
+
+  # Calculate differences between bounding box and target grid coordinates
   lonmindiffs <- abs(grid_ref$lons - lonmin)
   lonmaxdiffs <- abs(grid_ref$lons - lonmax)
   latmindiffs <- abs(grid_ref$lats - latmin)
   latmaxdiffs <- abs(grid_ref$lats - latmax)
+
+  # Find the index positions of the closest grid coordinates to the aoi extent
   x1 <- match(lonmindiffs[lonmindiffs == min(lonmindiffs)], lonmindiffs)
   x2 <- match(lonmaxdiffs[lonmaxdiffs == min(lonmaxdiffs)], lonmaxdiffs)
   y1 <- match(latmindiffs[latmindiffs == min(latmindiffs)], latmindiffs)
   y2 <- match(latmaxdiffs[latmaxdiffs == min(latmaxdiffs)], latmaxdiffs)
+
+  # Create a list with each required grid index position
   index_pos <- list("y1" = y1, "y2" = y2, "x1" = x1, "x2" = x2)
+
+  # Return list  
   return(index_pos)
 }
 
-# TODO: docs
+
 get_aoi_info <- function(aoi, grid_ref) {
+
   # Get relative index positions to full grid
   index_pos <- get_aoi_indexes(aoi, grid_ref)
   y1 <- index_pos[["y1"]]
@@ -265,15 +268,16 @@ get_aoi_info <- function(aoi, grid_ref) {
   # Now create a mask as a matrix
   r <- raster::raster(ncols = length(aoilons), nrows = length(aoilats))
   raster::extent(r) <- raster::extent(aoi)
+
   # TODO: write tests for this function. Then, try to run without "UNIT_CODE" below.
   r <- raster::rasterize(aoi, r, "UNIT_CODE")  # <------------------------------ Not generalizable
   mask_grid <- r * 0 + 1
-  mask_mat <- methods::as(mask_grid, "matrix")
+  mask_matrix <- methods::as(mask_grid, "matrix")
 
   # Package all of this into one object
   aoi_info <- list("aoilats" = aoilats,
                    "aoilons" = aoilons,
-                   "mask_mat" = mask_mat,
+                   "mask_matrix" = mask_matrix,
                    "resolution" = res)
 
   # Done.
@@ -281,13 +285,15 @@ get_aoi_info <- function(aoi, grid_ref) {
 }
 
 
-get_grouped_queries <- function(aoi, start_year, end_year, arg_ref, grid_ref) {
+get_grouped_queries <- function(aoi, start_year, end_year, arg_ref, grid_ref,
+                                ncores) {
+
   # We are building url queries from this base
-  urlbase <- paste0("http://thredds.northwestknowledge.net:8080/thredds/",
-                    "dodsC/agg_macav2metdata")
+  urlbase <- paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
+                    "agg_macav2metdata")
 
   # This will be the folder name for this park
-  location <- gsub(" ", "_", tolower(aoi$UNIT_NAME))
+  location <- gsub(" ", "_", tolower(aoi$UNIT_NAME))  # <----------------------- Use different strategy for other shapefiles
 
   # Get time information from our grid reference
   ntime_hist <- grid_ref$ntime_hist
@@ -300,44 +306,50 @@ get_grouped_queries <- function(aoi, start_year, end_year, arg_ref, grid_ref) {
   x1 <- index_pos[["x1"]]
   x2 <- index_pos[["x2"]]
 
-  # Build a list of vectors with historical and modeled queries and a filename
+  # Build a list of lists with historical/future model queries and a file name
   queries <- list()
   for (model in arg_ref$models) {
     args <- arg_ref$get_args(model)
+    variables <- arg_ref$variables
     params <- args$parameters
     scenarios <- args$scenarios
     ensemble <- args$ensemble
-    variables <- arg_ref$variables
     for (param in params) {
       for (scenario in scenarios) {
+
+        # Get internal variable name
+        var <- variables[param]
+
+        # Build local file name
         file_name <- paste(c(param, location, model, ensemble, scenario,
                              "macav2metdata", as.character(start_year),
                              as.character(end_year), "daily.nc"),
                            collapse = "_")
-        hattachment <- paste(c(urlbase, param, model, ensemble, "historical",
-                               "1950_2005", "CONUS_daily.nc?"),
-                             collapse = "_")
-        mattachment <- paste(c(urlbase, param, model, ensemble, scenario,
-                               "2006_2099", "CONUS_daily.nc?"), collapse = "_")
-        var <- variables[param]
-        # TODO: Consolidate query construction? 
-        # e.g., include "var" in the definitions of query 1 and 2
-        q1 <- paste0("[{0}:{1}:{ntime_hist}][{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
-                     "#fillmismatch")
-        q2 <- paste0("[{0}:{1}:{ntime_model}][{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
-                     "#fillmismatch")
-        hquery <- paste0(var, glue::glue(q1))
-        mquery <- paste0(var, glue::glue(q2))
-        hurl <- paste0(hattachment, hquery)
-        murl <- paste0(mattachment, mquery)
-        purl <- c(hurl, murl)
-        queries[[length(queries) + 1]] <- list(purl, file_name)
+
+        # Build remote historical and future file names
+        historical <- paste(c(urlbase, param, model, ensemble, "historical",
+                              "1950_2005", "CONUS_daily.nc"), collapse = "_")
+        future <- paste(c(urlbase, param, model, ensemble, scenario,
+                          "2006_2099", "CONUS_daily.nc"), collapse = "_")
+
+        # Build the temporal and spatial subsets
+        historical_subset <- glue::glue(paste0("?{var}[{0}:{1}:{ntime_hist}]",
+                                               "[{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
+                                               "#fillmismatch"))
+        future_subset <- glue::glue(paste0("?{var}[{0}:{1}:{ntime_model}]",
+                                           "[{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
+                                           "#fillmismatch"))
+
+        # Combine everything into a query package and add to query list
+        historical_url <- paste0(historical, historical_subset)
+        future_url <- paste0(future, future_subset)
+        paired_url <- c(historical_url, future_url)
+        queries[[length(queries) + 1]] <- list(paired_url, file_name)
       }
     }
   }
 
-  # Group these queries into groups based on the number of physical cpus
-  ncores <- parallel::detectCores() / 2
+  # Group these queries based on the number of physical cpus
   grouped_queries <- split(queries, ceiling(seq_along(queries) / ncores))
 
   # Done.
@@ -346,6 +358,7 @@ get_grouped_queries <- function(aoi, start_year, end_year, arg_ref, grid_ref) {
 
 
 get_park_boundaries <- function(parkname, dir = "data") {
+
   # Create directory if not present
   prefix <- file.path(dir, "shapefiles")
   dir.create(prefix, recursive = TRUE, showWarnings = FALSE)
@@ -354,7 +367,7 @@ get_park_boundaries <- function(parkname, dir = "data") {
   # Download if needed
   if (!file.exists(nps_boundary)) {
     file <- file.path(prefix, "nps_boundary.zip")
-    url <- "https://irma.nps.gov/DataStore/DownloadFile/629794"  # <------------ This url is not consistent!
+    url <- "https://irma.nps.gov/DataStore/DownloadFile/629794"  # <------------ This url is not consistent, and the page is generated with javascript
     utils::download.file(url = url, destfile = file, method = "curl")
     utils::unzip(file, exdir = prefix)
   }
@@ -368,15 +381,16 @@ get_park_boundaries <- function(parkname, dir = "data") {
 
 
 retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
-                            local_dir, aws_config_dir, store_locally = TRUE,
+                            local_dir, aws_config_file, store_locally = TRUE,
                             store_remotely = TRUE) {
+
   # Load xarray
   xr <- reticulate::import("xarray")
 
   # Unpack aoi info
   aoilats <- aoi_info[["aoilats"]]
   aoilons <- aoi_info[["aoilons"]]
-  mask_mat <- aoi_info[["mask_mat"]]
+  mask_matrix <- aoi_info[["mask_matrix"]]
   resolution <- aoi_info[["resolution"]]
 
   # Get the destination file
@@ -397,8 +411,9 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
     dst_folder <- dirname(dst)
   }
 
-  # These data sets are assumed to be consistent
+  # Retrieve subset and save file locally
   if (!file.exists(dst)) {
+
     # Get the combined historical and modeled url query
     purl <- query[[1]]
 
@@ -415,7 +430,7 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
                            lon = c("lon" = as.matrix(aoilons)))
 
     # Mask by boundary
-    dsmask <- xr$DataArray(mask_mat)
+    dsmask <- xr$DataArray(mask_matrix)
     dsmask <- dsmask$fillna(0)
     ds <- ds$where(dsmask$data == 1)
 
@@ -490,31 +505,33 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
 
     # Save to local file
     ds$to_netcdf(dst)
+  }
 
-    # Put the file in the bucket
-    if (store_remotely == TRUE) {
-      creds <- readRDS(aws_config_file)
-      bucket <- creds["bucket"]
-      region <- creds["region"]
-      object <- file.path(location, store_name)
+  # Put the file in the bucket
+  if (store_remotely == TRUE) {
+    creds <- readRDS(aws_config_file)
+    bucket <- creds["bucket"]
+    region <- creds["region"]
+    object <- file.path(location, store_name)
+    aws_url <- paste0("https://s3.console.aws.amazon.com/s3/object/", bucket,
+                      "/", location, "/", store_name, "?region=", region,
+                      "&tab=overview")
+    if (!aws.s3::head_object(object, bucket, silent = TRUE, verbose = FALSE)) {
       aws.s3::put_folder(location, bucket)
       aws.s3::put_object(file = dst, object = object, bucket = bucket)
-      aws_url <- paste0("https://s3.console.aws.amazon.com/s3/object/", bucket,
-                        "/", location, "/", store_name, "?region=", region,
-                        "&tab=overview")
-    } else {
-        aws_url <- "NA"
     }
-
-    # Keep track of file information
-    file_dir <- normalizePath(dst_folder)
-    file_name <- basename(dst)
-    reference <- list("local_file" = file_name, "local_path" = file_dir,
-                      "aws_url" = aws_url)
-    return(reference)
+  } else {
+      aws_url <- "NA"
   }
-}
 
+  # Keep track of file information
+  file_dir <- normalizePath(dst_folder)
+  file_name <- basename(dst)
+  file_path <- file.path(file_dir, file_name)
+  reference <- list("local_file" = file_name, "local_path" = file_path,
+                    "aws_url" = aws_url)
+  return(reference)
+}
 
 
 # Reference Classes
