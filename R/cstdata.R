@@ -68,11 +68,11 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
                     aws_config_dir = "~/.aws", verbose = FALSE) {
   '
   parkname="Acadia National Park"
-  start_year = 1950
-  end_year = 1952
+  start_year = 1995
+  end_year = 2000
   store_locally = TRUE
   local_dir = "cstdata"
-  store_remotely = TRUE
+  store_remotely = FALSE
   aws_config_dir = "~/.aws"
   verbose = FALSE
   '
