@@ -11,8 +11,8 @@ test_that("Test download_shapefile for file and shapefile object", {
     path <- file.path(dir, "tl_2016_08_cousub", "tl_2016_08_cousub.shp")
     
     # Return area of interest
-    aoi <- download_shapefile(url = url, shp_name = "tl_2016_08_cousub",
-                              dir_loc = dir)
+    aoi <- get_shapefile(path = url, shp_name = "tl_2016_08_cousub",
+                         dir_loc = dir)
 
     # Check that the local file was written
     expect_true(file.exists(path))

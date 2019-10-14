@@ -19,6 +19,7 @@ Imports:
    glue,
    methods,
    parallel,
+   pbapply,
    raster,
    reticulate,
    rgdal,
