@@ -73,8 +73,8 @@ Production Notes:
 - Where should the default local data storage go? Tmp?
 - The builds work find with reticulate, but we will need to take a few more
   steps:
-   1) I've not had luck with python 2, though this will more often be the default
-      I had to create a .Renviron file with the line:
+   1) I've not had luck with python 2, though this will more often be the
+      default. I had to create a .Renviron file with the line:
      
           RETICULATE_PYTHON="/usr/bin/python3"
 
