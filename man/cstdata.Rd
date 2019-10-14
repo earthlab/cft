@@ -4,13 +4,23 @@
 \alias{cstdata}
 \title{Climate Scenario Toolkit Data}
 \usage{
-cstdata(parkname = "Acadia National Park", start_year = 1950,
-  end_year = 2099, store_locally = TRUE, local_dir = "cstdata",
-  store_remotely = TRUE, aws_config_dir = "~/.aws", verbose = FALSE)
+cstdata(shp_path = NA, area_name = NA, national_park = NA,
+  start_year = 1950, end_year = 2099, store_locally = TRUE,
+  local_dir = tempdir(), store_remotely = TRUE,
+  aws_config_dir = "~/.aws", verbose = TRUE)
 }
 \arguments{
-\item{parkname}{The name of the U.S. National Park for which to download data
-, e.g., "Yellowstone National Park". (character)}
+\item{shp_path}{A path to a shapefile with which to clip the resulting data
+sets. If this option is used, leave the national_park argument empty or set
+to NA. (character)}
+
+\item{area_name}{If a shapefile path is provided, provide a name to use as a
+reference to the location. This will be used in file names and directories. 
+(character)'}
+
+\item{national_park}{The name of a national park (e.g., "Yellowstone National
+Park". The user may use this option in place of a shapefile path. In this
+case, leave the shp_path argument empty or set to NA. (character)}
 
 \item{start_year}{The first year of the desired period. (integer)}
 
