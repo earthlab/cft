@@ -44,3 +44,8 @@ test_that("Test get_park_boundaries for file and shapefile object", {
   expect_true(class(aoi) == "SpatialPolygonsDataFrame")
   
 })
+
+
+test_that("Default NPS boundary URL is valid", {
+  expect_true(RCurl::url.exists(nps_boundary_url()))
+})

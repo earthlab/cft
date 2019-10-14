@@ -35,8 +35,9 @@ get_park_boundaries <- function(parkname, dir_loc = tempdir()) {
   have it. Perhaps the js is the way to go.
   "
   # Download and return park object
-  url <- "https://irma.nps.gov/DataStore/DownloadFile/629794"
-  parks <- download_shapefile(url, shp_name = "nps_boundary", dir_loc = dir_loc)
+  parks <- download_shapefile(nps_boundary_url(),
+                              shp_name = "nps_boundary",
+                              dir_loc = dir_loc)
 
   # Get the boundaries of the chosen national park
   aoi <- parks[grepl(parkname, parks$UNIT_NAME), ]
