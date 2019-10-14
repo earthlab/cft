@@ -40,14 +40,21 @@
 #'       deprecation warnings. Perhaps we pin xarray to 0.12 (same behavior,
 #'       no warnings). 
 #'
-#' @param parkname The name of the U.S. National Park for which to download data
-#' , e.g., "Yellowstone National Park". (character)
+#' @param shp_path A path to a shapefile with which to clip the resulting data
+#'  sets. If this option is used, leave the national_park argument empty or set
+#'  to NA. (character)
+#' @param area_name If a shapefile path is provided, provide a name to use as a
+#'  reference to the location. This will be used in file names and directories. 
+#'  (character)' 
+#' @param national_park The name of a national park (e.g., "Yellowstone National
+#'  Park". The user may use this option in place of a shapefile path. In this
+#'  case, leave the shp_path argument empty or set to NA. (character)
 #' @param start_year The first year of the desired period. (integer)
 #' @param end_year The last year of the desired period. (integer)
 #' @param store_locally If `TRUE` this function will store the results in a
-#' local directory as NetCDF files. This options may be set to `FALSE` to save
-#' disk space, but the `store_remotely` option must be set to `TRUE` in this
-#' case. (logical)
+#'  local directory as NetCDF files. This options may be set to `FALSE` to save
+#'  disk space, but the `store_remotely` option must be set to `TRUE` in this
+#'  case. (logical)
 #' @param local_dir The local directory in which to save files if
 #' `store_locally` is set to `TRUE`. (character)
 #' @param store_remotely If `TRUE` this function will store the results in an
@@ -62,20 +69,47 @@
 #' @importFrom methods new
 #' 
 #' @export
-cstdata <- function(parkname="Acadia National Park", start_year = 1950,
-                    end_year = 2099, store_locally = TRUE,
-                    local_dir = "cstdata", store_remotely = TRUE,
-                    aws_config_dir = "~/.aws", verbose = FALSE) {
+cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
+                    start_year = 1950, end_year = 2099,
+                    store_locally = TRUE, local_dir = tempdir(),
+                    store_remotely = TRUE, aws_config_dir = "~/.aws",
+                    verbose = TRUE) {
   '
-  parkname="Acadia National Park"
+  shp_path = "/home/travis/Desktop/yellowstone/yellowstone.shp"
+  area_name = "Yellowstone National Park"
+  national_park = NA
   start_year = 1995
   end_year = 2000
   store_locally = TRUE
-  local_dir = "cstdata"
-  store_remotely = FALSE
+  local_dir = tempdir()
+  store_remotely = TRUE
   aws_config_dir = "~/.aws"
-  verbose = FALSE
+  verbose = TRUE
+
+  cstdata(shp_path = shp_path, area_name = "test_area", start_year = start_year, end_year = end_year)
   '
+  # Make sure user is providing some kind of location information
+  if (is.na(shp_path) & is.na(national_park)) {
+    msg <- paste("Please provide either a shapefile path or the name of",
+                 "a nation park ('Name National Park').")
+    stop(msg)
+  }
+
+  # Make sure user is not providing too much location information
+  if (!is.na(shp_path) & !is.na(national_park)) {
+    msg <- paste("Please provide either a shapefile path or the name of",
+                 "a nation park ('Name National Park'), but not both.")
+    stop(msg)
+  }
+
+  # If a shapefile path is provided, make sure it comes with an area name
+  if (!is.na(shp_path) & is.na(area_name)) {
+    msg <- paste("Please provide a the name you would like to use to reference",
+                 "the location of the shapefile provided. This will be used",
+                 "for both file names and directories.")
+    stop(msg)
+  }
+
   # Make sure user is choosing to store somewhere
   if (!store_locally & !store_remotely) {
     msg <- paste("Please set the store_locally and/or the store_remotely", 
@@ -83,16 +117,22 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
     stop(msg)
   }
 
-  # If that works, tell them whats happening  <--------------------------------- Tell them installation folder, too. So we might have to move the print statement down.
-  if (verbose) {
-    print(paste("Retrieving climate data for", parkname))
-  }
+  # Create the target folder
+  location_folder <- gsub(" ", "_", tolower(area_name))
+  location_dir <- file.path(local_dir, location_folder)
+  if (!dir.exists(location_dir)) dir.create(location_dir)
+  location_dir = normalizePath(location_dir)
 
   # Set up AWS access
   if (store_remotely) {
-    aws_config_file <- config_aws(aws_config_dir)
+    aws_creds <- config_aws(aws_config_dir)
+    bucket = aws_creds["bucket"]
+    region = aws_creds["region"]
+    aws_url <- paste0("https://s3.console.aws.amazon.com/s3/buckets/", bucket,
+                      "/", location_folder, "/?region=", region, "&tab=overview")
   } else {
-    aws_config_file <- "na"
+    aws_creds <- NA
+    aws_url <- NA
   }
 
   # Generate reference objects
@@ -100,7 +140,12 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
   arg_ref <- Argument_Reference()
 
   # Get national park area of interest
-  aoi <- get_park_boundaries(parkname)
+  if (!is.na(national_park)) {
+    aoi <- get_park_boundaries(national_park)
+    area_name <- national_park
+  } else {
+    aoi <- rgdal::readOGR(shp_path, verbose = FALSE) 
+  }
 
   # Match coordinate systems
   aoi <- sp::spTransform(aoi, grid_ref$crs)
@@ -110,14 +155,22 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
 
   # Build url queries and group by number of cpus
   ncores <- parallel::detectCores() / 2
-  grouped_queries <- get_grouped_queries(aoi, start_year, end_year, arg_ref, 
-                                         grid_ref, ncores)
+  grouped_queries <- get_grouped_queries(aoi, location_dir, start_year,
+                                         end_year, arg_ref, grid_ref, ncores)
+
 
   # Setup parallelization
   cl <- parallel::makeCluster(ncores)
   doParallel::registerDoParallel(cl)
   parallel::clusterExport(cl, c("retrieve_subset", "filter_years"),
                           envir = environment())
+
+  # If all that works, signal that the process is starting
+  if (verbose) {
+    print(paste("Retrieving climate data for", area_name))
+    print(paste("Saving local files to", location_dir))
+    if (store_remotely) print(paste("Saving remote files to", aws_url))
+  }
 
   # Retrieve subsets from grouped queries and create file reference data frame
   pbapply::pboptions(type="none")
@@ -136,10 +189,9 @@ cstdata <- function(parkname="Acadia National Park", start_year = 1950,
                               FUN = retrieve_subset, 
                               start_year = start_year, 
                               end_year = end_year,
-                              parkname = parkname, 
                               aoi_info = aoi_info,
-                              local_dir = local_dir, 
-                              aws_config_file = aws_config_file,
+                              location_dir = location_dir, 
+                              aws_creds = aws_creds,
                               store_locally = store_locally,
                               store_remotely = store_remotely,
                               cl = cl)
@@ -174,18 +226,20 @@ config_aws <- function(aws_config_dir) {
     key <- readline("aws key: ")
     skey <- readline("aws secret key: ")
     region <- readline("aws region: ")
-    creds <- c("bucket" = bucket, "key" = key, "skey" = skey, "region" = region)
-    saveRDS(creds, aws_config_file)
+    aws_creds <- c("bucket" = bucket, "key" = key, "skey" = skey,
+                   "region" = region)
+    print(paste("Saving configuration file to", aws_config_file))
+    saveRDS(aws_creds, aws_config_file)
   }
 
   # Initialize AWS access
-  creds <- readRDS(aws_config_file)
-  Sys.setenv("AWS_ACCESS_KEY_ID" = creds["key"],
-             "AWS_SECRET_ACCESS_KEY" = creds["skey"],
-             "AWS_DEFAULT_REGION" = creds["region"])
+  aws_creds <- readRDS(aws_config_file)
+  Sys.setenv("AWS_ACCESS_KEY_ID" = aws_creds["key"],
+             "AWS_SECRET_ACCESS_KEY" = aws_creds["skey"],
+             "AWS_DEFAULT_REGION" = aws_creds["region"])
 
-  # Return the file path
-  return(aws_config_file)
+  # Return the credentials
+  return(aws_creds)
 }
 
 
@@ -269,8 +323,8 @@ get_aoi_info <- function(aoi, grid_ref) {
   r <- raster::raster(ncols = length(aoilons), nrows = length(aoilats))
   raster::extent(r) <- raster::extent(aoi)
 
-  # TODO: write tests for this function. Then, try to run without "UNIT_CODE" below.
-  r <- raster::rasterize(aoi, r, "UNIT_CODE")  # <------------------------------ Not generalizable
+  # TODO: write tests for this function.
+  r <- raster::rasterize(aoi, r)
   mask_grid <- r * 0 + 1
   mask_matrix <- methods::as(mask_grid, "matrix")
 
@@ -285,15 +339,15 @@ get_aoi_info <- function(aoi, grid_ref) {
 }
 
 
-get_grouped_queries <- function(aoi, start_year, end_year, arg_ref, grid_ref,
-                                ncores) {
+get_grouped_queries <- function(aoi, location_dir, start_year, end_year,
+                                arg_ref, grid_ref, ncores) {
 
   # We are building url queries from this base
   urlbase <- paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
                     "agg_macav2metdata")
 
   # This will be the folder name for this park
-  location <- gsub(" ", "_", tolower(aoi$UNIT_NAME))  # <----------------------- Use different strategy for other shapefiles
+  location <- basename(location_dir)
 
   # Get time information from our grid reference
   ntime_hist <- grid_ref$ntime_hist
@@ -357,7 +411,7 @@ get_grouped_queries <- function(aoi, start_year, end_year, arg_ref, grid_ref,
 }
 
 
-get_park_boundaries <- function(parkname, dir = "data") {
+get_park_boundaries <- function(parkname, dir = tempdir()) {
 
   # Create directory if not present
   prefix <- file.path(dir, "shapefiles")
@@ -367,21 +421,21 @@ get_park_boundaries <- function(parkname, dir = "data") {
   # Download if needed
   if (!file.exists(nps_boundary)) {
     file <- file.path(prefix, "nps_boundary.zip")
-    url <- "https://irma.nps.gov/DataStore/DownloadFile/629794"  # <------------ This url is not consistent, and the page is generated with javascript
+    url <- "https://irma.nps.gov/DataStore/DownloadFile/629794"  # <------------ This is updated every few years. The link is generated with javascript and it would be a a bit messy for me to extract new urls from this. Checked all over for a cleaner retrievable reference, even their api didn't appear to have it. Perhaps the js is the way to go.
     utils::download.file(url = url, destfile = file, method = "curl")
     utils::unzip(file, exdir = prefix)
   }
 
   # Get the boundaries of the chosen national park
-  parks <- rgdal::readOGR(nps_boundary)
+  parks <- rgdal::readOGR(nps_boundary, verbose = FALSE)
   aoi <- parks[grepl(parkname, parks$UNIT_NAME), ]
 
   return(aoi)
 }
 
 
-retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
-                            local_dir, aws_config_file, store_locally = TRUE,
+retrieve_subset <- function(query, start_year, end_year, aoi_info, location_dir,
+                            aws_creds, store_locally = TRUE, 
                             store_remotely = TRUE) {
 
   # Load xarray
@@ -394,10 +448,8 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
   resolution <- aoi_info[["resolution"]]
 
   # Get the destination file
-  location <- gsub(" ", "_", tolower(parkname))
-  local_park_dir <- file.path(local_dir, location)
   if (store_locally == TRUE) {
-    dst_folder <- local_park_dir
+    dst_folder <- location_dir
     if (!dir.exists(dst_folder)) {
       dir.create(dst_folder, recursive = TRUE)
     }
@@ -435,6 +487,7 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
     ds <- ds$where(dsmask$data == 1)
 
     # Update Attributes  <------------------------------------------------------ Standards: https://www.unidata.ucar.edu/software/netcdf-java/current/metadata/DataDiscoveryAttConvention.html
+    area_name <- tools::toTitleCase(gsub("_", " ", basename(location_dir)))
     summary <- paste0(
       "This archive contains daily downscaled meteorological and hydrological ",
       "projections for the Conterminous United States at 1/24-deg resolution ",
@@ -461,7 +514,7 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
     attrs2 <- list(
       "title" = attrs1$title,
       "author" = "John Abatzoglou-University of Idaho, jabatzoglou@uidaho.edu",
-      "comment" = paste0("Subsetted to ", parkname, "by the North Central ",
+      "comment" = paste0("Subsetted to ", area_name, "by the North Central ",
                          "Climate Adaption Science Center"),
       "summary" = summary,
       "coordinate_system" = attrs1$coordinate_system,
@@ -509,15 +562,15 @@ retrieve_subset <- function(query, start_year, end_year, parkname, aoi_info,
 
   # Put the file in the bucket
   if (store_remotely == TRUE) {
-    creds <- readRDS(aws_config_file)
-    bucket <- creds["bucket"]
-    region <- creds["region"]
-    object <- file.path(location, store_name)
+    bucket <- aws_creds["bucket"]
+    region <- aws_creds["region"]
+    location_folder <- basename(location_dir)
+    object <- file.path(location_folder, store_name)
     aws_url <- paste0("https://s3.console.aws.amazon.com/s3/object/", bucket,
-                      "/", location, "/", store_name, "?region=", region,
+                      "/", location_folder, "/", store_name, "?region=", region,
                       "&tab=overview")
     if (!aws.s3::head_object(object, bucket, silent = TRUE, verbose = FALSE)) {
-      aws.s3::put_folder(location, bucket)
+      aws.s3::put_folder(location_folder, bucket)
       aws.s3::put_object(file = dst, object = object, bucket = bucket)
     }
   } else {
