@@ -90,14 +90,16 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
   '
   # Make sure user is providing some kind of location information
   if (is.na(shp_path) & is.na(national_park)) {
-    msg <- paste("Please provide either a shapefile path or the name of",
-                 "a nation park ('Name National Park').")
+    msg <- paste("No location data/AOI data were provided.",
+                 "Please provide either a shapefile path or the name of",
+                 "a national park (e.g., 'Yosemite National Park').")
     stop(msg)
   }
 
   # Make sure user is not providing too much location information
   if (!is.na(shp_path) & !is.na(national_park)) {
-    msg <- paste("Please provide either a shapefile path or the name of",
+    msg <- paste("Both a shapefile and a national park were provided.",
+                 "Please provide either a shapefile path or the name of",
                  "a nation park ('Name National Park'), but not both.")
     stop(msg)
   }
@@ -178,7 +180,6 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
   }
 
   # Retrieve subsets from grouped queries and create file reference data frame
-  pbapply::pboptions(type="none")
   file_references <- data.frame("local_file" = character(0),
                                 "local_path" = character(0),
                                 "aws_url" = character(0),
@@ -190,16 +191,16 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
     utils::setTxtProgressBar(pb, i)
 
     # Retrieve, subset, and write the files
-    refs <- pbapply::pblapply(grouped_queries[[i]],
-                              FUN = retrieve_subset, 
-                              start_year = start_year, 
-                              end_year = end_year,
-                              aoi_info = aoi_info,
-                              location_dir = location_dir, 
-                              aws_creds = aws_creds,
-                              store_locally = store_locally,
-                              store_remotely = store_remotely,
-                              cl = cl)
+    refs <- parallel::parLapplyLB(grouped_queries[[i]],
+                                  fun = retrieve_subset,
+                                  start_year = start_year,
+                                  end_year = end_year,
+                                  aoi_info = aoi_info,
+                                  location_dir = location_dir,
+                                  aws_creds = aws_creds,
+                                  store_locally = store_locally,
+                                  store_remotely = store_remotely,
+                                  cl = cl)
 
     # Add the file reference outputs to data frame
     refdf <- do.call(rbind.data.frame, refs)
