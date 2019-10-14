@@ -41,7 +41,8 @@
 #'       no warnings). 
 #'
 #' @param shp_path A path to a shapefile with which to clip the resulting data
-#'  sets. If this option is used, leave the national_park argument empty or set
+#'  sets. This path may be to a local .shp file or a url to a zipped remote
+#'  file. If this option is used, leave the national_park argument empty or set
 #'  to NA. (character)
 #' @param area_name If a shapefile path is provided, provide a name to use as a
 #'  reference to the location. This will be used in file names and directories. 
@@ -76,8 +77,9 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
   '
   shp_path = "/home/travis/Desktop/yellowstone/yellowstone.shp"
   shp_path = "https://www2.census.gov/geo/tiger/TIGER2016/COUSUB/tl_2016_08_cousub.zip"
+  shp_path = "/home/travis/Downloads/eGRID2016 Subregions.shp"
   area_name = "Yellowstone National Park"
-  national_park = NA
+  national_park = "Yosemite National Park
   start_year = 1995
   end_year = 2000
   store_locally = TRUE
@@ -136,7 +138,8 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
     bucket = aws_creds["bucket"]
     region = aws_creds["region"]
     aws_url <- paste0("https://s3.console.aws.amazon.com/s3/buckets/", bucket,
-                      "/", location_folder, "/?region=", region, "&tab=overview")
+                      "/", location_folder, "/?region=", region,
+                      "&tab=overview")
   } else {
     aws_creds <- NA
     aws_url <- NA
@@ -147,11 +150,12 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
   arg_ref <- Argument_Reference()
 
   # Get national park area of interest
+  if (verbose) print("Building the area of interest geometry")
   if (!is.na(national_park)) {
     aoi <- get_park_boundaries(national_park)
     area_name <- national_park
   } else {
-    aoi <- rgdal::readOGR(shp_path, verbose = FALSE) 
+    aoi <- get_shapefile(shp_path, dir_loc = local_dir) 
   }
 
   # Match coordinate systems
@@ -161,12 +165,12 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
   aoi_info <- get_aoi_info(aoi, grid_ref)
 
   # Build url queries and group by number of cpus
-  ncores <- parallel::detectCores() / 2
-  grouped_queries <- get_grouped_queries(aoi, location_dir, start_year,
-                                         end_year, arg_ref, grid_ref, ncores)
-
+  queries <- get_queries(aoi, location_dir, start_year, end_year, arg_ref,
+                         grid_ref)
 
   # Setup parallelization
+  pbapply::pboptions(use_lb = TRUE)
+  ncores <- parallel::detectCores() / 2
   cl <- parallel::makeCluster(ncores)
   doParallel::registerDoParallel(cl)
   parallel::clusterExport(cl, c("retrieve_subset", "filter_years"),
@@ -184,28 +188,21 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
                                 "local_path" = character(0),
                                 "aws_url" = character(0),
                                 stringsAsFactors = FALSE)
-  pb <- utils::txtProgressBar(min = 1, max = length(grouped_queries), style = 3)
-  for (i in seq_along(grouped_queries)) {
 
-    # Putting progress bar here to avoid delayed ticks
-    utils::setTxtProgressBar(pb, i)
+  # Retrieve, subset, and write the files
+  refs <- pbapply::pblapply(queries,
+                            FUN = retrieve_subset,
+                            start_year = start_year,
+                            end_year = end_year,
+                            aoi_info = aoi_info,
+                            location_dir = location_dir,
+                            aws_creds = aws_creds,
+                            store_locally = store_locally,
+                            store_remotely = store_remotely,
+                            cl = cl)
 
-    # Retrieve, subset, and write the files
-    refs <- parallel::parLapplyLB(grouped_queries[[i]],
-                                  fun = retrieve_subset,
-                                  start_year = start_year,
-                                  end_year = end_year,
-                                  aoi_info = aoi_info,
-                                  location_dir = location_dir,
-                                  aws_creds = aws_creds,
-                                  store_locally = store_locally,
-                                  store_remotely = store_remotely,
-                                  cl = cl)
-
-    # Add the file reference outputs to data frame
-    refdf <- do.call(rbind.data.frame, refs)
-    file_references <- rbind(file_references, refdf)
-  }
+  # Create a data frame from the file references
+  file_references <- do.call(rbind.data.frame, refs)
 
   # Close cluster
   parallel::stopCluster(cl)

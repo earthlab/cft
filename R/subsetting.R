@@ -94,8 +94,8 @@ get_aoi_info <- function(aoi, grid_ref) {
 }
 
 
-get_grouped_queries <- function(aoi, location_dir, start_year, end_year,
-                                arg_ref, grid_ref, ncores) {
+get_queries <- function(aoi, location_dir, start_year, end_year, arg_ref,
+                        grid_ref) {
   
   # We are building url queries from this base
   urlbase <- paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
@@ -157,12 +157,9 @@ get_grouped_queries <- function(aoi, location_dir, start_year, end_year,
       }
     }
   }
-  
-  # Group these queries based on the number of physical cpus
-  grouped_queries <- split(queries, ceiling(seq_along(queries) / ncores))
-  
+
   # Done.
-  return(grouped_queries)
+  return(queries)
 }
 
 

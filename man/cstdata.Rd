@@ -11,7 +11,8 @@ cstdata(shp_path = NA, area_name = NA, national_park = NA,
 }
 \arguments{
 \item{shp_path}{A path to a shapefile with which to clip the resulting data
-sets. If this option is used, leave the national_park argument empty or set
+sets. This path may be to a local .shp file or a url to a zipped remote
+file. If this option is used, leave the national_park argument empty or set
 to NA. (character)}
 
 \item{area_name}{If a shapefile path is provided, provide a name to use as a
