@@ -21,7 +21,6 @@ Imports:
    parallel,
    pbapply,
    raster,
-   RCurl,
    reticulate,
    rgdal,
    sp,
