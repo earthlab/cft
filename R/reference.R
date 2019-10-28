@@ -1,5 +1,3 @@
-#' @import methods
-
 Grid_Reference <- methods::setRefClass(
   "Grid_Reference",
   
@@ -104,8 +102,8 @@ Argument_Reference <- methods::setRefClass(
 )
 
 
-#' @export 
-grid_reference = Grid_Reference()
-
-#' @export
-argument_reference = Argument_Reference()
+#' #' @export 
+#' grid_reference = Grid_Reference()
+#' 
+#' #' @export
+#' argument_reference = Argument_Reference()

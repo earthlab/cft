@@ -54,8 +54,7 @@
 cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
                     start_year = 1950, end_year = 2099, store_locally = TRUE,
                     local_dir = tempdir(), store_remotely = FALSE,
-                    aws_config_dir = "~/.aws", models = "all",
-                    parameters = "all", verbose = TRUE) {
+                    aws_config_dir = "~/.aws", verbose = TRUE) {
   '
   shp_path = "/home/travis/Desktop/yellowstone/yellowstone.shp"
   shp_path = "https://www2.census.gov/geo/tiger/TIGER2016/COUSUB/tl_2016_08_cousub.zip"
