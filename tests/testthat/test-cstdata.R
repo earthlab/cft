@@ -19,28 +19,11 @@ test_that("Providing a shapefile but no area name raises an error", {
 })
 
 
-test_that("Provider no options for data storage raises an error", {
+test_that("Providing no options for data storage raises an error", {
   expect_error(cstdata(national_park = "Yellowstone National Park",
                        store_locally = FALSE, store_remotely = FALSE),
                regexp = "Please set the store_locally and/or the")
 })
 
-# I need to add more filters to reduce the time this takes
-# test_that("If park name is provided with no area name, the park name is used", {
-#   expect_error(
-#     cstdata(national_park = "Yellowstone National Park", area_name = NA))
-# })
+# I need to add more filters to reduce the time this takes for more tests
 
-
-
-
-
-# filter years
-
-# get_aoi_indexes
-
-# get_aoi_info
-
-# get_grouped _queries
-
-# retrieve_subset

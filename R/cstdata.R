@@ -132,7 +132,11 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
   arg_ref <- Argument_Reference()
 
   # Get national park area of interest
+<<<<<<< HEAD
   if (verbose) print("Retrieving all US National Park Boundaries")
+=======
+  if (verbose) print("Building the area of interest geometry")
+>>>>>>> e5d0876d8a0f6bbc662a70d0070ae25ba0e9f4b8
   if (!is.na(national_park)) {
     aoi <- get_park_boundaries(national_park)
     area_name <- national_park
