@@ -2,7 +2,7 @@
 deps <- c("dask", "netcdf4", "toolz", "xarray")
 
 # Tell reticulate to use a virtualenv
-reticulate::use_virtualenv()
+# reticulate::use_virtualenv()
 
 # If needed install these to the default reticulate virtual env
 if (!Sys.info()['sysname'] == "Windows"){
