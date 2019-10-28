@@ -48,8 +48,3 @@ test_that("Test get_park_boundaries for file and shapefile object", {
 
 test_that("Default NPS boundary URL is valid", {
   expect_true(RCurl::url.exists(nps_boundary_url()))
-<<<<<<< HEAD:tests/testthat/test-shapefile.R
-})
-=======
-})
->>>>>>> e5d0876d8a0f6bbc662a70d0070ae25ba0e9f4b8:tests/testthat/test-shapefile.R
