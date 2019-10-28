@@ -1,6 +1,9 @@
 # We need these for xarray to work properly
 deps <- c("dask", "netcdf4", "toolz", "xarray")
 
+# Tell reticulate to use a virtualenv
+reticulate::use_virtualenv()
+
 # If needed install these to the default reticulate virtual env
 if (!Sys.info()['sysname'] == "Windows"){
   if (!reticulate::py_module_available(dep)) {
