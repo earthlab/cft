@@ -32,6 +32,16 @@
 #' @param national_park The name of a national park (e.g., "Yellowstone National
 #'  Park". The user may use this option in place of a shapefile path. In this
 #'  case, leave the shp_path argument empty or set to NA. (character)
+#' @param models A list of global circulation models to download. If left empty
+#' all available models will be downloaded. A list of available of models is
+#' available under cstdata::argument_reference$models. (vector)
+#' @param parameters A list of climate parameters to download. If left empty
+#' all available parameters will be downloaded. A list of available of models is
+#' available under cstdata::argument_reference$parameters. (vector)
+#' @param scenarios A list of representative concentration pathways (rcps) to
+#' download. If left empty all available rcps will be downloaded. A list of
+#' available of rcps is available under cstdata::argument_reference$scenarios.
+#' (vector)
 #' @param start_year The first year of the desired period. (integer)
 #' @param end_year The last year of the desired period. (integer)
 #' @param store_locally If `TRUE` this function will store the results in a
@@ -52,20 +62,23 @@
 #' 
 #' @export
 cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
-                    start_year = 1950, end_year = 2099, store_locally = TRUE,
+                    models = NA, parameters = NA, scenarios = NA,
+                    start_year = 1950, end_year = 2099,  store_locally = TRUE, 
                     local_dir = tempdir(), store_remotely = FALSE,
                     aws_config_dir = "~/.aws", verbose = TRUE) {
   '
   shp_path = "/home/travis/Desktop/yellowstone/yellowstone.shp"
   shp_path = "https://www2.census.gov/geo/tiger/TIGER2016/COUSUB/tl_2016_08_cousub.zip"
-  shp_path = "/home/travis/Downloads/eGRID2016 Subregions.shp"
-  area_name = "Yellowstone National Park"
-  national_park = "Yosemite National Park
+  shp_path = NA
+  area_name = NA
+  national_park = "Yosemite National Park"
+  models = c("bcc-csm1-1", "bcc-csm1-1-m", "BNU-ESM", "CanESM2", "CCSM4")
+  parameters = c("tasmin", "tasmax", "rhsmin", "rhsmax", "pr")
   start_year = 1995
   end_year = 2000
   store_locally = TRUE
-  local_dir = tempdir()
-  store_remotely = TRUE
+  local_dir = "/home/travis/Desktop/cst_test"
+  store_remotely = FALSE
   aws_config_dir = "~/.aws"
   verbose = TRUE
 
@@ -110,7 +123,7 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
   # Create the target folder
   location_folder <- gsub(" ", "_", tolower(area_name))
   location_dir <- file.path(local_dir, location_folder)
-  if (!dir.exists(location_dir)) dir.create(location_dir)
+  if (!dir.exists(location_dir)) dir.create(location_dir, recursive = TRUE)
   location_dir = normalizePath(location_dir)
 
   # Set up AWS access
@@ -133,10 +146,10 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
   # Get national park area of interest
   if (verbose) print("Retrieving all US National Park Boundaries")
   if (!is.na(national_park)) {
-    aoi <- get_park_boundaries(national_park)
+    aoi <- get_park_boundaries(national_park, local_dir = local_dir)
     area_name <- national_park
   } else {
-    aoi <- get_shapefile(shp_path, dir_loc = local_dir) 
+    aoi <- get_shapefile(shp_path, local_dir = local_dir) 
   }
 
   # Match coordinate systems
@@ -146,8 +159,8 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
   aoi_info <- get_aoi_info(aoi, grid_ref)
 
   # Build url queries and group by number of cpus
-  queries <- get_queries(aoi, location_dir, start_year, end_year, arg_ref,
-                         grid_ref)
+  queries <- get_queries(aoi, location_dir, start_year, end_year, models,
+                         parameters, scenarios, arg_ref, grid_ref)
 
   # Setup parallelization
   pbapply::pboptions(use_lb = TRUE)

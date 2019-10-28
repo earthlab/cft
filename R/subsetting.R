@@ -94,8 +94,8 @@ get_aoi_info <- function(aoi, grid_ref) {
 }
 
 
-get_queries <- function(aoi, location_dir, start_year, end_year, arg_ref,
-                        grid_ref) {
+get_queries <- function(aoi, location_dir, start_year, end_year, models,
+                        parameters, scenarios, arg_ref, grid_ref) {
   
   # We are building url queries from this base
   urlbase <- paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
@@ -114,33 +114,52 @@ get_queries <- function(aoi, location_dir, start_year, end_year, arg_ref,
   y2 <- index_pos[["y2"]]
   x1 <- index_pos[["x1"]]
   x2 <- index_pos[["x2"]]
+
+  # Use all avalable models or user defined
+  if (all(is.na(models))) models <- arg_ref$models
+  if (all(is.na(parameters))) parameters <- arg_ref$parameters
+  if (all(is.na(scenarios))) scenarios <- arg_ref$scenarios
   
   # Build a list of lists with historical/future model queries and a file name
   queries <- list()
-  for (model in arg_ref$models) {
+  for (model in models) {
+
+    # Available arguments for this model
     args <- arg_ref$get_args(model)
+    avail_params <- args$parameters
+    avail_scenarops <- args$scenarios
+
+    # Available requested arguments
+    params <- lapply(parameters, FUN = function(x) if (x %in% avail_params) x)
+    rcps <- lapply(scenarios, FUN = function(x) if (x %in% avail_scenarops) x)
+    params <- params[!is.na(params)]
+    rcps <- rcps[!is.na(rcps)]
+
+    # Variable reference
     variables <- arg_ref$variables
-    params <- args$parameters
-    scenarios <- args$scenarios
+
+    # Only one model run for each
     ensemble <- args$ensemble
+
+    # Loop through all of the available arguments and build queries
     for (param in params) {
-      for (scenario in scenarios) {
-        
+      for (rcp in rcps) {
+
         # Get internal variable name
         var <- variables[param]
-        
+
         # Build local file name
-        file_name <- paste(c(param, location, model, ensemble, scenario,
+        file_name <- paste(c(param, location, model, ensemble, rcp,
                              "macav2metdata", as.character(start_year),
                              as.character(end_year), "daily.nc"),
                            collapse = "_")
-        
+
         # Build remote historical and future file names
         historical <- paste(c(urlbase, param, model, ensemble, "historical",
                               "1950_2005", "CONUS_daily.nc"), collapse = "_")
-        future <- paste(c(urlbase, param, model, ensemble, scenario,
+        future <- paste(c(urlbase, param, model, ensemble, rcp,
                           "2006_2099", "CONUS_daily.nc"), collapse = "_")
-        
+
         # Build the temporal and spatial subsets
         historical_subset <- glue::glue(paste0("?{var}[{0}:{1}:{ntime_hist}]",
                                                "[{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
@@ -148,7 +167,7 @@ get_queries <- function(aoi, location_dir, start_year, end_year, arg_ref,
         future_subset <- glue::glue(paste0("?{var}[{0}:{1}:{ntime_model}]",
                                            "[{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
                                            "#fillmismatch"))
-        
+
         # Combine everything into a query package and add to query list
         historical_url <- paste0(historical, historical_subset)
         future_url <- paste0(future, future_subset)

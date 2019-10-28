@@ -25,5 +25,21 @@ test_that("Providing no options for data storage raises an error", {
                regexp = "Please set the store_locally and/or the")
 })
 
-# I need to add more filters to reduce the time this takes for more tests
 
+test_that("A full run of cstdata completes and saves expected files", {
+
+  # This should create one file.
+  local_dir <- tempdir()
+  file_refs <- cstdata(national_park = "Acadia National Park",
+                       start_year = 1950, end_year = 1955,
+                       models = c("bcc-csm1-1"), parameters = c("pr"),
+                       scenarios = c("rcp45"), local_dir = local_dir)
+
+  # And this is the expected file name and path
+  exp_file = paste0("pr_acadia_national_park_bcc-csm1-1_r1i1p1_rcp45_",
+                    "macav2metdata_1950_1955_daily.nc")
+  exp_path = file.path(local_dir, "acadia_national_park", exp_file)
+
+  # So if this exists it worked
+  expect_true(file.exists(exp_path))
+})

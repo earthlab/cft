@@ -7,12 +7,13 @@ test_that("Test download_shapefile for file and shapefile object", {
                   "tl_2016_08_cousub.zip")
 
     # Expected Path for .shp 
-    dir <- tempdir()
-    path <- file.path(dir, "tl_2016_08_cousub", "tl_2016_08_cousub.shp")
+    local_dir <- tempdir()
+    path <- file.path(local_dir, "shapefiles", "tl_2016_08_cousub",
+                      "tl_2016_08_cousub.shp")
     
     # Return area of interest
     aoi <- get_shapefile(path = url, shp_name = "tl_2016_08_cousub",
-                         dir_loc = dir)
+                         local_dir = local_dir)
 
     # Check that the local file was written
     expect_true(file.exists(path))
@@ -31,18 +32,18 @@ test_that("Test get_park_boundaries for file and shapefile object", {
   parkname <- "Yellowstone National Park"
 
   # Expected path
-  dir <- tempdir()
-  path <- file.path(dir, "nps_boundary", "nps_boundary.shp")
+  local_dir <- tempdir()
+  local_path <- file.path(local_dir, "shapefiles", "nps_boundary", "nps_boundary.shp")
 
   # Return area of interest
-  aoi <- get_park_boundaries(parkname, dir_loc = dir)
+  aoi <- get_park_boundaries(parkname, local_dir = local_dir)
 
   # Check that the local file was written
-  expect_true(file.exists(path))
+  expect_true(file.exists(local_path))
   
   # Check that the returned object is the right class
   expect_true(class(aoi) == "SpatialPolygonsDataFrame")
-  
+
 })
 
 

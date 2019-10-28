@@ -5,9 +5,9 @@
 \title{Climate Scenario Toolkit Data}
 \usage{
 cstdata(shp_path = NA, area_name = NA, national_park = NA,
-  start_year = 1950, end_year = 2099, store_locally = TRUE,
-  local_dir = tempdir(), store_remotely = FALSE,
-  aws_config_dir = "~/.aws", verbose = TRUE)
+  models = NA, parameters = NA, scenarios = NA, start_year = 1950,
+  end_year = 2099, store_locally = TRUE, local_dir = tempdir(),
+  store_remotely = FALSE, aws_config_dir = "~/.aws", verbose = TRUE)
 }
 \arguments{
 \item{shp_path}{A path to a shapefile with which to clip the resulting data
@@ -22,6 +22,19 @@ reference to the location. This will be used in file names and directories.
 \item{national_park}{The name of a national park (e.g., "Yellowstone National
 Park". The user may use this option in place of a shapefile path. In this
 case, leave the shp_path argument empty or set to NA. (character)}
+
+\item{models}{A list of global circulation models to download. If left empty
+all available models will be downloaded. A list of available of models is
+available under cstdata::argument_reference$models. (vector)}
+
+\item{parameters}{A list of climate parameters to download. If left empty
+all available parameters will be downloaded. A list of available of models is
+available under cstdata::argument_reference$parameters. (vector)}
+
+\item{scenarios}{A list of representative concentration pathways (rcps) to
+download. If left empty all available rcps will be downloaded. A list of
+available of rcps is available under cstdata::argument_reference$scenarios.
+(vector)}
 
 \item{start_year}{The first year of the desired period. (integer)}
 
