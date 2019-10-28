@@ -105,7 +105,7 @@ get_queries <- function(aoi, location_dir, start_year, end_year, arg_ref,
   location <- basename(location_dir)
   
   # Get time information from our grid reference
-  ntime_hist <- grid_ref$ntime_hist
+  ntime_hist <- grid_ref$ntime_historical
   ntime_model <- grid_ref$ntime_model
   
   # Get relative index positions to full grid
