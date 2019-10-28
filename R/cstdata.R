@@ -18,27 +18,9 @@
 #'
 #' - The use of reticulate may enable us to use Zarr arrays, which are
 #'   accessible directly from an s3 bucket.
-#' - This command apparently install python packages automatically through
-#'   conda: "reticulate::conda_install(envname, packages)"
-#' - The R Packages book suggests that we don't put all of these functions into
-#'   file (why not?). It looks like we should split them up and use
-#'   devtools::load_all() instead.
-#' - Where should the default local data storage go? Tmp?
-#' - The builds work find with reticulate, but we will need to take a few more
-#'   steps:
-#'    1) I've not had luck with python 2, though this will more often be the
-#'       default. I had to create a .Renviron file with the line:
-#'      
-#'           RETICULATE_PYTHON="/usr/bin/python3"
-#'
-#'       This won't do, though, its always different
-#'
-#'    2) In addition to xarray, I needed to install netcdf4, dask, and toolz
-#'    3) We could better ensure that this functions by using a conda environment,
-#'       but that might require extra doing on the users part.
-#'    4) Xarray 0.14 will change the behaviour of open_mfdataset, 0.13 is giving 
-#'       deprecation warnings. Perhaps we pin xarray to 0.12 (same behavior,
-#'       no warnings). 
+#' - Xarray 0.14 will change the behaviour of open_mfdataset, 0.13 is giving 
+#'   deprecation warnings. Perhaps we pin xarray to 0.12 (same behavior,
+#'   no warnings). 
 #'
 #' @param shp_path A path to a shapefile with which to clip the resulting data
 #'  sets. If this option is used, leave the national_park argument empty or set
@@ -71,7 +53,7 @@
 cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
                     start_year = 1950, end_year = 2099,
                     store_locally = TRUE, local_dir = tempdir(),
-                    store_remotely = TRUE, aws_config_dir = "~/.aws",
+                    store_remotely = FALSE, aws_config_dir = "~/.aws",
                     verbose = TRUE) {
   '
   shp_path = "/home/travis/Desktop/yellowstone/yellowstone.shp"
