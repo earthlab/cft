@@ -1,5 +1,7 @@
+#' @import methods
+
 Grid_Reference <- methods::setRefClass(
-  "reference_grid",
+  "Grid_Reference",
   
   fields = list(
     crs = "character",
@@ -38,7 +40,7 @@ Grid_Reference <- methods::setRefClass(
 
 
 Argument_Reference <- methods::setRefClass(
-  "argument_options",
+  "Argument_Reference",
   
   fields = list(
     models = "character",
@@ -100,3 +102,10 @@ Argument_Reference <- methods::setRefClass(
     }
   )
 )
+
+
+#' @export 
+grid_reference = Grid_Reference()
+
+#' @export
+argument_reference = Argument_Reference()

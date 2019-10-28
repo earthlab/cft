@@ -52,10 +52,10 @@
 #' 
 #' @export
 cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
-                    start_year = 1950, end_year = 2099,
-                    store_locally = TRUE, local_dir = tempdir(),
-                    store_remotely = FALSE, aws_config_dir = "~/.aws",
-                    verbose = TRUE) {
+                    start_year = 1950, end_year = 2099, store_locally = TRUE,
+                    local_dir = tempdir(), store_remotely = FALSE,
+                    aws_config_dir = "~/.aws", models = "all",
+                    parameters = "all", verbose = TRUE) {
   '
   shp_path = "/home/travis/Desktop/yellowstone/yellowstone.shp"
   shp_path = "https://www2.census.gov/geo/tiger/TIGER2016/COUSUB/tl_2016_08_cousub.zip"
@@ -90,7 +90,7 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
 
   # If a shapefile path is provided, make sure it comes with an area name
   if (!is.na(shp_path) & is.na(area_name)) {
-    msg <- paste("Please provide a the name you would like to use to reference",
+    msg <- paste("Please provide the name you would like to use to reference",
                  "the location of the shapefile provided. This will be used",
                  "for both file names and directories.")
     stop(msg)
@@ -132,7 +132,7 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
   arg_ref <- Argument_Reference()
 
   # Get national park area of interest
-  if (verbose) print("Building the area of interest geometry")
+  if (verbose) print("Retrieving all US National Park Boundaries")
   if (!is.na(national_park)) {
     aoi <- get_park_boundaries(national_park)
     area_name <- national_park
