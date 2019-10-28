@@ -1,6 +1,10 @@
 language: r
 sudo: false
-cache: packages
+
+cache:
+  packages: true
+  directories:
+    - $HOME/.cache/pip
 
 addons:
   apt:
@@ -10,12 +14,16 @@ addons:
       - libgdal-dev
       - netcdf-bin
       - libnetcdf-dev
+      - python3-dev
       - python3-pip
-      - python3-venv
       - python3-virtualenv
+      - python3-venv
 
-before_install:
-  - pip3 install xarray
+
+before_script:
+  - python3 -m pip install --upgrade --ignore-installed --user travis virtualenv
+  - R CMD INSTALL .
+  - R -e 'cstdata::install_py_deps()'
 
 after_success:
     - Rscript -e 'covr::codecov()'
