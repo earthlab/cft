@@ -9,7 +9,9 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Suggests: 
-    testthat (>= 2.1.0)
+    RCurl,
+    testthat (>= 2.1.0),
+    covr
 Imports:
    aws.s3,
    doParallel,

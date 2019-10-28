@@ -12,6 +12,10 @@ addons:
       - libnetcdf-dev
       - python3-pip
       - python3-venv
-      
+      - python3-virtualenv
+
 before_install:
   - pip3 install xarray
+
+after_success:
+    - Rscript -e 'covr::codecov()'
