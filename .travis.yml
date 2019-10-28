@@ -11,6 +11,7 @@ addons:
       - netcdf-bin
       - libnetcdf-dev
       - python3-pip
+      - python3-venv
       
 before_install:
   - pip3 install xarray
