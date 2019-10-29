@@ -13,16 +13,17 @@ Suggests:
     testthat (>= 2.1.0),
     covr
 Imports:
-   aws.s3,
-   doParallel,
-   foreach,
-   glue,
-   methods,
-   parallel,
-   pbapply,
-   raster,
-   reticulate,
-   rgdal,
-   sp,
-   utils
+    aws.s3,
+    doParallel,
+    foreach,
+    glue,
+    methods,
+    parallel,
+    pbapply,
+    raster,
+    reticulate,
+    rgdal,
+    sp,
+    utils,
+    rstudioapi
 RoxygenNote: 6.1.1
