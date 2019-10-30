@@ -5,8 +5,8 @@
 \title{Climate Scenario Toolkit Data}
 \usage{
 cstdata(shp_path = NA, area_name = NA, national_park = NA,
-  models = NA, parameters = NA, scenarios = NA, start_year = 1950,
-  end_year = 2099, store_locally = TRUE, local_dir = tempdir(),
+  models = NA, parameters = NA, scenarios = NA, years = c(1950,
+  2099), store_locally = TRUE, local_dir = tempdir(),
   store_remotely = FALSE, aws_config_dir = "~/.aws", verbose = TRUE)
 }
 \arguments{
@@ -36,9 +36,7 @@ download. If left empty all available rcps will be downloaded. A list of
 available of rcps is available under cstdata::argument_reference$scenarios.
 (vector)}
 
-\item{start_year}{The first year of the desired period. (integer)}
-
-\item{end_year}{The last year of the desired period. (integer)}
+\item{years}{The first and last years of the desired period. (vector)}
 
 \item{store_locally}{If `TRUE` this function will store the results in a
 local directory as NetCDF files. This options may be set to `FALSE` to save

@@ -46,8 +46,7 @@
 #' download. If left empty all available rcps will be downloaded. A list of
 #' available of rcps is available under cstdata::argument_reference$scenarios.
 #' (vector)
-#' @param start_year The first year of the desired period. (integer)
-#' @param end_year The last year of the desired period. (integer)
+#' @param years The first and last years of the desired period. (vector)
 #' @param store_locally If `TRUE` this function will store the results in a
 #'  local directory as NetCDF files. This options may be set to `FALSE` to save
 #'  disk space, but the `store_remotely` option must be set to `TRUE` in this
@@ -67,27 +66,10 @@
 #' @export
 cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
                     models = NA, parameters = NA, scenarios = NA,
-                    start_year = 1950, end_year = 2099,  store_locally = TRUE, 
+                    years = c(1950, 2099),  store_locally = TRUE, 
                     local_dir = tempdir(), store_remotely = FALSE,
                     aws_config_dir = "~/.aws", verbose = TRUE) {
-  '
-  shp_path = "/home/travis/Desktop/yellowstone/yellowstone.shp"
-  shp_path = "https://www2.census.gov/geo/tiger/TIGER2016/COUSUB/tl_2016_08_cousub.zip"
-  shp_path = NA
-  area_name = NA
-  national_park = "Yosemite National Park"
-  models = c("bcc-csm1-1", "bcc-csm1-1-m", "BNU-ESM", "CanESM2", "CCSM4")
-  parameters = c("tasmin", "tasmax", "rhsmin", "rhsmax", "pr")
-  start_year = 1995
-  end_year = 2000
-  store_locally = TRUE
-  local_dir = "/home/travis/Desktop/cst_test"
-  store_remotely = FALSE
-  aws_config_dir = "~/.aws"
-  verbose = TRUE
 
-  cstdata(shp_path = shp_path, area_name = "test_area", start_year = start_year, end_year = end_year)
-  '
   # Make sure user is providing some kind of location information
   if (is.na(shp_path) & is.na(national_park)) {
     msg <- paste("No location data/AOI data were provided.",
@@ -163,12 +145,12 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
   aoi_info <- get_aoi_info(aoi, grid_ref)
 
   # Build url queries and group by number of cpus
-  queries <- get_queries(aoi, location_dir, start_year, end_year, models,
-                         parameters, scenarios, arg_ref, grid_ref)
+  queries <- get_queries(aoi, location_dir, years, models, parameters,
+                         scenarios, arg_ref, grid_ref)
 
   # Setup parallelization
   pbapply::pboptions(use_lb = TRUE)
-  ncores <- parallel::detectCores() / 2
+  ncores <- get_ncores()
   cl <- parallel::makeCluster(ncores)
   doParallel::registerDoParallel(cl)
   parallel::clusterExport(cl, c("retrieve_subset", "filter_years"),
@@ -190,8 +172,7 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
   # Retrieve, subset, and write the files
   refs <- pbapply::pblapply(queries,
                             FUN = retrieve_subset,
-                            start_year = start_year,
-                            end_year = end_year,
+                            years = years,
                             aoi_info = aoi_info,
                             location_dir = location_dir,
                             aws_creds = aws_creds,

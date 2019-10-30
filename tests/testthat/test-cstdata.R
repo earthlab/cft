@@ -31,13 +31,13 @@ test_that("A full run of cstdata completes and saves an expected file", {
   # This should create one file.
   local_dir <- tempdir()
   file_refs <- cstdata(national_park = "Acadia National Park",
-                       start_year = 1950, end_year = 1955,
-                       models = c("bcc-csm1-1"), parameters = c("pr"),
-                       scenarios = c("rcp45"), local_dir = local_dir)
+                       years = c(2004, 2008), models = c("bcc-csm1-1"),
+                       parameters = c("pr"), scenarios = c("rcp45"),
+                       local_dir = local_dir)
 
   # And this is the expected file name and path
   exp_file = paste0("pr_acadia_national_park_bcc-csm1-1_r1i1p1_rcp45_",
-                    "macav2metdata_1950_1955_daily.nc")
+                    "macav2metdata_2004_2008_daily.nc")
   exp_path = file.path(local_dir, "acadia_national_park", exp_file)
 
   # So if this exists it worked

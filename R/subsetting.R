@@ -94,8 +94,8 @@ get_aoi_info <- function(aoi, grid_ref) {
 }
 
 
-get_queries <- function(aoi, location_dir, start_year, end_year, models,
-                        parameters, scenarios, arg_ref, grid_ref) {
+get_queries <- function(aoi, location_dir, years, models, parameters,
+                        scenarios, arg_ref, grid_ref) {
   
   # We are building url queries from this base
   urlbase <- paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
@@ -103,7 +103,11 @@ get_queries <- function(aoi, location_dir, start_year, end_year, models,
   
   # This will be the folder name for this park
   location <- basename(location_dir)
-  
+
+  # Split year range up
+  start_year <- years[1]
+  end_year <- years[2]
+
   # Get time information from our grid reference
   ntime_hist <- grid_ref$ntime_historical
   ntime_model <- grid_ref$ntime_model
@@ -182,12 +186,16 @@ get_queries <- function(aoi, location_dir, start_year, end_year, models,
 }
 
 
-retrieve_subset <- function(query, start_year, end_year, aoi_info, location_dir,
+retrieve_subset <- function(query, years, aoi_info, location_dir,
                             aws_creds, store_locally = TRUE,
                             store_remotely = TRUE) {
   # Load xarray
   xr <- reticulate::import("xarray")
   
+  # Split year range up
+  start_year <- years[1]
+  end_year <- years[2]
+
   # Unpack aoi info
   aoilats <- aoi_info[["aoilats"]]
   aoilons <- aoi_info[["aoilons"]]
