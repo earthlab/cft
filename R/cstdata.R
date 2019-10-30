@@ -20,8 +20,12 @@
 #'   accessible directly from an s3 bucket.
 #' - Xarray 0.14 will change the behaviour of open_mfdataset, 0.13 is giving 
 #'   deprecation warnings. Perhaps we pin xarray to 0.12 (same behavior,
-#'   no warnings). 
+#'   no warnings).
+#' - RCurl::url_exists works in linux and osx, but sometimes fails in windows.
+#'   It apparently needs proxy settings in these cases. Try setting proxy
+#'   options next chance on a windows machine.
 #'
+#'   
 #' @param shp_path A path to a shapefile with which to clip the resulting data
 #'  sets. This path may be to a local .shp file or a url to a zipped remote
 #'  file. If this option is used, leave the national_park argument empty or set
@@ -144,7 +148,7 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
   arg_ref <- Argument_Reference()
 
   # Get national park area of interest
-  if (verbose) print("Retrieving all US National Park Boundaries")
+  if (verbose) print("Retrieving US National Park Boundaries")
   if (!is.na(national_park)) {
     aoi <- get_park_boundaries(national_park, local_dir = local_dir)
     area_name <- national_park

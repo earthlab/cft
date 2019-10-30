@@ -8,7 +8,7 @@ get_shapefile <- function(path, shp_name = NA, local_dir = tempdir()) {
   shp_folder <- file.path(local_dir, "shapefiles", shp_name)
 
   # Check if this is a url or local path
-  if (!httr::http_error(path)) {
+  if (RCurl::url.exists(path)) {
 
     # Only run if no files exist
     exp_file = c(list.files(shp_folder, full.names = TRUE, pattern = "\\.shp$"))
@@ -43,8 +43,19 @@ get_park_boundaries <- function(national_park, local_dir = tempdir()) {
   over for a cleaner retrievable reference, even their api didn't appear to
   have it. Perhaps the js is the way to go.
   "
+  # This would be the local path if it exists yet
+  local_path <- file.path(local_dir, "shapefiles", "nps_boundary",
+                          "nps_boundary.shp")
+
+  # Check if the local file exists yet
+  if (!file.exists(local_path)) {
+    path <- nps_boundary_url()
+  } else {
+    path <- local_path
+  }
+  
   # Download and return park object
-  parks <- get_shapefile(path = nps_boundary_url(),
+  parks <- get_shapefile(path = path,
                          shp_name = "nps_boundary",
                          local_dir = local_dir)
 

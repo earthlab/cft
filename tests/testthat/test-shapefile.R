@@ -29,15 +29,16 @@ test_that("Test get_park_boundaries for file and shapefile object", {
   skip_on_travis()
   
   # Same park: Yellowstone
-  parkname <- "Yellowstone National Park"
+  national_park <- "Yellowstone National Park"
 
   # Expected path
   local_dir <- tempdir()
   local_path <- file.path(local_dir, "shapefiles", "nps_boundary", "nps_boundary.shp")
 
   # Return area of interest
-  aoi <- get_park_boundaries(parkname, local_dir = local_dir)
-
+  aoi <- get_park_boundaries(national_park, local_dir = local_dir)
+  print(aoi)
+  
   # Check that the local file was written
   expect_true(file.exists(local_path))
   
@@ -48,5 +49,5 @@ test_that("Test get_park_boundaries for file and shapefile object", {
 
 
 test_that("Default NPS boundary URL is valid", {
-  expect_false(httr::http_error(nps_boundary_url()))
+  expect_true(RCurl::url.exists(nps_boundary_url()))
 })

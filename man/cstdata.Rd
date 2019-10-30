@@ -82,4 +82,7 @@ Production Notes:
 - Xarray 0.14 will change the behaviour of open_mfdataset, 0.13 is giving 
   deprecation warnings. Perhaps we pin xarray to 0.12 (same behavior,
   no warnings).
+- RCurl::url_exists works in linux and osx, but sometimes fails in windows.
+  It apparently needs proxy settings in these cases. Try setting proxy
+  options next chance on a windows machine.
 }

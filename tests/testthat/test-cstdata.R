@@ -26,7 +26,7 @@ test_that("Providing no options for data storage raises an error", {
 })
 
 
-test_that("A full run of cstdata completes and saves expected files", {
+test_that("A full run of cstdata completes and saves an expected file", {
 
   # This should create one file.
   local_dir <- tempdir()
