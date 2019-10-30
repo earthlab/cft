@@ -17,6 +17,7 @@ Imports:
    doParallel,
    foreach,
    glue,
+   httr,
    methods,
    parallel,
    pbapply,

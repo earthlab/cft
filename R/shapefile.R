@@ -8,7 +8,7 @@ get_shapefile <- function(path, shp_name = NA, local_dir = tempdir()) {
   shp_folder <- file.path(local_dir, "shapefiles", shp_name)
 
   # Check if this is a url or local path
-  if (RCurl::url.exists(path)) {
+  if (!httr::http_error(path)) {
 
     # Only run if no files exist
     exp_file = c(list.files(shp_folder, full.names = TRUE, pattern = "\\.shp$"))
@@ -16,7 +16,7 @@ get_shapefile <- function(path, shp_name = NA, local_dir = tempdir()) {
       dir.create(shp_folder, recursive = TRUE, showWarnings = FALSE)
   
       # Create a file path for the zipped folder
-      zip_path <- file.path(shp_folder, basename(path))
+      zip_path <- file.path(shp_folder, "temp.zip")
   
       # Download and unzip
       utils::download.file(url = path, destfile = zip_path, method = "curl")
