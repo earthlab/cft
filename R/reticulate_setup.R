@@ -6,10 +6,11 @@
 #' 
 #' @export
 install_py_deps <- function(conda = TRUE) {
-  deps <- c("dask", "netcdf4", "toolz", "xarray")
   if (conda) {
+    deps <- c("dask", "netcdf4", "toolz", "xarray=0.12.3")
     reticulate::conda_install(envname = "r-reticulate", packages = deps)
   } else {
+    deps <- c("dask", "netcdf4", "toolz", "xarray==0.12.3")
     reticulate::py_install(deps, method = "auto", conda = "auto")
   }
 }
