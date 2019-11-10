@@ -1,11 +1,12 @@
 #' Climate Scenario Toolkit Data
+#' 
+#' Retrieves subsetted data of climate future scenarios within specified National
+#' Parks or shapefiles in the Contiguous United States. This data is downscaled
+#' using the Multivariate Adaptive Constructed Analogs (MACA) technique.
 #'
-#' Retrieves subsetted data of climate future scenarios for National Parks in
-#' the Contiguous United States. This data is downscaled using the Multivariate
-#' Adaptive Constructed Analogs (MACA) technique.
-#'
-#' This package retrieves daily gridded data sets of General Climate Models
-#' (GCM) clipped to specified National Parks. Each of these data sets represent
+#' This package retrieves daily gridded data sets of General Circulation Model
+#' (GCM) runs clipped to specified areas of interest and returns a data frame of the
+#' file names and they're storage paths. Each of these data sets represent
 #' a single GCM, climate variable and Representative Concentration Pathway (RCP)
 #' from 1950 to 2099. The 1950 to 2005 portion of this time period represents
 #' historical data while the 2006 to 2099 portion represents modeled data. These
@@ -25,17 +26,28 @@
 #'   It apparently needs proxy settings in these cases. Try setting proxy
 #'   options next chance on a windows machine.
 #'
-#'   
+#' @examples
+#' files_df <- cstdata(park = "Acadia National Park",
+#'                     years = c(2020, 2025),
+#'                     models = c("CCSM4"),
+#'                     parameters = c("pr", "tasmax"))
+#'
+#' files_df <- cstdata(park = "Yellowstone",
+#'                     years = c(2095, 2099),
+#'                     models = c("bcc-csm1-1", "bcc-csm1-1-m"),
+#'                     parameters = c("pr", "tasmax", "rsds"))
+#'
 #' @param shp_path A path to a shapefile with which to clip the resulting data
 #'  sets. This path may be to a local .shp file or a url to a zipped remote
-#'  file. If this option is used, leave the national_park argument empty or set
+#'  file. If this option is used, leave the `park` argument empty or set
 #'  to NA. (character)
-#' @param area_name If a shapefile path is provided, provide a name to use as a
-#'  reference to the location. This will be used in file names and directories. 
-#'  (character)' 
-#' @param national_park The name of a national park (e.g., "Yellowstone National
-#'  Park". The user may use this option in place of a shapefile path. In this
-#'  case, leave the shp_path argument empty or set to NA. (character)
+#' @param area_name If a shapefile path is used, provide a name to use as a
+#'  reference to the location. This will be used in file names, attributes, and
+#'  directories. (character)' 
+#' @param park The name of a national park (e.g., "Yellowstone National
+#'  Park", "Yellowstone Park", "Yellowstone", "yellowstone", etc.). The user may
+#'  use this option in place of a shapefile path. In this case, leave the
+#'  shp_path argument empty or set to NA. (character)
 #' @param models A list of global circulation models to download. If left empty
 #' all available models will be downloaded. A list of available of models is
 #' available under cstdata::argument_reference$models. (vector)
@@ -48,7 +60,7 @@
 #' (vector)
 #' @param years The first and last years of the desired period. (vector)
 #' @param store_locally If `TRUE` this function will store the results in a
-#'  local directory as NetCDF files. This options may be set to `FALSE` to save
+#'  local directory as NetCDF files. This option may be set to `FALSE` to save
 #'  disk space, but the `store_remotely` option must be set to `TRUE` in this
 #'  case. (logical)
 #' @param local_dir The local directory in which to save files if
@@ -64,14 +76,14 @@
 #' @importFrom methods new
 #' 
 #' @export
-cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
-                    models = NA, parameters = NA, scenarios = NA,
-                    years = c(1950, 2099),  store_locally = TRUE, 
-                    local_dir = tempdir(), store_remotely = FALSE,
-                    aws_config_dir = "~/.aws", verbose = TRUE) {
+cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
+                    parameters = NA, scenarios = NA, years = c(1950, 2099),
+                    store_locally = TRUE, local_dir = tempdir(),
+                    store_remotely = FALSE, aws_config_dir = "~/.aws",
+                    verbose = TRUE) {
 
   # Make sure user is providing some kind of location information
-  if (is.na(shp_path) & is.na(national_park)) {
+  if (is.na(shp_path) & is.na(park)) {
     msg <- paste("No location data/AOI data were provided.",
                  "Please provide either a shapefile path or the name of",
                  "a national park (e.g., 'Yosemite National Park').")
@@ -79,10 +91,10 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
   }
 
   # Make sure user is not providing too much location information
-  if (!is.na(shp_path) & !is.na(national_park)) {
+  if (!is.na(shp_path) & !is.na(park)) {
     msg <- paste("Both a shapefile and a national park were provided.",
                  "Please provide either a shapefile path or the name of",
-                 "a nation park ('Name National Park'), but not both.")
+                 "a national park ('Name National Park'), but not both.")
     stop(msg)
   }
 
@@ -102,10 +114,15 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
   }
 
   # If a national park is provided without an area_name, default to park name
-  if (!is.na(national_park) & is.na(area_name)) {
-    area_name = national_park
+  if (!is.na(park) & is.na(area_name)) {
+    area_name = park
   }
 
+  # Standardize and fix formatting errors if park is given
+  if (!is.na(park)) {
+    park <- check_parkname(park)
+  }
+  
   # Create the target folder
   location_folder <- gsub(" ", "_", tolower(area_name))
   location_dir <- file.path(local_dir, location_folder)
@@ -131,9 +148,9 @@ cstdata <- function(shp_path = NA, area_name = NA, national_park = NA,
 
   # Get national park area of interest
   if (verbose) print("Retrieving US National Park Boundaries")
-  if (!is.na(national_park)) {
-    aoi <- get_park_boundaries(national_park, local_dir = local_dir)
-    area_name <- national_park
+  if (!is.na(park)) {
+    aoi <- get_park_boundaries(park, local_dir = local_dir)
+    area_name <- park
   } else {
     aoi <- get_shapefile(shp_path, local_dir = local_dir) 
   }

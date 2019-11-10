@@ -24,19 +24,42 @@ test_that("Test download_shapefile for file and shapefile object", {
 })
 
 
+
+test_that("Test that check_parkname fixes some expected input formatting errors", {
+
+  # Possible formatting errors
+  p1 = " Yellowstone National   Park"
+  p2 = "Yellowstone   "
+  p3 = "Yellowstone  Park"
+
+  # List of formatted park names
+  parknames <- lapply(c(p1, p2, p3), FUN = check_parkname)
+  
+  # Retrieve the national park shapefile
+  aois <- lapply(parknames, FUN = get_park_boundaries)
+  
+  # Each should have at least one feature
+  lengths <- sapply(aois, FUN = length)
+
+  # So a vector of their lengths should add up to at least 3
+  expect_true(sum(lengths) >= 3)
+
+})
+
+
 test_that("Test get_park_boundaries for file and shapefile object", {
   # always breaks in travis
   skip_on_travis()
   
   # Same park: Yellowstone
-  national_park <- "Yellowstone National Park"
+  park <- "Yellowstone National Park"
 
   # Expected path
   local_dir <- tempdir()
   local_path <- file.path(local_dir, "shapefiles", "nps_boundary", "nps_boundary.shp")
 
   # Return area of interest
-  aoi <- get_park_boundaries(national_park, local_dir = local_dir)
+  aoi <- get_park_boundaries(park, local_dir = local_dir)
   print(aoi)
   
   # Check that the local file was written

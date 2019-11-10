@@ -19,7 +19,7 @@ get_shapefile <- function(path, shp_name = NA, local_dir = tempdir()) {
       zip_path <- file.path(shp_folder, "temp.zip")
   
       # Download and unzip
-      utils::download.file(url = path, destfile = zip_path, method = "curl")
+      utils::download.file(url = path, destfile = zip_path, method = "libcurl")
       utils::unzip(zip_path, exdir = shp_folder)
       file.remove(zip_path)
 
@@ -35,8 +35,40 @@ get_shapefile <- function(path, shp_name = NA, local_dir = tempdir()) {
   return(aoi)
 }
 
+check_parkname <- function(parkname) {
+  
+  # Start in lower case
+  parkname = tolower(parkname)
 
-get_park_boundaries <- function(national_park, local_dir = tempdir()) {
+  # If there is more than one space, reduce to one
+  parkname <- gsub("\\s+", " ", parkname)
+
+  # If 'national park' is in there somewhere, assume it's correct
+  if ( grepl("national park", parkname) ) {
+    
+
+  # If just 'park' is in there, fix it
+  } else if (grepl("park", parkname)) {
+    parkname <- gsub("park", "", parkname)
+    parkname <- paste(parkname, "national park")
+
+  # If no reference to parks, fix that too
+  } else {
+    parkname <- paste(parkname, "national park")
+  }
+
+  # Now reduce multi-spaces again and trim the ends
+  parkname <- gsub("\\s+", " ", parkname)
+  parkname <- trimws(parkname)
+
+  # And return to title case to match the shapefile format  
+  parkname <- tools::toTitleCase(parkname)
+
+  return(parkname)
+}
+
+
+get_park_boundaries <- function(park, local_dir = tempdir()) {
   "
   The url updated every few years. The link is generated with javascript and
   it would be a a bit messy for me to extract new urls from this. Checked all 
@@ -60,7 +92,7 @@ get_park_boundaries <- function(national_park, local_dir = tempdir()) {
                          local_dir = local_dir)
 
   # Get the boundaries of the chosen national park
-  aoi <- parks[grepl(national_park, parks$UNIT_NAME), ]
+  aoi <- parks[grepl(park, parks$UNIT_NAME), ]
 
   return(aoi)
 }
