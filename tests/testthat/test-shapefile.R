@@ -1,6 +1,6 @@
 test_that("Test download_shapefile for file and shapefile object", {
     # Always breaks in travis
-    skip_on_travis()
+    # skip_on_travis()
 
     # Same url: the state of Colorado     
     url <- paste0("https://www2.census.gov/geo/tiger/TIGER2016/COUSUB/", 
@@ -49,7 +49,7 @@ test_that("Test that check_parkname fixes some expected input formatting errors"
 
 test_that("Test get_park_boundaries for file and shapefile object", {
   # always breaks in travis
-  skip_on_travis()
+  # skip_on_travis()
   
   # Same park: Yellowstone
   park <- "Yellowstone National Park"
