@@ -26,7 +26,8 @@
 #'   It apparently needs proxy settings in these cases. Try setting proxy
 #'   options next chance on a windows machine.
 #'
-# @examples
+
+# Examples will go here, but we need to skip on travis
 # files_df <- cstdata(park = "Acadia National Park",
 #                     years = c(2020, 2025),
 #                     models = c("CCSM4"),
