@@ -26,18 +26,6 @@
 #'   It apparently needs proxy settings in these cases. Try setting proxy
 #'   options next chance on a windows machine.
 #'
-
-# Examples will go here, but we need to skip on travis
-# files_df <- cstdata(park = "Acadia National Park",
-#                     years = c(2020, 2025),
-#                     models = c("CCSM4"),
-#                     parameters = c("pr", "tasmax"))
-#
-# files_df <- cstdata(park = "Yellowstone",
-#                     years = c(2095, 2099),
-#                     models = c("bcc-csm1-1", "bcc-csm1-1-m"),
-#                     parameters = c("pr", "tasmax", "rsds"))
-#'
 #' @param shp_path A path to a shapefile with which to clip the resulting data
 #'  sets. This path may be to a local .shp file or a url to a zipped remote
 #'  file. If this option is used, leave the `park` argument empty or set
