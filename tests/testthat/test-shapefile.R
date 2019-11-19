@@ -20,9 +20,7 @@ test_that("Test download_shapefile for file and shapefile object", {
 
 
 test_that("Test get_park_boundaries for file and shapefile object", {
-  # always breaks in travis
-  skip_on_travis()
-  
+
   clean_up <- function() {
     unlink(list.files(pattern = "nps_boundary", 
                       recursive = TRUE, 
