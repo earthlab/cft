@@ -1,4 +1,4 @@
 nps_boundary_url <- function() {
   # return default nps boundary url
-  "https://irma.nps.gov/DataStore/DownloadFile/629794"
+  "https://irma.nps.gov/DataStore/DownloadFile/630692"
 }

@@ -2,24 +2,20 @@ test_that("Test download_shapefile for file and shapefile object", {
     # Always breaks in travis
     skip_on_travis()
 
-    # Same url: the state of Colorado     
-    url <- paste0("https://www2.census.gov/geo/tiger/TIGER2016/COUSUB/", 
-                  "tl_2016_08_cousub.zip")
+    # Same url: the state of Colorado
+    url <- "https://www2.census.gov/geo/tiger/TIGER2016/COUSUB/tl_2016_08_cousub.zip"
 
     # Expected Path for .shp 
     dir <- tempdir()
     path <- file.path(dir, "tl_2016_08_cousub", "tl_2016_08_cousub.shp")
     
     # Return area of interest
-    aoi <- get_shapefile(path = url, shp_name = "tl_2016_08_cousub",
+    aoi <- get_shapefile(path = url, 
+                         shp_name = "tl_2016_08_cousub",
                          dir_loc = dir)
 
-    # Check that the local file was written
     expect_true(file.exists(path))
-
-    # Check that the returned object is the right class
-    expect_true(class(aoi) == "SpatialPolygonsDataFrame")
-
+    expect_s4_class(aoi, "SpatialPolygonsDataFrame")
 })
 
 
@@ -27,22 +23,28 @@ test_that("Test get_park_boundaries for file and shapefile object", {
   # always breaks in travis
   skip_on_travis()
   
+  clean_up <- function() {
+    unlink(list.files(pattern = "nps_boundary", 
+                      recursive = TRUE, 
+                      full.names = TRUE, 
+                      include.dirs = TRUE), 
+           force = TRUE, recursive = TRUE) # ensure no previous files
+  }
+  
   # Same park: Yellowstone
   parkname <- "Yellowstone National Park"
 
   # Expected path
-  dir <- tempdir()
+  dir <- "."
+  clean_up()
   path <- file.path(dir, "nps_boundary", "nps_boundary.shp")
 
   # Return area of interest
   aoi <- get_park_boundaries(parkname, dir_loc = dir)
 
-  # Check that the local file was written
   expect_true(file.exists(path))
-  
-  # Check that the returned object is the right class
-  expect_true(class(aoi) == "SpatialPolygonsDataFrame")
-  
+  expect_s4_class(aoi, "SpatialPolygonsDataFrame")
+  clean_up()
 })
 
 
