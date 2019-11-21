@@ -11,6 +11,7 @@ LazyData: true
 Suggests: 
     RCurl,
     testthat (>= 2.1.0),
+    sf,
     covr
 Imports:
     aws.s3,
