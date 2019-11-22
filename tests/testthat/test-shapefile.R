@@ -55,3 +55,8 @@ test_that("Local shapefiles are readable", {
   aoi <- get_shapefile(path = system.file("shape/nc.shp", package="sf"))
   expect_s4_class(aoi, "SpatialPolygonsDataFrame")
 })
+
+test_that("Invalid park names raise errors", {
+  expect_error(get_park_boundaries("Poodlebear National Monument"), 
+               regexp = "not contained")
+})
