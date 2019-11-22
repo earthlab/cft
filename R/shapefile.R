@@ -1,6 +1,5 @@
 
 get_shapefile <- function(path, shp_name = NA, dir_loc = tempdir()) {
-
   # Specify or infer the shapefile name
   if (is.na(shp_name)) shp_name <- tools::file_path_sans_ext(basename(path))
 
@@ -20,11 +19,10 @@ get_shapefile <- function(path, shp_name = NA, dir_loc = tempdir()) {
       # Download and unzip
       utils::download.file(url = path, destfile = zip_path, method = "curl")
       utils::unzip(zip_path, exdir = dir_loc)
-
-      # Retrieve the .shp file from the new folder
-      shapefile <- list.files(dir_loc, pattern = "\\.shp$", full.names = TRUE)
-      aoi <- rgdal::readOGR(shapefile, verbose = FALSE)
     }
+    # Retrieve the .shp file from the new folder
+    shapefile <- list.files(dir_loc, pattern = "\\.shp$", full.names = TRUE)
+    aoi <- rgdal::readOGR(shapefile, verbose = FALSE)
   } else {
     # Retrieve the .shp file 
     aoi <- rgdal::readOGR(path, verbose = FALSE)   
@@ -46,6 +44,12 @@ get_park_boundaries <- function(parkname, dir_loc = tempdir()) {
                               shp_name = "nps_boundary",
                               dir_loc = dir_loc)
 
+  if (!parkname %in% parks$UNIT_NAME) {
+    stop(
+        paste0(
+          "The requested park (", parkname, ") is not contained in the ", 
+          "national park boundary data. Is the park name spelled correctly?"))
+  }
   # Get the boundaries of the chosen national park
   aoi <- parks[grepl(parkname, parks$UNIT_NAME), ]
 
