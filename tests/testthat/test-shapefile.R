@@ -1,76 +1,57 @@
 test_that("Test download_shapefile for file and shapefile object", {
-    # Always breaks in travis
-    # skip_on_travis()
-
-    # Same url: the state of Colorado     
-    url <- paste0("https://www2.census.gov/geo/tiger/TIGER2016/COUSUB/", 
-                  "tl_2016_08_cousub.zip")
-
-    # Expected Path for .shp 
-    local_dir <- tempdir()
-    path <- file.path(local_dir, "shapefiles", "tl_2016_08_cousub",
-                      "tl_2016_08_cousub.shp")
-    
-    # Return area of interest
-    aoi <- get_shapefile(path = url, shp_name = "tl_2016_08_cousub",
-                         local_dir = local_dir)
-
-    # Check that the local file was written
-    expect_true(file.exists(path))
-
-    # Check that the returned object is the right class
-    expect_true(class(aoi) == "SpatialPolygonsDataFrame")
-
-})
-
-
-
-test_that("Test that check_parkname fixes some expected input formatting errors", {
-
-  # Possible formatting errors
-  p1 = " Yellowstone National   Park"
-  p2 = "Yellowstone   "
-  p3 = "Yellowstone  Park"
-
-  # List of formatted park names
-  parknames <- lapply(c(p1, p2, p3), FUN = check_parkname)
+  # Always breaks in travis
+  skip_on_travis()
   
-  # Retrieve the national park shapefile
-  aois <- lapply(parknames, FUN = get_park_boundaries)
+  # Same url: the state of Colorado
+  url <- "https://www2.census.gov/geo/tiger/TIGER2016/COUSUB/tl_2016_08_cousub.zip"
   
-  # Each should have at least one feature
-  lengths <- sapply(aois, FUN = length)
-
-  # So a vector of their lengths should add up to at least 3
-  expect_true(sum(lengths) >= 3)
-
+  # Expected Path for .shp 
+  dir <- tempdir()
+  path <- file.path(dir, "tl_2016_08_cousub", "tl_2016_08_cousub.shp")
+  
+  # Return area of interest
+  aoi <- get_shapefile(path = url, 
+                       shp_name = "tl_2016_08_cousub",
+                       dir_loc = dir)
+  
+  expect_true(file.exists(path))
+  expect_s4_class(aoi, "SpatialPolygonsDataFrame")
 })
 
 
 test_that("Test get_park_boundaries for file and shapefile object", {
-  # always breaks in travis
-  # skip_on_travis()
+  
+  clean_up <- function() {
+    unlink(list.files(pattern = "nps_boundary", 
+                      recursive = TRUE, 
+                      full.names = TRUE, 
+                      include.dirs = TRUE), 
+           force = TRUE, recursive = TRUE) # ensure no previous files
+  }
   
   # Same park: Yellowstone
-  park <- "Yellowstone National Park"
-
+  parkname <- "Yellowstone National Park"
+  
   # Expected path
-  local_dir <- tempdir()
-  local_path <- file.path(local_dir, "shapefiles", "nps_boundary", "nps_boundary.shp")
-
+  dir <- "."
+  clean_up()
+  path <- file.path(dir, "nps_boundary", "nps_boundary.shp")
+  
   # Return area of interest
-  aoi <- get_park_boundaries(park, local_dir = local_dir)
-  print(aoi)
+  aoi <- get_park_boundaries(parkname, dir_loc = dir)
   
-  # Check that the local file was written
-  expect_true(file.exists(local_path))
-  
-  # Check that the returned object is the right class
-  expect_true(class(aoi) == "SpatialPolygonsDataFrame")
-
+  expect_true(file.exists(path))
+  expect_s4_class(aoi, "SpatialPolygonsDataFrame")
+  clean_up()
 })
 
 
 test_that("Default NPS boundary URL is valid", {
   expect_true(RCurl::url.exists(nps_boundary_url()))
+})
+
+
+test_that("Local shapefiles are readable", {
+  aoi <- get_shapefile(path = system.file("shape/nc.shp", package="sf"))
+  expect_s4_class(aoi, "SpatialPolygonsDataFrame")
 })
