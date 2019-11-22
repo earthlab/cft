@@ -41,9 +41,10 @@ test_that("A full run of cstdata completes and saves an expected file", {
 
   # And this is the expected file name and path
   exp_file = paste0("pr_acadia_national_park_bcc-csm1-1_r1i1p1_rcp45_",
-                    "macav2metdata_2004_2008_daily.nc")
+                    "macav2metdata_2004_2005_daily.nc")
   exp_path = file.path(local_dir, "acadia_national_park", exp_file)
 
   # So if this exists it worked
   expect_true(file.exists(exp_path))
 })
+
