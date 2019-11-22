@@ -1,14 +1,10 @@
 test_that("Test download_shapefile for file and shapefile object", {
-    # Same url: the state of Colorado
-    url <- "https://www2.census.gov/geo/tiger/TIGER2016/COUSUB/tl_2016_08_cousub.zip"
+    url <- "https://www2.census.gov/geo/tiger/TIGER2019/COUSUB/tl_2019_44_cousub.zip"
 
-    # Expected Path for .shp 
     dir <- tempdir()
-    path <- file.path(dir, "shapefiles", "tl_2016_08_cousub", "tl_2016_08_cousub.shp")
+    path <- file.path(dir, "shapefiles", "tl_2019_44_cousub", "tl_2019_44_cousub.shp")
     
-    # Return area of interest
     aoi <- get_shapefile(path = url, 
-                         shp_name = "tl_2016_08_cousub",
                          local_dir = dir)
 
     expect_true(file.exists(path))
@@ -50,6 +46,6 @@ test_that("Local shapefiles are readable", {
 })
 
 test_that("Invalid park names raise errors", {
-  expect_error(get_park_boundaries("Poodlebear National Monument"), 
+  expect_error(get_park_boundaries("Poodlebear National Park"), 
                regexp = "not contained")
 })
