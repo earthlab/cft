@@ -27,7 +27,10 @@ test_that("Providing no options for data storage raises an error", {
 
 
 test_that("A full run of cstdata completes and saves an expected file", {
-
+  # Check the version of xarray here
+  v = reticulate::py_get_attr(xr, "_version")
+  print(paste("Xarray version:", v$get_versions()$version))
+  
   # This should create one file.
   local_dir <- tempdir()
   file_refs <- cstdata(park = "Acadia National Park",

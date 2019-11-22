@@ -1,13 +1,11 @@
 test_that("Test download_shapefile for file and shapefile object", {
-  # Always breaks in travis
-  skip_on_travis()
-  
+
   # Same url: the state of Colorado
   url <- "https://www2.census.gov/geo/tiger/TIGER2016/COUSUB/tl_2016_08_cousub.zip"
   
   # Expected Path for .shp 
   dir <- tempdir()
-  path <- file.path(dir, "tl_2016_08_cousub", "tl_2016_08_cousub.shp")
+  path <- file.path(dir, "shapefiles", "tl_2016_08_cousub", "tl_2016_08_cousub.shp")
   
   # Return area of interest
   aoi <- get_shapefile(path = url, 
@@ -35,7 +33,7 @@ test_that("Test get_park_boundaries for file and shapefile object", {
   # Expected path
   dir <- "."
   clean_up()
-  path <- file.path(dir, "nps_boundary", "nps_boundary.shp")
+  path <- file.path(dir, "shapefiles", "nps_boundary", "nps_boundary.shp")
   
   # Return area of interest
   aoi <- get_park_boundaries(parkname, dir_loc = dir)
