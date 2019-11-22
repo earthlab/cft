@@ -17,7 +17,6 @@ Imports:
     doParallel,
     foreach,
     glue,
-    httr,
     methods,
     parallel,
     pbapply,
@@ -25,5 +24,6 @@ Imports:
     reticulate,
     rgdal,
     sp,
-    utils
+    utils,
+    rstudioapi
 RoxygenNote: 6.1.1
