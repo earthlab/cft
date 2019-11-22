@@ -17,6 +17,7 @@ addons:
       - libproj-dev
       - libgeos-dev
       - libgdal-dev
+      - libudunits2-dev
       - netcdf-bin
       - libnetcdf-dev
       - python3-dev

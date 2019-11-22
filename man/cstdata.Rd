@@ -4,31 +4,43 @@
 \alias{cstdata}
 \title{Climate Scenario Toolkit Data}
 \usage{
-cstdata(shp_path = NA, area_name = NA, national_park = NA,
-  start_year = 1950, end_year = 2099, store_locally = TRUE,
-  local_dir = tempdir(), store_remotely = FALSE,
-  aws_config_dir = "~/.aws", verbose = TRUE)
+cstdata(shp_path = NA, area_name = NA, park = NA, models = NA,
+  parameters = NA, scenarios = NA, years = c(1950, 2099),
+  store_locally = TRUE, local_dir = tempdir(),
+  store_remotely = FALSE, aws_config_dir = "~/.aws", verbose = TRUE)
 }
 \arguments{
 \item{shp_path}{A path to a shapefile with which to clip the resulting data
 sets. This path may be to a local .shp file or a url to a zipped remote
-file. If this option is used, leave the national_park argument empty or set
+file. If this option is used, leave the `park` argument empty or set
 to NA. (character)}
 
-\item{area_name}{If a shapefile path is provided, provide a name to use as a
-reference to the location. This will be used in file names and directories. 
-(character)'}
+\item{area_name}{If a shapefile path is used, provide a name to use as a
+reference to the location. This will be used in file names, attributes, and
+directories. (character)'}
 
-\item{national_park}{The name of a national park (e.g., "Yellowstone National
-Park". The user may use this option in place of a shapefile path. In this
-case, leave the shp_path argument empty or set to NA. (character)}
+\item{park}{The name of a national park (e.g., "Yellowstone National
+Park", "Yellowstone Park", "Yellowstone", "yellowstone", etc.). The user may
+use this option in place of a shapefile path. In this case, leave the
+shp_path argument empty or set to NA. (character)}
 
-\item{start_year}{The first year of the desired period. (integer)}
+\item{models}{A list of global circulation models to download. If left empty
+all available models will be downloaded. A list of available of models is
+available under cstdata::argument_reference$models. (vector)}
 
-\item{end_year}{The last year of the desired period. (integer)}
+\item{parameters}{A list of climate parameters to download. If left empty
+all available parameters will be downloaded. A list of available of models is
+available under cstdata::argument_reference$parameters. (vector)}
+
+\item{scenarios}{A list of representative concentration pathways (rcps) to
+download. If left empty all available rcps will be downloaded. A list of
+available of rcps is available under cstdata::argument_reference$scenarios.
+(vector)}
+
+\item{years}{The first and last years of the desired period. (vector)}
 
 \item{store_locally}{If `TRUE` this function will store the results in a
-local directory as NetCDF files. This options may be set to `FALSE` to save
+local directory as NetCDF files. This option may be set to `FALSE` to save
 disk space, but the `store_remotely` option must be set to `TRUE` in this
 case. (logical)}
 
@@ -47,13 +59,14 @@ needed to build the file. (character)}
 \item{verbose}{Print verbose output. (logical)}
 }
 \description{
-Retrieves subsetted data of climate future scenarios for National Parks in
-the Contiguous United States. This data is downscaled using the Multivariate
-Adaptive Constructed Analogs (MACA) technique.
+Retrieves subsetted data of climate future scenarios within specified National
+Parks or shapefiles in the Contiguous United States. This data is downscaled
+using the Multivariate Adaptive Constructed Analogs (MACA) technique.
 }
 \details{
-This package retrieves daily gridded data sets of General Climate Models
-(GCM) clipped to specified National Parks. Each of these data sets represent
+This package retrieves daily gridded data sets of General Circulation Model
+(GCM) runs clipped to specified areas of interest and returns a data frame of the
+file names and they're storage paths. Each of these data sets represent
 a single GCM, climate variable and Representative Concentration Pathway (RCP)
 from 1950 to 2099. The 1950 to 2005 portion of this time period represents
 historical data while the 2006 to 2099 portion represents modeled data. These
@@ -69,4 +82,7 @@ Production Notes:
 - Xarray 0.14 will change the behaviour of open_mfdataset, 0.13 is giving 
   deprecation warnings. Perhaps we pin xarray to 0.12 (same behavior,
   no warnings).
+- RCurl::url_exists works in linux and osx, but sometimes fails in windows.
+  It apparently needs proxy settings in these cases. Try setting proxy
+  options next chance on a windows machine.
 }

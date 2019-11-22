@@ -7,7 +7,7 @@ Grid_Reference <- methods::setRefClass(
     resolution = "numeric",
     lats = "numeric",
     lons = "numeric",
-    ntime_hist = "numeric",
+    ntime_historical = "numeric",
     ntime_model = "numeric"
   ),
   
@@ -21,7 +21,7 @@ Grid_Reference <- methods::setRefClass(
                           resolution = 0.04166575,
                           nlat = 585,
                           nlon = 1386,
-                          ntime_hist = 20453,
+                          ntime_historical = 20453,
                           ntime_model = 34332) {
       crs <<- crs
       resolution <<- resolution
@@ -30,7 +30,7 @@ Grid_Reference <- methods::setRefClass(
                       function(x) extent["latmin"][[1]] + x * resolution)
       lons <<- sapply(1:(nlon),
                       function(x) extent["lonmin"][[1]] + x * resolution)
-      ntime_hist <<- ntime_hist
+      ntime_historical <<- ntime_historical
       ntime_model <<- ntime_model
     }
   )
@@ -102,8 +102,12 @@ Argument_Reference <- methods::setRefClass(
 )
 
 
-# #' @export 
-# grid_reference = Grid_Reference()
-#' 
-# #' @export
-# argument_reference = Argument_Reference()
+#' @title Attributes
+#' @param argument_reference object containing information about input models and parameters for cstdata.
+#' @export
+argument_reference <- Argument_Reference()$initFields()
+
+#' @title Attributes
+#' @param grid_reference Reference object containing geographical coordinate information of the full grid in which the data is provided.
+#' @export
+grid_reference <- Grid_Reference()$initFields()
