@@ -10,7 +10,7 @@ test_that("Test download_shapefile for file and shapefile object", {
   # Return area of interest
   aoi <- get_shapefile(path = url, 
                        shp_name = "tl_2016_08_cousub",
-                       dir_loc = dir)
+                       local_dir = dir)
   
   expect_true(file.exists(path))
   expect_s4_class(aoi, "SpatialPolygonsDataFrame")
@@ -36,7 +36,7 @@ test_that("Test get_park_boundaries for file and shapefile object", {
   path <- file.path(dir, "shapefiles", "nps_boundary", "nps_boundary.shp")
   
   # Return area of interest
-  aoi <- get_park_boundaries(parkname, dir_loc = dir)
+  aoi <- get_park_boundaries(parkname, local_dir = dir)
   
   expect_true(file.exists(path))
   expect_s4_class(aoi, "SpatialPolygonsDataFrame")
