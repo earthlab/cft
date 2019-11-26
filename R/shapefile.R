@@ -45,7 +45,7 @@ suggest_parkname <- function(parkname, available_names) {
   # Get pair-wise string similarity score with each available name
   scores <-sapply(as.character(names),
                   FUN = stringdist::stringsim,
-                  b=parkname)
+                  b = parkname)
   
   # Find the index positions of the top five highest scores
   sorted_scores <- sort(scores, decreasing = TRUE)
