@@ -15,9 +15,11 @@ test_that("Test that config_aws properly stores configuration file", {
 test_that("Test that config_aws writes a file with expected keys", {
 
   # Start test mode
-  original_test_mode <- getOption('cstdata.test_mode')
+  # original_test_mode <- getOption('cstdata.test_mode')
   options('cstdata.test_mode' = TRUE)
 
+  # options('cstdata.test_mode')
+  
   # What happens?
   config_aws()
 
@@ -26,13 +28,17 @@ test_that("Test that config_aws writes a file with expected keys", {
 
   # Expected keys
   expkeys <- c("bucket", "key", "skey", "region")
+
+  # Undo test mode
+  options('my_package.test_mode' = FALSE)
+
+  # Delete the config file
+  unlink("~/.aws/cstdata_config.RDS")
   
   # Expect keys, testing for aws access would be problematic
   expect_true(all(names(config) == expkeys))
 
-  options('my_package.test_mode' = original_test_mode)
-  
-  unlink("~/.aws/cstdata_config.RDS")
-  
-  
+
 })
+
+
