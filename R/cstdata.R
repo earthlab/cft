@@ -57,10 +57,10 @@
 #' @param store_remotely If `TRUE` this function will store the results in an
 #' Amazon Web Services S3 bucket. This will require the user to store an S3
 #' configuration file on their local machine. (logical)
-#' @param aws_config_dir The local directory in which to save the configuration
-#' file needed for storing data in an AWS S3 bucket. If the file is not yet
-#' present in this directory, the user will be prompted for the information
-#' needed to build the file. (character)
+#' @param aws_config_path The path to the local RDS file in which to save the
+#' configuration information needed for storing data in an AWS S3 bucket. If
+#' the file is not yet present in this directory, the user will be prompted
+#' for the information needed to build the file. (character)
 #' @param verbose Print verbose output. (logical)
 #' @importFrom methods new
 #' 
@@ -68,7 +68,8 @@
 cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
                     parameters = NA, scenarios = NA, years = c(1950, 2099),
                     store_locally = TRUE, local_dir = tempdir(),
-                    store_remotely = FALSE, aws_config_dir = "~/.aws",
+                    store_remotely = FALSE,
+                    aws_config_path = "~/.aws/cstdata_config.RDS",
                     verbose = TRUE) {
 
   # Make sure user is providing some kind of location information
@@ -107,11 +108,6 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
     area_name = park
   }
 
-  # Standardize and fix formatting errors if park is given
-  if (!is.na(park)) {
-    park <- check_parkname(park)
-  }
-  
   # Create the target folder
   location_folder <- gsub(" ", "_", tolower(area_name))
   location_dir <- file.path(local_dir, location_folder)
@@ -120,7 +116,7 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
 
   # Set up AWS access
   if (store_remotely) {
-    aws_creds <- config_aws(aws_config_dir)
+    aws_creds <- config_aws(aws_config_path = aws_config_path)
     bucket = aws_creds["bucket"]
     region = aws_creds["region"]
     aws_url <- paste0("https://s3.console.aws.amazon.com/s3/buckets/", bucket,

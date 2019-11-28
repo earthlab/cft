@@ -1,44 +1,49 @@
-test_that("Test that config_aws properly stores configuration file", {
-  skip_on_travis()
-  fake_bucket <- "fake_bucket"
-  fake_key <- "a;dfhlgjhsd"
-  fake_skey <- "a;hjslkdjghsdkjgh"
-  region <- "us-west-2"
-  
-  # Strategies:
-  # https://stackoverflow.com/questions/41372146/test-interaction-with-users-in-r-package
-  # https://rdrr.io/cran/readr/src/tests/testthat/test-read-lines.R
-  # https://stackoverflow.com/questions/38461391/avoid-pauses-due-to-readline-while-testing
+test_that("Test that the 'ask' function is storing inputs", {
+  # Write the answer to a file and ask it for input.
+  f = file()
+
+  # Set the package connection to this file
+  options(cstdata.connection = f)
+
+  # Write answer in advance
+  write("Blue...no!", f)
+  color <- ask("What is your favorite color?")
+
+  # Test for the expected output
+  testthat::expect_true(color == "Blue...no!")
+
+  # Reset the connection source
+  options(cstdata.connection = stdin())
 })
 
+test_that("Test that 'config_aws' properly stores user inputs", {
+  # Create target file path
+  config_path <- path.expand("~/.aws/cstdata_test_config.RDS")
 
-test_that("Test that config_aws writes a file with expected keys", {
-
-  # Start test mode
-  # original_test_mode <- getOption('cstdata.test_mode')
-  options('cstdata.test_mode' = TRUE)
-
-  # options('cstdata.test_mode')
+  # Make sure the configuration file doesn't already exist
+  unlink(config_path)
   
-  # What happens?
-  config_aws()
+  # Create a file to store inputs and set the package connection to it
+  f = file()
+  options(cstdata.connection = f)
+  
+  # Write sample inputs in advance
+  write("a bucket\na key\nan skey\na region", f)
 
-  # Now we can check output?
-  config <- readRDS("~/.aws/cstdata_config.RDS")
+  # Get the configuration object
+  config <- config_aws(aws_config_path = config_path)
 
-  # Expected keys
+  # These are our expected keys and values
   expkeys <- c("bucket", "key", "skey", "region")
+  expvalues <- c("a bucket", "a key", "an skey", "a region")
 
-  # Undo test mode
-  options('my_package.test_mode' = FALSE)
-
-  # Delete the config file
-  unlink("~/.aws/cstdata_config.RDS")
-  
-  # Expect keys, testing for aws access would be problematic
+  # Check that the file was written and check keys and sample values
+  expect_true(file.exists(config_path))
   expect_true(all(names(config) == expkeys))
-
+  
+  # Delete the config file, close the input file, and reset the connection
+  unlink(config_path)
+  close(f)
+  options(cstdata.connection = stdin())
 
 })
-
-
