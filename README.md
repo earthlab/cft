@@ -1,7 +1,7 @@
 cstdata
 
-[![Build Status](https://travis-ci.com/WilliamsTravis/cstdata.svg?branch=master)](https://travis-ci.com/WilliamsTravis/cstdata)
-[![Codecov test coverage](https://codecov.io/gh/WilliamsTravis/cstdata/branch/master/graph/badge.svg)](https://codecov.io/gh/WilliamsTravis/cstdata?branch=master)
+[![Build Status](https://travis-ci.com/earthlab/cstdata.svg?branch=master)](https://travis-ci.com/earthlab/cstdata)
+[![Codecov test coverage](https://codecov.io/gh/earthlab/cstdata/branch/master/graph/badge.svg)](https://codecov.io/gh/earthlab/cstdata?branch=master)
 
 
 This is a collection of methods for quickly downloading downscaled global climate model (GCM) data covering specified areas for 

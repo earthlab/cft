@@ -27,6 +27,7 @@ test_that("Providing no options for data storage raises an error", {
 
 
 test_that("A full run of cstdata completes and saves an expected file", {
+
   # Check the version of xarray here
   xr <- reticulate::import("xarray")
   v <- reticulate::py_get_attr(xr, "_version")

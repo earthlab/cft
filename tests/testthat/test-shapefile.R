@@ -1,8 +1,10 @@
 test_that("Test download_shapefile for file and shapefile object", {
-    url <- "https://www2.census.gov/geo/tiger/TIGER2019/COUSUB/tl_2019_44_cousub.zip"
+    url <- paste0("https://www2.census.gov/geo/tiger/TIGER2019/COUSUB/",
+                  "tl_2019_44_cousub.zip")
 
     dir <- tempdir()
-    path <- file.path(dir, "shapefiles", "tl_2019_44_cousub", "tl_2019_44_cousub.shp")
+    path <- file.path(dir, "shapefiles", "tl_2019_44_cousub",
+                      "tl_2019_44_cousub.shp")
     
     aoi <- get_shapefile(path = url, 
                          local_dir = dir)
@@ -10,7 +12,6 @@ test_that("Test download_shapefile for file and shapefile object", {
     expect_true(file.exists(path))
     expect_s4_class(aoi, "SpatialPolygonsDataFrame")
 })
-
 
 test_that("Test get_park_boundaries for file and shapefile object", {
   clean_up <- function() {
@@ -22,7 +23,7 @@ test_that("Test get_park_boundaries for file and shapefile object", {
   }
   
   parkname <- "Yellowstone National Park"
-  
+
   dir <- "."
   clean_up()
   path <- file.path(dir, "shapefiles", "nps_boundary", "nps_boundary.shp")
@@ -34,11 +35,9 @@ test_that("Test get_park_boundaries for file and shapefile object", {
   clean_up()
 })
 
-
 test_that("Default NPS boundary URL is valid", {
   expect_true(RCurl::url.exists(nps_boundary_url()))
 })
-
 
 test_that("Local shapefiles are readable", {
   aoi <- get_shapefile(path = system.file("shape/nc.shp", package="sf"))
@@ -46,6 +45,5 @@ test_that("Local shapefiles are readable", {
 })
 
 test_that("Invalid park names raise errors", {
-  expect_error(get_park_boundaries("Poodlebear National Park"), 
-               regexp = "not contained")
+  expect_error(get_park_boundaries("Poodlebear National Park"))
 })

@@ -25,6 +25,7 @@ Imports:
     reticulate,
     rgdal,
     sp,
+    stringdist,
     utils,
     rstudioapi
 RoxygenNote: 6.1.1

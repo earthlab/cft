@@ -57,10 +57,10 @@
 #' @param store_remotely If `TRUE` this function will store the results in an
 #' Amazon Web Services S3 bucket. This will require the user to store an S3
 #' configuration file on their local machine. (logical)
-#' @param aws_config_dir The local directory in which to save the configuration
-#' file needed for storing data in an AWS S3 bucket. If the file is not yet
-#' present in this directory, the user will be prompted for the information
-#' needed to build the file. (character)
+#' @param aws_config_path The path to the local RDS file in which to save the
+#' configuration information needed for storing data in an AWS S3 bucket. If
+#' the file is not yet present in this directory, the user will be prompted
+#' for the information needed to build the file. (character)
 #' @param verbose Print verbose output. (logical)
 #' @importFrom methods new
 #' 
@@ -68,7 +68,8 @@
 cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
                     parameters = NA, scenarios = NA, years = c(1950, 2099),
                     store_locally = TRUE, local_dir = tempdir(),
-                    store_remotely = FALSE, aws_config_dir = "~/.aws",
+                    store_remotely = FALSE,
+                    aws_config_path = "~/.aws/cstdata_config.RDS",
                     verbose = TRUE) {
 
   # Make sure user is providing some kind of location information
@@ -107,24 +108,23 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
     area_name = park
   }
 
-  # Standardize and fix formatting errors if park is given
-  if (!is.na(park)) {
-    park <- check_parkname(park)
-  }
-  
+  # Get national park or area of interest
+  if (verbose) print("Retrieving US Area of Interest Boundaries")
+  aoi <- get_aoi(park, shp_path, area_name, local_dir)
+
   # Create the target folder
-  location_folder <- gsub(" ", "_", tolower(area_name))
-  location_dir <- file.path(local_dir, location_folder)
+  area_name <- gsub(" ", "_", tolower(area_name))
+  location_dir <- file.path(local_dir, area_name)
   if (!dir.exists(location_dir)) dir.create(location_dir, recursive = TRUE)
   location_dir = normalizePath(location_dir)
 
   # Set up AWS access
   if (store_remotely) {
-    aws_creds <- config_aws(aws_config_dir)
+    aws_creds <- config_aws(aws_config_path = aws_config_path)
     bucket = aws_creds["bucket"]
     region = aws_creds["region"]
     aws_url <- paste0("https://s3.console.aws.amazon.com/s3/buckets/", bucket,
-                      "/", location_folder, "/?region=", region,
+                      "/", area_name, "/?region=", region,
                       "&tab=overview")
   } else {
     aws_creds <- NA
@@ -135,15 +135,6 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
   grid_ref <- Grid_Reference()
   arg_ref <- Argument_Reference()
 
-  # Get national park area of interest
-  if (verbose) print("Retrieving US National Park Boundaries")
-  if (!is.na(park)) {
-    aoi <- get_park_boundaries(park, local_dir = local_dir)
-    area_name <- park
-  } else {
-    aoi <- get_shapefile(shp_path, local_dir = local_dir) 
-  }
-
   # Match coordinate systems
   aoi <- sp::spTransform(aoi, grid_ref$crs)
 
@@ -151,8 +142,8 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
   aoi_info <- get_aoi_info(aoi, grid_ref)
 
   # Build url queries and group by number of cpus
-  queries <- get_queries(aoi, location_dir, years, models, parameters,
-                         scenarios, arg_ref, grid_ref)
+  queries <- get_queries(aoi, area_name, years, models, parameters, scenarios,
+                         arg_ref, grid_ref)
 
   # Setup parallelization
   pbapply::pboptions(use_lb = TRUE)

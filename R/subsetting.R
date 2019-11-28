@@ -94,15 +94,12 @@ get_aoi_info <- function(aoi, grid_ref) {
 }
 
 
-get_queries <- function(aoi, location_dir, years, models, parameters,
-                        scenarios, arg_ref, grid_ref) {
-  
+get_queries <- function(aoi, area_name, years, models,
+                        parameters, scenarios, arg_ref, grid_ref) {
+
   # We are building url queries from this base
   urlbase <- paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
                     "agg_macav2metdata")
-  
-  # This will be the folder name for this park
-  location <- basename(location_dir)
 
   # Split year range up
   start_year <- years[1]
@@ -153,7 +150,7 @@ get_queries <- function(aoi, location_dir, years, models, parameters,
         var <- variables[param]
 
         # Build local file name
-        file_name <- paste(c(param, location, model, ensemble, rcp,
+        file_name <- paste(c(param, area_name, model, ensemble, rcp,
                              "macav2metdata", as.character(start_year),
                              as.character(end_year), "daily.nc"),
                            collapse = "_")

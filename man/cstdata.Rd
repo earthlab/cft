@@ -7,7 +7,8 @@
 cstdata(shp_path = NA, area_name = NA, park = NA, models = NA,
   parameters = NA, scenarios = NA, years = c(1950, 2099),
   store_locally = TRUE, local_dir = tempdir(),
-  store_remotely = FALSE, aws_config_dir = "~/.aws", verbose = TRUE)
+  store_remotely = FALSE,
+  aws_config_path = "~/.aws/cstdata_config.RDS", verbose = TRUE)
 }
 \arguments{
 \item{shp_path}{A path to a shapefile with which to clip the resulting data
@@ -51,10 +52,10 @@ case. (logical)}
 Amazon Web Services S3 bucket. This will require the user to store an S3
 configuration file on their local machine. (logical)}
 
-\item{aws_config_dir}{The local directory in which to save the configuration
-file needed for storing data in an AWS S3 bucket. If the file is not yet
-present in this directory, the user will be prompted for the information
-needed to build the file. (character)}
+\item{aws_config_path}{The path to the local RDS file in which to save the
+configuration information needed for storing data in an AWS S3 bucket. If
+the file is not yet present in this directory, the user will be prompted
+for the information needed to build the file. (character)}
 
 \item{verbose}{Print verbose output. (logical)}
 }
