@@ -5,6 +5,21 @@ test_that("Test that filter years returns correct start and end days", {
   expect_true(days[2] == 11687)
 })
 
+test_that("Test that incorrect inputs in 'filter_years' returns errors", {
+  # Start year is after end year
+  expect_error(filter_years(start_year = 1981, end_year = 1977,
+                            available_start = 1950, available_end = 2099))
+
+  # Start year is before available start year
+  expect_error(filter_years(start_year = 1949, end_year = 1981,
+                            available_start = 1950, available_end = 2099))
+
+  # End year is after available end year
+  expect_error(filter_years(start_year = 1977, end_year = 2100,
+                            available_start = 1950, available_end = 2099))
+
+})
+
 test_that("Test that 'get_aoi_indexes' returns correct spatial indices", {
   local_dir <- tempdir()
   area_name <- "Acadia National Park"
@@ -19,7 +34,7 @@ test_that("Test that 'get_aoi_indexes' returns correct spatial indices", {
 })
 
 
-test_that("Test get_queries", {
+test_that("Test that 'get_queries' returns expected paths", {
 
   # Sample arguments
   local_dir <- tempdir()
@@ -58,6 +73,32 @@ test_that("Test get_queries", {
 
   # The third object should contain a .nc file
   expect_true(queries[3] == ncfile)
+})
+
+
+test_that("Test that setting 'get_queries' args to NA returns full list", {
+  # Needed arguments
+  local_dir <- tempdir()
+  area_name <- "Acadia National Park"
+  aoi <- get_park_boundaries(area_name, local_dir = local_dir)
+  area_name <- gsub(" ", "_", tolower(area_name))
+  years <- c(2000, 2001)
+  arg_ref <- Argument_Reference()
+  grid_ref <- Grid_Reference()
+
+  # Get a query object
+  queries <- get_queries(aoi = aoi, area_name = area_name, arg_ref = arg_ref,
+                         grid_ref = grid_ref, years = years, models = NA,
+                         parameters = NA, scenarios = NA)
+
+  # Expected length is the product of the number of different arguments
+  len_models <- length(arg_ref$models)
+  len_params <- length(arg_ref$parameters)
+  len_scenarios <- length(arg_ref$scenarios)
+  exp_len_queries <- len_models * len_params * len_scenario
+
+  # Expect the length of queries to match the product above
+  expect_true(exp_len_queries == length(queries))
 })
 
 
