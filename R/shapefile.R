@@ -1,3 +1,12 @@
+get_aoi <- function(park, shp_path, area_name, local_dir) {
+  # Choose which to area of interest to return.
+  if (!is.na(park)) {
+    aoi <- get_park_boundaries(park, local_dir = local_dir)
+  } else {
+    aoi <- get_shapefile(shp_path, local_dir = local_dir) 
+  }
+  return(aoi)
+}
 
 get_shapefile <- function(path, shp_name = NA, local_dir = tempdir()) {
 

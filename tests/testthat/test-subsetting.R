@@ -1,6 +1,31 @@
-test_that("Test get_queries", {
+test_that("Test that filter years returns correct start and end days", {
+  days <- filter_years(start_year = 1977, end_year = 1981,
+                       available_start = 1950, available_end = 2099)
+  expect_true(days[1] == 9862)
+  expect_true(days[2] == 11687)
+})
+
+test_that("Test that 'get_aoi_indexes' returns correct spatial indices", {
   local_dir <- tempdir()
-  aoi <- get_park_boundaries("Acadia National Park", local_dir = local_dir)
+  area_name <- "Acadia National Park"
+  aoi <- get_park_boundaries(area_name, local_dir = local_dir)
+  grid_ref <- Grid_Reference()
+  indices <- get_aoi_indexes(aoi, grid_ref)
+
+  # There is a slight possibility that the park boundary extent will change
+  exp_indices <- list("y1" = 455, "y2" = 465, "x1" = 1347, "x2" = 1362)
+  expect_true(all(unlist(indices) == unlist(exp_indices)))
+  
+})
+
+
+test_that("Test get_queries", {
+
+  # Sample arguments
+  local_dir <- tempdir()
+  area_name <- "Acadia National Park"
+  aoi <- get_park_boundaries(area_name, local_dir = local_dir)
+  area_name <- gsub(" ", "_", tolower(area_name))
   years <- c(2000, 2001)
   models <- "bcc-csm1-1"
   parameters <- "pr"
@@ -8,12 +33,31 @@ test_that("Test get_queries", {
   arg_ref <- Argument_Reference()
   grid_ref <- Grid_Reference()
 
-  queries <- get_queries(aoi, local_dir, years, models, parameters,
+  # Get a query object
+  queries <- get_queries(aoi, area_name, years, models, parameters,
                          scenarios, arg_ref, grid_ref)
-  
-  expect_true(class(queries) == "list")
-  # queries should contain a path to one nc file
-  expect_true(1 == sum(grepl("\\.nc$", unlist(queries))))
+
+  # Unlist this object
+  queries <- unlist(queries)
+
+  # Expected returns (without subsetting in case of border changes)
+  url1 <- paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
+                 "agg_macav2metdata_pr_bcc-csm1-1_r1i1p1_historical_1950_2005",
+                 "_CONUS_daily.nc?precipitation")
+  url2 <- paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
+                 "agg_macav2metdata_pr_bcc-csm1-1_r1i1p1_rcp45_2006_2099",
+                 "_CONUS_daily.nc?precipitation")
+  ncfile <- paste0("pr_acadia_national_park_bcc-csm1-1_r1i1p1_rcp45_",
+                   "macav2metdata_2000_2001_daily.nc")
+
+  # The first object should contain the expected historical url
+  expect_true(grepl(url1, queries[1], fixed = TRUE))
+
+  # The second object should contain the expected modeled url
+  expect_true(grepl(url2, queries[2], fixed = TRUE))
+
+  # The third object should contain a .nc file
+  expect_true(queries[3] == ncfile)
 })
 
 
