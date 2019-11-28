@@ -1,4 +1,4 @@
-config_aws <- function(aws_config_dir) {
+config_aws <- function(aws_config_dir="~/.aws") {
   aws_config_file <- file.path(aws_config_dir, "cstdata_config.RDS")
   
   # Build configuration file if needed

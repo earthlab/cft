@@ -35,11 +35,9 @@ test_that("Test get_park_boundaries for file and shapefile object", {
   clean_up()
 })
 
-
 test_that("Default NPS boundary URL is valid", {
   expect_true(RCurl::url.exists(nps_boundary_url()))
 })
-
 
 test_that("Local shapefiles are readable", {
   aoi <- get_shapefile(path = system.file("shape/nc.shp", package="sf"))
