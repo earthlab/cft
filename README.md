@@ -13,7 +13,7 @@ Install the development version of the cstdata package with:
 
 
 ```r
-remotes::install_github("WilliamsTravis/cstdata")
+remotes::install_github("earthlab/cstdata")
 ```
 
 Then, install python dependencies via:
