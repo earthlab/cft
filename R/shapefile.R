@@ -102,3 +102,4 @@ get_park_boundaries <- function(parkname, local_dir = tempdir()) {
 
   return(aoi)
 }
+

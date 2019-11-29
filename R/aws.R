@@ -36,3 +36,4 @@ config_aws <- function(aws_config_path="~/.aws/cstdata_config.RDS") {
   # Return the credentials
   return(aws_creds)
 }
+

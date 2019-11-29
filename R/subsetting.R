@@ -1,5 +1,6 @@
 filter_years <- function(start_year = 1950, end_year = 2099,
                          available_start = 1950, available_end = 2099) {
+
   # Turn these into strings, then dates
   available1 <- as.Date(glue::glue("{available_start}-01-01"))
   available2 <- as.Date(glue::glue("{available_end}-12-31"))
@@ -23,8 +24,8 @@ filter_years <- function(start_year = 1950, end_year = 2099,
   day1 <- as.integer(date1 - available1)
   day2 <- as.integer(date2 - available1)
   
-  # Return these as a pair
-  return(c(day1, day2))
+  # Return these as a range
+  return(seq(day1, day2))
 }
 
 
@@ -183,12 +184,13 @@ get_queries <- function(aoi, area_name, years, models,
 }
 
 
-retrieve_subset <- function(query, years, aoi_info, location_dir,
+retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
                             aws_creds, store_locally = TRUE,
                             store_remotely = TRUE) {
   # Load xarray
   xr <- reticulate::import("xarray")
-  
+  np <- reticulate::import("numpy", convert = FALSE)
+
   # Split year range up
   start_year <- years[1]
   end_year <- years[2]
@@ -201,37 +203,39 @@ retrieve_subset <- function(query, years, aoi_info, location_dir,
   
   # Get the destination file
   if (store_locally == TRUE) {
-    dst_folder <- location_dir
-    if (!dir.exists(dst_folder)) {
-      dir.create(dst_folder, recursive = TRUE)
+    if (!dir.exists(local_dir)) {
+      dir.create(local_dir, recursive = TRUE)
     }
     file_name <- query[[2]]
     store_name <- query[[2]]
-    dst <- file.path(dst_folder, file_name)
+    dst <- file.path(local_dir, file_name)
   } else {
     store_name <- query[[2]]
     dst <- tempfile(fileext = ".nc")
     file_name <- basename(dst)
-    dst_folder <- dirname(dst)
+    local_dir <- dirname(dst)
   }
-  
+
   # Retrieve subset and save file locally
   if (!file.exists(dst)) {
     
     # Get the combined historical and modeled url query
-    purl <- query[[1]]
+    url_pair <- query[[1]]
     
     # Save a local file
-    ds <- xr$open_mfdataset(purl, concat_dim = "time")
+    ds <- xr$open_mfdataset(url_pair, concat_dim = "time")
     
     # Filter dates
-    didx <- filter_years(start_year, end_year)
-    stopifnot(length(didx) == 2)
-    ds <- ds$sel(time = c(didx[[1]]: didx[[2]]))
+    days <- filter_years(start_year, end_year)
+    ds <- ds$sel(time = c(days[[1]]: days[[length(days)]]))
     
-    # add coordinate
-    ds <- ds$assign_coords(lat = c("lat" = as.matrix(aoilats)),
-                           lon = c("lon" = as.matrix(aoilons)))
+    # Add coordinates as floats
+    lats <- np$asarray(c(as.matrix(aoilats)), dtype = np$float32)
+    lons <- np$asarray(c(as.matrix(aoilons)), dtype = np$float32)
+    times <- np$asarray(days, np$int32)
+    ds <- ds$assign_coords(lat = lats,
+                           lon = lons,
+                           time = times)
     
     # Mask by boundary
     dsmask <- xr$DataArray(mask_matrix)
@@ -239,7 +243,6 @@ retrieve_subset <- function(query, years, aoi_info, location_dir,
     ds <- ds$where(dsmask$data == 1)
     
     # Update Attributes  <------------------------------------------------------ Standards: https://www.unidata.ucar.edu/software/netcdf-java/current/metadata/DataDiscoveryAttConvention.html
-    area_name <- tools::toTitleCase(gsub("_", " ", basename(location_dir)))
     summary <- paste0(
       "This archive contains daily downscaled meteorological and hydrological ",
       "projections for the Conterminous United States at 1/24-deg resolution ",
@@ -307,16 +310,16 @@ retrieve_subset <- function(query, years, aoi_info, location_dir,
       # "license" = attrs1$license
     )
     ds$attrs <- attrs2
-    
+
     # Save to local file
     ds$to_netcdf(dst)
   }
-  
+
   # Put the file in the bucket
   if (store_remotely == TRUE) {
     bucket <- aws_creds["bucket"]
     region <- aws_creds["region"]
-    location_folder <- basename(location_dir)
+    location_folder <- area_name
     object <- file.path(location_folder, store_name)
     aws_url <- paste0("https://s3.console.aws.amazon.com/s3/object/", bucket,
                       "/", location_folder, "/", store_name, "?region=", region,
@@ -330,12 +333,11 @@ retrieve_subset <- function(query, years, aoi_info, location_dir,
   }
   
   # Keep track of file information
-  file_dir <- normalizePath(dst_folder)
+  file_dir <- normalizePath(local_dir)
   file_name <- basename(dst)
   file_path <- file.path(file_dir, file_name)
   reference <- list("local_file" = file_name, "local_path" = file_path,
                     "aws_url" = aws_url)
   return(reference)
 }
-
 

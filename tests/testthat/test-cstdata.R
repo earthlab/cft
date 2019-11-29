@@ -36,8 +36,10 @@ test_that("A full run of cstdata completes and saves an expected file", {
   # This should create one file.
   local_dir <- tempdir()
   file_refs <- cstdata(park = "Acadia National Park",
-                       years = c(2004, 2005), models = c("bcc-csm1-1"),
-                       parameters = c("pr"), scenarios = c("rcp45"),
+                       years = c(2004, 2005),
+                       models = c("bcc-csm1-1"),
+                       parameters = c("pr"),
+                       scenarios = c("rcp45"),
                        local_dir = local_dir)
 
   # And this is the expected file name and path

@@ -109,7 +109,7 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
   }
 
   # Get national park or area of interest
-  if (verbose) print("Retrieving US Area of Interest Boundaries")
+  if (verbose) print("Retrieving Area of Interest Boundaries")
   aoi <- get_aoi(park, shp_path, area_name, local_dir)
 
   # Create the target folder
@@ -171,7 +171,8 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
                             FUN = retrieve_subset,
                             years = years,
                             aoi_info = aoi_info,
-                            location_dir = location_dir,
+                            area_name = area_name,
+                            local_dir = location_dir,
                             aws_creds = aws_creds,
                             store_locally = store_locally,
                             store_remotely = store_remotely,
