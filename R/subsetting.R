@@ -189,7 +189,8 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
                             store_remotely = TRUE) {
   # Load xarray
   xr <- reticulate::import("xarray")
-  
+  np <- reticulate::import("numpy", convert = FALSE)
+
   # Split year range up
   start_year <- years[1]
   end_year <- years[2]
@@ -228,10 +229,13 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
     days <- filter_years(start_year, end_year)
     ds <- ds$sel(time = c(days[[1]]: days[[length(days)]]))
     
-    # add coordinate
-    ds <- ds$assign_coords(lat = c(as.matrix(aoilats)),
-                           lon = c(as.matrix(aoilons)),
-                           time = days)
+    # Add coordinates as floats
+    lats <- np$asarray(c(as.matrix(aoilats)), dtype = np$float32)
+    lons <- np$asarray(c(as.matrix(aoilons)), dtype = np$float32)
+    times <- np$asarray(days, np$int32)
+    ds <- ds$assign_coords(lat = lats,
+                           lon = lons,
+                           time = times)
     
     # Mask by boundary
     dsmask <- xr$DataArray(mask_matrix)
@@ -306,7 +310,7 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
       # "license" = attrs1$license
     )
     ds$attrs <- attrs2
-    
+
     # Save to local file
     ds$to_netcdf(dst)
   }
