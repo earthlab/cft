@@ -5,8 +5,8 @@ test_that("Test download_shapefile for file and shapefile object", {
     dir <- tempdir()
     path <- file.path(dir, "shapefiles", "tl_2019_44_cousub",
                       "tl_2019_44_cousub.shp")
-    
-    aoi <- get_shapefile(path = url, 
+
+    aoi <- get_shapefile(path = url,
                          local_dir = dir)
 
     expect_true(file.exists(path))
@@ -15,13 +15,13 @@ test_that("Test download_shapefile for file and shapefile object", {
 
 test_that("Test get_park_boundaries for file and shapefile object", {
   clean_up <- function() {
-    unlink(list.files(pattern = "nps_boundary", 
-                      recursive = TRUE, 
-                      full.names = TRUE, 
-                      include.dirs = TRUE), 
+    unlink(list.files(pattern = "nps_boundary",
+                      recursive = TRUE,
+                      full.names = TRUE,
+                      include.dirs = TRUE),
            force = TRUE, recursive = TRUE) # ensure no previous files
   }
-  
+
   parkname <- "Yellowstone National Park"
 
   dir <- "."
@@ -45,5 +45,6 @@ test_that("Local shapefiles are readable", {
 })
 
 test_that("Invalid park names raise errors", {
-  expect_error(get_park_boundaries("Poodlebear National Park"))
+  expect_error(get_park_boundaries("Poodlebear National Park"),
+               regexp = "is not contained in the national park boundary data")
 })
