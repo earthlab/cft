@@ -92,10 +92,10 @@ get_park_boundaries <- function(parkname, local_dir = tempdir()) {
     # If not, it could be a spelling error. Make suggestions.
     best_matches <- suggest_parkname(parkname, avail_names)
     best_matches <- paste(best_matches, collapse = "\n")
-    msg <- paste0("The requested park (", parkname, ") is not contained in ",
-                 "the national park boundary data. Here are the top five ",
+    msg <- paste("The requested park (", parkname, ") is not contained in",
+                 "the national park boundary data. Here are the top five",
                  "matches:\n", best_matches, "\n")
-    stop(cat(msg))
+    stop(msg)
   }
 
   aoi <- parks[grepl(parkname, parks$UNIT_NAME), ]
