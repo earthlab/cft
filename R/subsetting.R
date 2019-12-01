@@ -129,13 +129,13 @@ get_queries <- function(aoi, area_name, years, models,
     # Available arguments for this model
     args <- arg_ref$get_args(model)
     avail_params <- args$parameters
-    avail_scenarops <- args$scenarios
+    avail_scenarios <- args$scenarios
 
     # Available requested arguments
     params <- lapply(parameters, FUN = function(x) if (x %in% avail_params) x)
-    rcps <- lapply(scenarios, FUN = function(x) if (x %in% avail_scenarops) x)
-    params <- params[!is.na(params)]
-    rcps <- rcps[!is.na(rcps)]
+    rcps <- lapply(scenarios, FUN = function(x) if (x %in% avail_scenarios) x)
+    params <- params[params %in% avail_params]
+    rcps <- rcps[rcps %in% avail_scenarios]
 
     # Variable reference
     variables <- arg_ref$variables
@@ -170,11 +170,15 @@ get_queries <- function(aoi, area_name, years, models,
                                            "[{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
                                            "#fillmismatch"))
 
+        # For further reference, create a vector of data set elements
+        elements <- c("model" = model, "parameter" = param, "rcp" = rcp,
+                      "ensemble" = ensemble, "years" = years)
+  
         # Combine everything into a query package and add to query list
         historical_url <- paste0(historical, historical_subset)
         future_url <- paste0(future, future_subset)
         paired_url <- c(historical_url, future_url)
-        queries[[length(queries) + 1]] <- list(paired_url, file_name)
+        queries[[length(queries) + 1]] <- list(paired_url, file_name, elements)
       }
     }
   }
@@ -187,6 +191,9 @@ get_queries <- function(aoi, area_name, years, models,
 retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
                             aws_creds, store_locally = TRUE,
                             store_remotely = TRUE) {
+  # Catch errors here, there are several reasons it could fail
+
+  
   # Load xarray
   xr <- reticulate::import("xarray")
   np <- reticulate::import("numpy", convert = FALSE)
@@ -200,7 +207,7 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
   aoilons <- aoi_info[["aoilons"]]
   mask_matrix <- aoi_info[["mask_matrix"]]
   resolution <- aoi_info[["resolution"]]
-  
+
   # Get the destination file
   if (store_locally == TRUE) {
     if (!dir.exists(local_dir)) {
@@ -236,12 +243,15 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
     ds <- ds$assign_coords(lat = lats,
                            lon = lons,
                            time = times)
-    
+
     # Mask by boundary
     dsmask <- xr$DataArray(mask_matrix)
     dsmask <- dsmask$fillna(0)
     ds <- ds$where(dsmask$data == 1)
-    
+
+    # Get data set attributes
+    elements <- query[[3]]
+
     # Update Attributes  <------------------------------------------------------ Standards: https://www.unidata.ucar.edu/software/netcdf-java/current/metadata/DataDiscoveryAttConvention.html
     summary <- paste0(
       "This archive contains daily downscaled meteorological and hydrological ",
@@ -272,6 +282,9 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
       "comment" = paste0("Subsetted to ", area_name, "by the North Central ",
                          "Climate Adaption Science Center"),
       "summary" = summary,
+      "ensemble" = elements["ensemble"],
+      "model" = elements["model"],
+      "rcp" = elements["rcp"],
       "coordinate_system" = attrs1$coordinate_system,
       "geospatial_lat_min" = min(aoilats),
       "geospatial_lat_max" = max(aoilats),
