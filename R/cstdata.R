@@ -61,6 +61,8 @@
 #' configuration information needed for storing data in an AWS S3 bucket. If
 #' the file is not yet present in this directory, the user will be prompted
 #' for the information needed to build the file. (character)
+#' @param ncores The number of cpus to use to process and save data. Defaults
+#' to half the number of cores detected by parallel::detectCores(). (integer)
 #' @param verbose Print verbose output. (logical)
 #' @importFrom methods new
 #' 
@@ -69,7 +71,7 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
                     parameters = NA, scenarios = NA, years = c(1950, 2099),
                     store_locally = TRUE, local_dir = tempdir(),
                     store_remotely = FALSE,
-                    aws_config_path = "~/.aws/cstdata_config.RDS",
+                    aws_config_path = "~/.aws/cstdata_config.RDS", ncores = NA,
                     verbose = TRUE) {
 
   # Make sure user is providing some kind of location information
@@ -146,8 +148,8 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
                          arg_ref, grid_ref)
 
   # Setup parallelization
+  if (is.na(ncores)) ncores <- get_ncores()
   pbapply::pboptions(use_lb = TRUE)
-  ncores <- get_ncores()
   cl <- parallel::makeCluster(ncores)
   doParallel::registerDoParallel(cl)
   parallel::clusterExport(cl, c("retrieve_subset", "filter_years"),
@@ -181,7 +183,7 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
   # Create a data frame from the file references
   file_references <- do.call(rbind.data.frame, refs)
 
-  # Close cluster
+  # Close cluster  # <--------------------------------------------------------- Close in exception
   parallel::stopCluster(cl)
 
   # Reset index of file reference data frame

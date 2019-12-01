@@ -1,0 +1,13 @@
+shp_path = NA
+area_name = "acadia_national_park"
+park = "Acadia National Park"
+models = NA
+parameters = NA
+scenarios = NA
+years = c(2050, 2055)
+store_locally = TRUE
+local_dir = "~/cstdata_test/acadia_national_park"
+store_remotely = FALSE
+aws_config_path = "~/.aws/cstdata_config.RDS"
+ncores = NA
+verbose = TRUE

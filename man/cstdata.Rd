@@ -8,7 +8,8 @@ cstdata(shp_path = NA, area_name = NA, park = NA, models = NA,
   parameters = NA, scenarios = NA, years = c(1950, 2099),
   store_locally = TRUE, local_dir = tempdir(),
   store_remotely = FALSE,
-  aws_config_path = "~/.aws/cstdata_config.RDS", verbose = TRUE)
+  aws_config_path = "~/.aws/cstdata_config.RDS", ncores = NA,
+  verbose = TRUE)
 }
 \arguments{
 \item{shp_path}{A path to a shapefile with which to clip the resulting data
@@ -56,6 +57,9 @@ configuration file on their local machine. (logical)}
 configuration information needed for storing data in an AWS S3 bucket. If
 the file is not yet present in this directory, the user will be prompted
 for the information needed to build the file. (character)}
+
+\item{ncores}{The number of cpus to use to process and save data. Defaults
+to half the number of cores detected by parallel::detectCores(). (integer)}
 
 \item{verbose}{Print verbose output. (logical)}
 }

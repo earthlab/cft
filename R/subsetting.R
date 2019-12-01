@@ -1,6 +1,6 @@
 filter_years <- function(start_year = 1950, end_year = 2099,
                          available_start = 1950, available_end = 2099) {
-
+  
   # Turn these into strings, then dates
   available1 <- as.Date(glue::glue("{available_start}-01-01"))
   available2 <- as.Date(glue::glue("{available_end}-12-31"))
@@ -97,15 +97,15 @@ get_aoi_info <- function(aoi, grid_ref) {
 
 get_queries <- function(aoi, area_name, years, models,
                         parameters, scenarios, arg_ref, grid_ref) {
-
+  
   # We are building url queries from this base
   urlbase <- paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
                     "agg_macav2metdata")
-
+  
   # Split year range up
   start_year <- years[1]
   end_year <- years[2]
-
+  
   # Get time information from our grid reference
   ntime_hist <- grid_ref$ntime_historical
   ntime_model <- grid_ref$ntime_model
@@ -116,7 +116,7 @@ get_queries <- function(aoi, area_name, years, models,
   y2 <- index_pos[["y2"]]
   x1 <- index_pos[["x1"]]
   x2 <- index_pos[["x2"]]
-
+  
   # Use all avalable models or user defined
   if (all(is.na(models))) models <- arg_ref$models
   if (all(is.na(parameters))) parameters <- arg_ref$parameters
@@ -125,43 +125,43 @@ get_queries <- function(aoi, area_name, years, models,
   # Build a list of lists with historical/future model queries and a file name
   queries <- list()
   for (model in models) {
-
+    
     # Available arguments for this model
     args <- arg_ref$get_args(model)
     avail_params <- args$parameters
-    avail_scenarops <- args$scenarios
-
+    avail_scenarios <- args$scenarios
+    
     # Available requested arguments
     params <- lapply(parameters, FUN = function(x) if (x %in% avail_params) x)
-    rcps <- lapply(scenarios, FUN = function(x) if (x %in% avail_scenarops) x)
-    params <- params[!is.na(params)]
-    rcps <- rcps[!is.na(rcps)]
-
+    rcps <- lapply(scenarios, FUN = function(x) if (x %in% avail_scenarios) x)
+    params <- params[params %in% avail_params]
+    rcps <- rcps[rcps %in% avail_scenarios]
+    
     # Variable reference
     variables <- arg_ref$variables
-
+    
     # Only one model run for each
     ensemble <- args$ensemble
-
+    
     # Loop through all of the available arguments and build queries
     for (param in params) {
       for (rcp in rcps) {
-
+        
         # Get internal variable name
         var <- variables[param]
-
+        
         # Build local file name
         file_name <- paste(c(param, area_name, model, ensemble, rcp,
                              "macav2metdata", as.character(start_year),
                              as.character(end_year), "daily.nc"),
                            collapse = "_")
-
+        
         # Build remote historical and future file names
         historical <- paste(c(urlbase, param, model, ensemble, "historical",
                               "1950_2005", "CONUS_daily.nc"), collapse = "_")
         future <- paste(c(urlbase, param, model, ensemble, rcp,
                           "2006_2099", "CONUS_daily.nc"), collapse = "_")
-
+        
         # Build the temporal and spatial subsets
         historical_subset <- glue::glue(paste0("?{var}[{0}:{1}:{ntime_hist}]",
                                                "[{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
@@ -169,16 +169,20 @@ get_queries <- function(aoi, area_name, years, models,
         future_subset <- glue::glue(paste0("?{var}[{0}:{1}:{ntime_model}]",
                                            "[{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
                                            "#fillmismatch"))
-
+        
+        # For further reference, create a vector of data set elements
+        elements <- c("model" = model, "parameter" = param, "rcp" = rcp,
+                      "ensemble" = ensemble, "years" = years)
+        
         # Combine everything into a query package and add to query list
         historical_url <- paste0(historical, historical_subset)
         future_url <- paste0(future, future_subset)
         paired_url <- c(historical_url, future_url)
-        queries[[length(queries) + 1]] <- list(paired_url, file_name)
+        queries[[length(queries) + 1]] <- list(paired_url, file_name, elements)
       }
     }
   }
-
+  
   # Done.
   return(queries)
 }
@@ -187,14 +191,17 @@ get_queries <- function(aoi, area_name, years, models,
 retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
                             aws_creds, store_locally = TRUE,
                             store_remotely = TRUE) {
+  # Catch errors here, there are several reasons it could fail
+  
+  
   # Load xarray
   xr <- reticulate::import("xarray")
   np <- reticulate::import("numpy", convert = FALSE)
-
+  
   # Split year range up
   start_year <- years[1]
   end_year <- years[2]
-
+  
   # Unpack aoi info
   aoilats <- aoi_info[["aoilats"]]
   aoilons <- aoi_info[["aoilons"]]
@@ -215,7 +222,7 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
     file_name <- basename(dst)
     local_dir <- dirname(dst)
   }
-
+  
   # Retrieve subset and save file locally
   if (!file.exists(dst)) {
     
@@ -242,6 +249,9 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
     dsmask <- dsmask$fillna(0)
     ds <- ds$where(dsmask$data == 1)
     
+    # Get data set attributes
+    elements <- query[[3]]
+    
     # Update Attributes  <------------------------------------------------------ Standards: https://www.unidata.ucar.edu/software/netcdf-java/current/metadata/DataDiscoveryAttConvention.html
     summary <- paste0(
       "This archive contains daily downscaled meteorological and hydrological ",
@@ -266,12 +276,22 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
       "atmosphere and estimating pressure from elevation using the barometric ",
       "formula.")
     attrs1 <- ds$attrs
+
+    # Vapor pressure is missing title information. <--------------------------- I think it might be best to create our own set of attributes from scratch.
+    if ( is.null(attrs1$title) ) {
+      attrs1$title <- paste("Downscaled daily meteorological data of",
+                            elements["parameter"], "from", elements["model"],
+                            "using the run", elements["ensemble"])
+    }
     attrs2 <- list(
       "title" = attrs1$title,
       "author" = "John Abatzoglou-University of Idaho, jabatzoglou@uidaho.edu",
       "comment" = paste0("Subsetted to ", area_name, "by the North Central ",
                          "Climate Adaption Science Center"),
       "summary" = summary,
+      "ensemble" = elements["ensemble"],
+      "model" = elements["model"],
+      "rcp" = elements["rcp"],
       "coordinate_system" = attrs1$coordinate_system,
       "geospatial_lat_min" = min(aoilats),
       "geospatial_lat_max" = max(aoilats),
@@ -310,11 +330,11 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
       # "license" = attrs1$license
     )
     ds$attrs <- attrs2
-
+    
     # Save to local file
     ds$to_netcdf(dst)
   }
-
+  
   # Put the file in the bucket
   if (store_remotely == TRUE) {
     bucket <- aws_creds["bucket"]
@@ -340,4 +360,3 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
                     "aws_url" = aws_url)
   return(reference)
 }
-
