@@ -143,7 +143,7 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
   # Get geographic information about the aoi
   aoi_info <- get_aoi_info(aoi, grid_ref)
 
-  # Build url queries and group by number of cpus
+  # Build url queries, filenames, and dataset elements
   queries <- get_queries(aoi, area_name, years, models, parameters, scenarios,
                          arg_ref, grid_ref)
 

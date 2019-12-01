@@ -1,6 +1,6 @@
 # Just a sample to practice this
 
-scatter <- function(file_df, var1 = "tasmax", var2 = "precipitation") {
+scatter <- function(var1 = "tasmax", var2 = "precipitation") {
   # Sample set of model outputs
   file_df <- cstdata::cstdata(park = "Acadia National Park",
                               years = c(2050, 2055),
