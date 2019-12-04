@@ -136,7 +136,8 @@ test_that("Test retrieve_subset", {
   store_locally <- TRUE
   store_remotely <- FALSE
 
-  subset <- retrieve_subset(query, years, aoi_info, area_name, local_dir,
+  subset <- retrieve_subset(query, years, aoi_info, area_name, 
+                            local_dir = file.path(tempdir(), "some_subdir"),
                             aws_creds, store_locally, store_remotely)
   expect_true(file.exists(subset$local_path))
   expect_true(grepl("\\.nc$", subset$local_file))
