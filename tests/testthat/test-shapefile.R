@@ -6,8 +6,10 @@ test_that("Test download_shapefile for file and shapefile object", {
     path <- file.path(dir, "shapefiles", "tl_2019_44_cousub",
                       "tl_2019_44_cousub.shp")
 
-    aoi <- get_shapefile(path = url,
-                         local_dir = dir)
+    aoi <- get_aoi(park = NA, 
+                   area_name = NA,
+                   shp_path = url,
+                   local_dir = dir)
 
     expect_true(file.exists(path))
     expect_s4_class(aoi, "SpatialPolygonsDataFrame")
