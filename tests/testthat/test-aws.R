@@ -44,3 +44,9 @@ test_that("Test that 'config_aws' properly stores user inputs", {
   options(cstdata.connection = stdin())
   close(f)
 })
+
+test_that("config_aws creates dirs", {
+  path <- file.path(tempdir(), "aws-creds", "out.rds")
+  config_aws(path)
+  expect_true(file.exists(dirname(path)))
+})
