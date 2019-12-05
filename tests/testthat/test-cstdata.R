@@ -27,13 +27,6 @@ test_that("Providing no options for data storage raises an error", {
 
 
 test_that("A full run of cstdata completes and saves an expected file", {
-
-  # Check the version of xarray here
-  xr <- reticulate::import("xarray")
-  v <- reticulate::py_get_attr(xr, "_version")
-  print(paste("Xarray version:", v$get_versions()$version))
-  
-  # This should create one file.
   local_dir <- tempdir()
   file_refs <- cstdata(park = "Acadia National Park",
                        years = c(2004, 2005),
@@ -42,12 +35,10 @@ test_that("A full run of cstdata completes and saves an expected file", {
                        scenarios = c("rcp45"),
                        local_dir = local_dir)
 
-  # And this is the expected file name and path
-  exp_file = paste0("pr_acadia_national_park_bcc-csm1-1_r1i1p1_rcp45_",
-                    "macav2metdata_2004_2005_daily.nc")
-  exp_path = file.path(local_dir, "acadia_national_park", exp_file)
+  expected_file <- paste0("pr_acadia_national_park_bcc-csm1-1_r1i1p1_rcp45_",
+                          "macav2metdata_2004_2005_daily.nc")
+  expected_path <- file.path(local_dir, "acadia_national_park", expected_file)
 
-  # So if this exists it worked
-  expect_true(file.exists(exp_path))
+  expect_true(file.exists(expected_path))
 })
 
