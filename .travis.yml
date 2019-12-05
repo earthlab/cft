@@ -12,11 +12,7 @@ before_install:
   - sudo apt-get -q update
   - sudo apt-get -y install libudunits2-dev
   # install conda
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    fi
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda
   - source "$HOME/miniconda/etc/profile.d/conda.sh"
   - hash -r
@@ -43,7 +39,7 @@ addons:
 before_script:
   - python3 -m pip install --upgrade --ignore-installed --user travis virtualenv
   - R CMD INSTALL .
-  - R -e 'cstdata::install_py_deps()'
+  - R -e "cstdata::install_py_deps(method='conda')"
 
 after_success:
     - Rscript -e 'covr::codecov()'
