@@ -21,7 +21,7 @@ test_that("Providing a shapefile but no area name raises an error", {
 
 test_that("Providing no options for data storage raises an error", {
   expect_error(cstdata(park = "Yellowstone National Park",
-                       store_locally = FALSE, store_remotely = FALSE),
+                       store_locally = FALSE),
                regexp = "Please set the store_locally and/or the")
 })
 

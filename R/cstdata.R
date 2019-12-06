@@ -54,13 +54,8 @@
 #'  case. (logical)
 #' @param local_dir The local directory in which to save files if
 #' `store_locally` is set to `TRUE`. (character)
-#' @param store_remotely If `TRUE` this function will store the results in an
-#' Amazon Web Services S3 bucket. This will require the user to store an S3
-#' configuration file on their local machine. (logical)
-#' @param aws_config_path The path to the local RDS file in which to save the
-#' configuration information needed for storing data in an AWS S3 bucket. If
-#' the file is not yet present in this directory, the user will be prompted
-#' for the information needed to build the file. (character)
+#' @param s3_bucket Optional parameter (character) for an Amazon Web Services
+#' S3 bucket to store climate data.
 #' @param verbose Print verbose output. (logical)
 #' @importFrom methods new
 #' 
@@ -68,9 +63,7 @@
 cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
                     parameters = NA, scenarios = NA, years = c(1950, 2099),
                     store_locally = TRUE, local_dir = tempdir(),
-                    store_remotely = FALSE,
-                    aws_config_path = "~/.aws/cstdata_config.RDS",
-                    verbose = TRUE) {
+                    s3_bucket = NA, verbose = TRUE) {
 
   # Make sure user is providing some kind of location information
   if (is.na(shp_path) & is.na(park)) {
@@ -97,8 +90,8 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
   }
 
   # Make sure user is choosing to store somewhere
-  if (!store_locally & !store_remotely) {
-    msg <- paste("Please set the store_locally and/or the store_remotely", 
+  if (!store_locally & is.na(s3_bucket)) {
+    msg <- paste("Please set the store_locally and/or the s3_bucket", 
                  "arguments equal to TRUE.")
     stop(msg)
   }
@@ -119,15 +112,13 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
   location_dir = normalizePath(location_dir)
 
   # Set up AWS access
-  if (store_remotely) {
-    aws_creds <- config_aws(aws_config_path = aws_config_path)
-    bucket = aws_creds["bucket"]
-    region = aws_creds["region"]
-    aws_url <- paste0("https://s3.console.aws.amazon.com/s3/buckets/", bucket,
-                      "/", area_name, "/?region=", region,
+  if (!is.na(s3_bucket)) {
+    aws_url <- paste0("https://s3.console.aws.amazon.com/s3/buckets/", 
+                      s3_bucket,
+                      "/", area_name, 
+                      "/?region=", Sys.getenv("AWS_DEFAULT_REGION"),
                       "&tab=overview")
   } else {
-    aws_creds <- NA
     aws_url <- NA
   }
 
@@ -157,7 +148,7 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
   if (verbose) {
     print(paste("Retrieving climate data for", area_name))
     print(paste("Saving local files to", location_dir))
-    if (store_remotely) print(paste("Saving remote files to", aws_url))
+    if (!is.na(s3_bucket)) print(paste("Saving remote files to", aws_url))
   }
 
   # Retrieve subsets from grouped queries and create file reference data frame
@@ -173,9 +164,8 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
                             aoi_info = aoi_info,
                             area_name = area_name,
                             local_dir = location_dir,
-                            aws_creds = aws_creds,
                             store_locally = store_locally,
-                            store_remotely = store_remotely,
+                            s3_bucket = s3_bucket,
                             cl = cl)
 
   # Create a data frame from the file references

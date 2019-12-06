@@ -186,7 +186,7 @@ get_queries <- function(aoi, area_name, years, models,
 
 retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
                             aws_creds, store_locally = TRUE,
-                            store_remotely = TRUE) {
+                            s3_bucket) {
   # Load xarray
   xr <- reticulate::import("xarray")
   np <- reticulate::import("numpy", convert = FALSE)
@@ -316,20 +316,19 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
   }
 
   # Put the file in the bucket
-  if (store_remotely == TRUE) {
-    bucket <- aws_creds["bucket"]
-    region <- aws_creds["region"]
+  if (!is.na(s3_bucket)) {
+    region <- Sys.getenv("AWS_DEFAULT_REGION")
     location_folder <- area_name
     object <- file.path(location_folder, store_name)
-    aws_url <- paste0("https://s3.console.aws.amazon.com/s3/object/", bucket,
+    aws_url <- paste0("https://s3.console.aws.amazon.com/s3/object/", s3_bucket,
                       "/", location_folder, "/", store_name, "?region=", region,
                       "&tab=overview")
-    if (!aws.s3::head_object(object, bucket, silent = TRUE, verbose = FALSE)) {
-      aws.s3::put_folder(location_folder, bucket)
-      aws.s3::put_object(file = dst, object = object, bucket = bucket)
+    if (!aws.s3::head_object(object, s3_bucket, silent = TRUE, verbose = FALSE)) {
+      aws.s3::put_folder(location_folder, s3_bucket)
+      aws.s3::put_object(file = dst, object = object, bucket = s3_bucket)
     }
   } else {
-    aws_url <- "NA"
+    aws_url <- NA
   }
   
   # Keep track of file information

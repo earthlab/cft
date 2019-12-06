@@ -4,11 +4,19 @@
 \alias{cstdata}
 \title{Climate Scenario Toolkit Data}
 \usage{
-cstdata(shp_path = NA, area_name = NA, park = NA, models = NA,
-  parameters = NA, scenarios = NA, years = c(1950, 2099),
-  store_locally = TRUE, local_dir = tempdir(),
-  store_remotely = FALSE,
-  aws_config_path = "~/.aws/cstdata_config.RDS", verbose = TRUE)
+cstdata(
+  shp_path = NA,
+  area_name = NA,
+  park = NA,
+  models = NA,
+  parameters = NA,
+  scenarios = NA,
+  years = c(1950, 2099),
+  store_locally = TRUE,
+  local_dir = tempdir(),
+  s3_bucket = NA,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{shp_path}{A path to a shapefile with which to clip the resulting data
@@ -48,14 +56,8 @@ case. (logical)}
 \item{local_dir}{The local directory in which to save files if
 `store_locally` is set to `TRUE`. (character)}
 
-\item{store_remotely}{If `TRUE` this function will store the results in an
-Amazon Web Services S3 bucket. This will require the user to store an S3
-configuration file on their local machine. (logical)}
-
-\item{aws_config_path}{The path to the local RDS file in which to save the
-configuration information needed for storing data in an AWS S3 bucket. If
-the file is not yet present in this directory, the user will be prompted
-for the information needed to build the file. (character)}
+\item{s3_bucket}{Optional parameter (character) for an Amazon Web Services
+S3 bucket to store climate data.}
 
 \item{verbose}{Print verbose output. (logical)}
 }
