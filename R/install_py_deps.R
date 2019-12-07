@@ -11,7 +11,7 @@
 #' @param method Installation method. By default, "auto" automatically finds a
 #'   method that will work in the local environment. Change the default to force
 #'   a specific installation method. Note that the "virtualenv" method is not
-#'   available on Windows (as this isn't supported by TensorFlow). Note also
+#'   available on Windows. Note also
 #'   that since this command runs without privilege the "system" method is
 #'   available only on Windows.
 #'

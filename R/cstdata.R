@@ -57,6 +57,13 @@
 #' @param s3_bucket Optional parameter (character) for an Amazon Web Services
 #' S3 bucket to store climate data.
 #' @param verbose Print verbose output. (logical)
+#' 
+#' @examples 
+#' \dontrun{
+#' d <- cstdata(park = "Acadia National Park", parameters = "pr", 
+#'              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
+#' }
+#' 
 #' @importFrom methods new
 #' 
 #' @export
