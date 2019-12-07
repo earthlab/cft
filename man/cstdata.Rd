@@ -89,3 +89,10 @@ Production Notes:
   It apparently needs proxy settings in these cases. Try setting proxy
   options next chance on a windows machine.
 }
+\examples{
+\dontrun{
+d <- cstdata(park = "Acadia National Park", parameters = "pr", 
+             years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
+}
+
+}

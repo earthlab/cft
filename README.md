@@ -31,4 +31,7 @@ The GCM data is downscaled to a 4km resolution via the Multivariate Adaptive Con
 
 ## Example
 
-TODO
+```{r, eval = FALSE}
+d <- cstdata(park = "Acadia National Park", parameters = "pr", 
+             years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
+```

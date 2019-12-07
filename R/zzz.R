@@ -17,8 +17,3 @@ get_ncores <- function() {
   }
   return(ncores)
 }
-
-.onAttach <- function(libname, pkgname){
-  # To default to function inputs from user
-  options(cstdata.connection = stdin())
-}
