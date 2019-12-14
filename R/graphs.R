@@ -40,7 +40,6 @@ extract <- function(row, time_period, fun, day1, day2) {
   return(value)
 }
 
-
 get_fun <- function(file_df, time_period, agg_fun) {
 
   # Check that these files contain data within the earliest reference year
@@ -137,14 +136,25 @@ get_fun <- function(file_df, time_period, agg_fun) {
 }
 
 
+#' Scatterplot
+#' @param file_df Description coming soon!
+#' @param var1 Description coming soon!
+#' @param var2 Description coming soon!
+#' @param agg_fun Description coming soon!
+#' @param difference Description coming soon!
+#' @param target_period Description coming soon!
+#' @param reference_period Description coming soon!
+#' @param scenarios Description coming soon!
+#' @export
 scatterplot <- function(file_df,
                         var1 = "tasmax",
                         var2 = "pr",
                         agg_fun = "mean",
                         difference = TRUE,
                         target_period = c(2080, 2099),
-                        scenarios = c("rcp45", "rcp85"),  # <------------------ They will be able to specify any grouping variable, and the function will plot accordingly. At least that's the plan.
-                        reference_period = NA) {
+                        reference_period = c(1990, 2019),
+                        scenarios = c("rcp45", "rcp85")  # <------------------ They will be able to specify any grouping variable, and the function will plot accordingly. At least that's the plan.
+                        ) {
   '
   var1 = "tasmax"
   var2 = "pr"
