@@ -32,7 +32,8 @@ get_shapefile <- function(path, shp_name = NA, local_dir = tempdir()) {
     path <- list.files(shp_folder, pattern = "\\.shp$", full.names = TRUE)
   }
   aoi <- rgdal::readOGR(path, verbose = FALSE)   
-  aoi
+
+  return(aoi)
 }
 
 suggest_parkname <- function(parkname, available_names) {

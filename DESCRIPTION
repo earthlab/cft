@@ -16,6 +16,7 @@ Suggests:
 Imports:
     aws.s3,
     doParallel,
+    doSNOW,
     dplyr,
     foreach,
     glue,
@@ -24,6 +25,7 @@ Imports:
     parallel,
     pbapply,
     plotly,
+    progress,
     raster,
     reticulate,
     rgdal,

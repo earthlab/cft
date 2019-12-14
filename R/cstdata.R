@@ -169,19 +169,24 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
                                 stringsAsFactors = FALSE)
 
   # Retrieve, subset, and write the files
-  refs <- pbapply::pblapply(queries,
-                            FUN = retrieve_subset,
-                            years = years,
-                            aoi_info = aoi_info,
-                            area_name = area_name,
-                            local_dir = location_dir,
-                            aws_creds = aws_creds,
-                            store_locally = store_locally,
-                            store_remotely = store_remotely,
-                            cl = cl)
+  tryCatch({
+    refs <- pbapply::pblapply(queries,
+                              FUN = retrieve_subset,
+                              years = years,
+                              aoi_info = aoi_info,
+                              area_name = area_name,
+                              local_dir = location_dir,
+                              aws_creds = aws_creds,
+                              store_locally = store_locally,
+                              store_remotely = store_remotely,
+                              cl = cl)
+  }, error = function(e) {
+    parallel::stopCluster(cl) 
+    stop(e)
+  })
 
   # Create a data frame from the file references
-  file_references <- do.call(rbind.data.frame, refs)
+  file_references <- data.frame(do.call(rbind, refs), stringsAsFactors = FALSE)
 
   # Close cluster  # <--------------------------------------------------------- Close in exception
   parallel::stopCluster(cl)

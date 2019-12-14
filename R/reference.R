@@ -45,6 +45,7 @@ Argument_Reference <- methods::setRefClass(
     parameters = "character",
     scenarios = "character",
     variables = "list",
+    labels = "list",
     units = "list"),
   
   methods = list(
@@ -67,6 +68,16 @@ Argument_Reference <- methods::setRefClass(
                        "vas" = "northward_wind",
                        "huss" = "specific_humidity",
                        "vpd" = "vpd"),
+      labels = list("tasmin" = "Minimum Temperature",
+                    "tasmax" = "Maximum Temperature",
+                    "rhsmin" = "Minimum Relative Humidity",
+                    "rhsmax" = "Maximum Relative Humidity",
+                    "pr" = "Precipitation",
+                    "rsds" = "Surface Downswelling Shortwave Flux",
+                    "uas" = "Eastward Wind",
+                    "vas" = "Northward Wind",
+                    "huss" = "Specific Humidity",
+                    "vpd" = "Vapor Pressure Deficit"),
       units = list("air_temperature" = "K",
                    "relative_humidity" = "%",
                    "precipitation" = "mm",
@@ -74,12 +85,13 @@ Argument_Reference <- methods::setRefClass(
                    "eastward_wind" = "m s-1",
                    "northward_wind" = "m s-1",
                    "specific_humidity" = "kg kg-1",
-                   "vpd" = "kPa"
-      )) {
+                   "vpd" = "kPa")
+      ) {
       models <<- models
       parameters <<- parameters
       scenarios <<- scenarios
       variables <<- variables
+      labels <<- labels
       units <<- units
     },
     

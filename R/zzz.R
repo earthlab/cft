@@ -4,6 +4,8 @@ nps_boundary_url <- function() {
 }
 
 get_ncores <- function() {
+  # Checkout these posts: https://stackoverflow.com/questions/28954991/whether-to-use-the-detectcores-function-in-r-to-specify-the-number-of-cores-for
+  # Considering the above posts, consider the future::availableCores()
   # Testing/checks may impose a limit on cpu usage
   limit <- Sys.getenv("_R_CHECK_LIMIT_CORES_", "")
 

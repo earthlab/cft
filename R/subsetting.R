@@ -171,8 +171,15 @@ get_queries <- function(aoi, area_name, years, models,
                                            "#fillmismatch"))
 
         # For further reference, create a vector of data set elements
-        elements <- c("model" = model, "parameter" = param, "rcp" = rcp,
-                      "ensemble" = ensemble, "years" = years)
+        elements <- c("model" = model,
+                      "parameter" = param,
+                      "rcp" = rcp,
+                      "ensemble" = ensemble,
+                      "year1" = as.numeric(years[1]),
+                      "year2" = as.numeric(years[2]),
+                      "area_name" = area_name,
+                      "units" = unname(arg_ref$units[unlist(var)]),
+                      "full_var_name" = unname(arg_ref$labels[unlist(param)]))
   
         # Combine everything into a query package and add to query list
         historical_url <- paste0(historical, historical_subset)
@@ -191,7 +198,7 @@ get_queries <- function(aoi, area_name, years, models,
 retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
                             aws_creds, store_locally = TRUE,
                             store_remotely = TRUE) {
-  # Catch errors here, there are several reasons it could fail
+  # Catch errors, there are several reasons it could fail
 
   # Load xarray
   xr <- reticulate::import("xarray")
@@ -222,19 +229,22 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
     local_dir <- dirname(dst)
   }
   
+  # Get data set attributes
+  elements <- query[[3]]
+
   # Retrieve subset and save file locally
   if (!file.exists(dst)) {
-    
+
     # Get the combined historical and modeled url query
     url_pair <- query[[1]]
-    
+
     # Save a local file
     ds <- xr$open_mfdataset(url_pair, concat_dim = "time")
-    
+
     # Filter dates
     days <- filter_years(start_year, end_year)
     ds <- ds$sel(time = c(days[[1]]: days[[length(days)]]))
-    
+
     # Add coordinates as floats
     lats <- np$asarray(c(as.matrix(aoilats)), dtype = np$float32)
     lons <- np$asarray(c(as.matrix(aoilons)), dtype = np$float32)
@@ -247,9 +257,6 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
     dsmask <- xr$DataArray(mask_matrix)
     dsmask <- dsmask$fillna(0)
     ds <- ds$where(dsmask$data == 1)
-
-    # Get data set attributes
-    elements <- query[[3]]
 
     # Update Attributes  <------------------------------------------------------ Standards: https://www.unidata.ucar.edu/software/netcdf-java/current/metadata/DataDiscoveryAttConvention.html
     summary <- paste0(
@@ -288,9 +295,9 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
       "comment" = paste0("Subsetted to ", area_name, "by the North Central ",
                          "Climate Adaption Science Center"),
       "summary" = summary,
-      "ensemble" = elements["ensemble"],
-      "model" = elements["model"],
-      "rcp" = elements["rcp"],
+      "ensemble" = unname(elements["ensemble"]),
+      "model" = unname(elements["model"]),
+      "rcp" = unname(elements["rcp"]),
       "coordinate_system" = attrs1$coordinate_system,
       "geospatial_lat_min" = min(aoilats),
       "geospatial_lat_max" = max(aoilats),
@@ -329,11 +336,11 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
       # "license" = attrs1$license
     )
     ds$attrs <- attrs2
-    
+
     # Save to local file
     ds$to_netcdf(dst)
   }
-  
+
   # Put the file in the bucket
   if (store_remotely == TRUE) {
     bucket <- aws_creds["bucket"]
@@ -341,7 +348,8 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
     location_folder <- area_name
     object <- file.path(location_folder, store_name)
     aws_url <- paste0("https://s3.console.aws.amazon.com/s3/object/", bucket,
-                      "/", location_folder, "/", store_name, "?region=", region,
+                      "/", location_folder, "/", store_name, "?region=",
+                      region,
                       "&tab=overview")
     if (!aws.s3::head_object(object, bucket, silent = TRUE, verbose = FALSE)) {
       aws.s3::put_folder(location_folder, bucket)
@@ -355,7 +363,7 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
   file_dir <- normalizePath(local_dir)
   file_name <- basename(dst)
   file_path <- file.path(file_dir, file_name)
-  reference <- list("local_file" = file_name, "local_path" = file_path,
-                    "aws_url" = aws_url)
+  reference <- c(list("local_file" = file_name, "local_path" = file_path,
+                    "aws_url" = aws_url), elements)
   return(reference)
 }
