@@ -225,7 +225,7 @@ convert_KC <- function(file_df, column) {
 }
 
 format_months <- function(months) {
-  #' Reformat months inputs to %b style
+  # Reformat months inputs to %b style
 
   # To convert to padded strings if numbers
   rfrmt <- function(x) {

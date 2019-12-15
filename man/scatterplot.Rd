@@ -4,7 +4,8 @@
 \alias{scatterplot}
 \title{Climate Scenarios Toolkit Scatterplot}
 \usage{
-scatterplot(file_df, var1 = "tasmax", var2 = "pr", agg_fun = "mean",
+scatterplot(file_df = NA, agg_fun = "mean", var1 = "tasmax",
+  var2 = "pr", months1 = "all", months2 = "all",
   target_period = c(2080, 2099), reference_period = c(1990, 2019),
   difference = TRUE, scenarios = c("rcp45", "rcp85"))
 }
@@ -12,14 +13,20 @@ scatterplot(file_df, var1 = "tasmax", var2 = "pr", agg_fun = "mean",
 \item{file_df}{A file reference data frame output from a `cstdata` run.
 (data frame)}
 
+\item{agg_fun}{The aggregating function to applied to the model variables
+(e.g., "mean"). (character)}
+
 \item{var1}{The x-axis variable, see cstdata::argument_reference
 (e.g., "pr"). (character).}
 
 \item{var2}{The y-axis variable, see cstdata::argument_reference
 (e.g., "tasmax").  character)}
 
-\item{agg_fun}{The aggregating function to applied to the model variables
-(e.g., "mean"). (character)}
+\item{months1}{The months of the year with which to include in the
+aggregation of variable 1 (e.g., c("aug", "sep", "oct")). (vector)}
+
+\item{months2}{The months of the year with which to include in the
+aggregation of variable 2 (e.g., c("apr", "may", "jun")). (vector)}
 
 \item{target_period}{The time period within which to apply the aggreating
 value function (e.g., c(2050, 2075)). (vector)}
