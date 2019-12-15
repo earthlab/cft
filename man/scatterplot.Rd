@@ -2,29 +2,43 @@
 % Please edit documentation in R/graphs.R
 \name{scatterplot}
 \alias{scatterplot}
-\title{Scatterplot}
+\title{Climate Scenarios Toolkit Scatterplot}
 \usage{
 scatterplot(file_df, var1 = "tasmax", var2 = "pr", agg_fun = "mean",
-  difference = TRUE, target_period = c(2080, 2099),
-  reference_period = c(1990, 2019), scenarios = c("rcp45", "rcp85"))
+  target_period = c(2080, 2099), reference_period = c(1990, 2019),
+  difference = TRUE, scenarios = c("rcp45", "rcp85"))
 }
 \arguments{
-\item{file_df}{Description coming soon!}
+\item{file_df}{A file reference data frame output from a `cstdata` run.
+(data frame)}
 
-\item{var1}{Description coming soon!}
+\item{var1}{The x-axis variable, see cstdata::argument_reference
+(e.g., "pr"). (character).}
 
-\item{var2}{Description coming soon!}
+\item{var2}{The y-axis variable, see cstdata::argument_reference
+(e.g., "tasmax").  character)}
 
-\item{agg_fun}{Description coming soon!}
+\item{agg_fun}{The aggregating function to applied to the model variables
+(e.g., "mean"). (character)}
 
-\item{difference}{Description coming soon!}
+\item{target_period}{The time period within which to apply the aggreating
+value function (e.g., c(2050, 2075)). (vector)}
 
-\item{target_period}{Description coming soon!}
+\item{reference_period}{The time period with which to compare the target
+period (e.g., c(1980, 2010)). (vector)}
 
-\item{reference_period}{Description coming soon!}
+\item{difference}{Whether or not to return values as the difference between
+the target and reference periods. Requires an input for `reference_period`.
+(logical).}
 
-\item{scenarios}{Description coming soon!}
+\item{scenarios}{A vector of representative concetration pathway keys
+(e.g., c("rcp45", rcp85")). (vector)}
 }
 \description{
-Scatterplot
+Renders a scatterplot between two model variables from an assortment of
+General Circulation Models. This function uses an user-specified function to
+aggregate model outputs within a specified area and time period. Users may
+also choose to return differences between the results of that aggregating
+function between two time periods. Uses the output of `cstdata` as a
+reference to local or remote files and meta data.
 }
