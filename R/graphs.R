@@ -14,7 +14,7 @@ convert_KC <- function(file_df, column) {
   file_df[[column]][temp_rows] <- c
 
   # Reassign C to graph units
-  file_df$units[temp_rows] <- "\u00B0C"
+  file_df$units[temp_rows] <- "C"
 
   return(file_df)
 }
@@ -283,7 +283,7 @@ scatterplot <- function(file_df,
   # Make it show the chart studio button
   
   # Graph the plot with this layout
-  graph %>% plotly::layout(
+  graph <- graph %>% plotly::layout(
     # autosize = TRUE,
     xaxis = list(title = xlabel),
     yaxis = list(title = ylabel),
@@ -304,6 +304,7 @@ scatterplot <- function(file_df,
     ) %>% plotly::config(showEditInChartStudio = TRUE,
                          displaylogo = FALSE)
 
+  print(graph)
   names(graph_df) <- c("model", "rcp", var1, var2)
   return(graph_df)
 }

@@ -56,8 +56,9 @@
 #' `store_locally` is set to `TRUE`. (character)
 #' @param s3_bucket Optional parameter (character) for an Amazon Web Services
 #' S3 bucket to store climate data.
-
 #' @param verbose Print verbose output. (logical)
+#' @param ncores The number of cpus to use, overrides the default of half the
+#' number of detected cpus. (numeric)
 #' 
 #' @examples 
 #' \dontrun{
@@ -71,7 +72,7 @@
 cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
                     parameters = NA, scenarios = NA, years = c(1950, 2099),
                     store_locally = TRUE, local_dir = tempdir(),
-                    s3_bucket = NA, verbose = TRUE) {
+                    s3_bucket = NA, verbose = TRUE, ncores = NA) {
 
 
   # Make sure user is providing some kind of location information
