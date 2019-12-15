@@ -51,6 +51,9 @@ case. (logical)}
 S3 bucket to store climate data.}
 
 \item{verbose}{Print verbose output. (logical)}
+
+\item{ncores}{The number of cpus to use, overrides the default of half the
+number of detected cpus. (numeric)}
 }
 \description{
 Retrieves subsetted data of climate future scenarios within specified National
