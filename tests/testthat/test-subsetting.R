@@ -77,30 +77,30 @@ test_that("Test that 'get_queries' returns expected paths", {
 })
 
 
-test_that("Test that setting 'get_queries' args to NA returns full list", {
-
-    # Needed arguments
-  area_name <- "Acadia National Park"
-  aoi <- get_park_boundaries(area_name, local_dir = local_dir)
-  area_name <- gsub(" ", "_", tolower(area_name))
-  years <- c(2000, 2001)
-  arg_ref <- Argument_Reference()
-  grid_ref <- Grid_Reference()
-
-  # Get a query object
-  queries <- get_queries(aoi = aoi, area_name = area_name, arg_ref = arg_ref,
-                         grid_ref = grid_ref, years = years, models = NA,
-                         parameters = NA, scenarios = NA)
-
-  # Expected length is the product of the number of different arguments
-  len_models <- length(arg_ref$models)
-  len_params <- length(arg_ref$parameters)
-  len_scenarios <- length(arg_ref$scenarios)
-  exp_len_queries <- len_models * len_params * len_scenarios
-
-  # Expect the length of queries to match the product above
-  expect_true(exp_len_queries == length(queries))
-})
+# test_that("Test that setting 'get_queries' args to NA returns full list", {
+# 
+#   # Needed arguments
+#   area_name <- "Acadia National Park"
+#   aoi <- get_park_boundaries(area_name, local_dir = local_dir)
+#   area_name <- gsub(" ", "_", tolower(area_name))
+#   years <- c(2000, 2001)
+#   arg_ref <- Argument_Reference()
+#   grid_ref <- Grid_Reference()
+# 
+#   # Get a query object
+#   queries <- get_queries(aoi = aoi, area_name = area_name, arg_ref = arg_ref,
+#                          grid_ref = grid_ref, years = years, models = NA,
+#                          parameters = NA, scenarios = NA)
+# 
+#   # Expected length is the product of the number of different arguments
+#   len_models <- length(arg_ref$models)
+#   len_params <- length(arg_ref$parameters)
+#   len_scenarios <- length(arg_ref$scenarios)
+#   exp_len_queries <- len_models * len_params * len_scenarios
+# 
+#   # Expect the length of queries to match the product above
+#   expect_true(exp_len_queries == length(queries))
+# })
 
 
 test_that("Test get_aoi_info", {
@@ -127,7 +127,9 @@ test_that("Test retrieve_subset", {
   filename <- paste0("pr_acadia_national_park_bcc-csm1-1_r1i1p1_rcp45_",
                     "macav2metdata_2000_2001_daily.nc")
   area_name <- "acadia_national_park"
-  query <- list(c(url1, url2), filename)
+  elements <- c(model = "bcc-csm1-1", rcp = "rcp45", ensemble = "r1i1p1",
+                "year1" = 2000, "year2" = 2001)
+  query <- list(c(url1, url2), filename, elements)
   years <- c(2000, 2001)
   grid_ref <- Grid_Reference()
   aoi <- get_park_boundaries("Acadia National Park", local_dir = local_dir)
@@ -138,6 +140,7 @@ test_that("Test retrieve_subset", {
   subset <- retrieve_subset(query, years, aoi_info, area_name, 
                             local_dir = file.path(tempdir(), "some_subdir"),
                             aws_creds, store_locally, s3_bucket = NA)
+
   expect_true(file.exists(subset$local_path))
   expect_true(grepl("\\.nc$", subset$local_file))
 })

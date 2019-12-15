@@ -56,6 +56,7 @@
 #' `store_locally` is set to `TRUE`. (character)
 #' @param s3_bucket Optional parameter (character) for an Amazon Web Services
 #' S3 bucket to store climate data.
+
 #' @param verbose Print verbose output. (logical)
 #' 
 #' @examples 
@@ -71,6 +72,7 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
                     parameters = NA, scenarios = NA, years = c(1950, 2099),
                     store_locally = TRUE, local_dir = tempdir(),
                     s3_bucket = NA, verbose = TRUE) {
+
 
   # Make sure user is providing some kind of location information
   if (is.na(shp_path) & is.na(park)) {
@@ -139,13 +141,13 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
   # Get geographic information about the aoi
   aoi_info <- get_aoi_info(aoi, grid_ref)
 
-  # Build url queries and group by number of cpus
+  # Build url queries, filenames, and dataset elements
   queries <- get_queries(aoi, area_name, years, models, parameters, scenarios,
                          arg_ref, grid_ref)
 
   # Setup parallelization
+  if (is.na(ncores)) ncores <- get_ncores()
   pbapply::pboptions(use_lb = TRUE)
-  ncores <- get_ncores()
   cl <- parallel::makeCluster(ncores)
   doParallel::registerDoParallel(cl)
   parallel::clusterExport(cl, c("retrieve_subset", "filter_years"),
@@ -175,10 +177,11 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
                             s3_bucket = s3_bucket,
                             cl = cl)
 
-  # Create a data frame from the file references
-  file_references <- do.call(rbind.data.frame, refs)
 
-  # Close cluster
+  # Create a data frame from the file references
+  file_references <- data.frame(do.call(rbind, refs), stringsAsFactors = FALSE)
+
+  # Close cluster  # <--------------------------------------------------------- Close in exception
   parallel::stopCluster(cl)
 
   # Reset index of file reference data frame

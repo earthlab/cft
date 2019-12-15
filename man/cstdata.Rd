@@ -17,6 +17,7 @@ cstdata(
   s3_bucket = NA,
   verbose = TRUE
 )
+
 }
 \arguments{
 \item{shp_path}{A path to a shapefile with which to clip the resulting data
@@ -58,6 +59,9 @@ case. (logical)}
 
 \item{s3_bucket}{Optional parameter (character) for an Amazon Web Services
 S3 bucket to store climate data.}
+
+\item{ncores}{The number of cpus to use to process and save data. Defaults
+to half the number of cores detected by parallel::detectCores(). (integer)}
 
 \item{verbose}{Print verbose output. (logical)}
 }
