@@ -74,7 +74,6 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
                     store_locally = TRUE, local_dir = tempdir(),
                     s3_bucket = NA, verbose = TRUE, ncores = NA) {
 
-
   # Make sure user is providing some kind of location information
   if (is.na(shp_path) & is.na(park)) {
     msg <- paste("No location data/AOI data were provided.",

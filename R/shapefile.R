@@ -22,15 +22,18 @@ get_shapefile <- function(path, shp_name = NA, local_dir = tempdir()) {
                                full.names = TRUE, 
                                pattern = "\\.shp$")
     if (length(expected_file) == 0) {
+
       # download shapefile if it doesn't exist
       dir.create(shp_folder, recursive = TRUE, showWarnings = FALSE)
       zip_path <- file.path(shp_folder, "temp.zip")
-      utils::download.file(url = path, destfile = zip_path, method = "curl")
+      utils::download.file(url = path, destfile = zip_path)
       utils::unzip(zip_path, exdir = shp_folder)
       file.remove(zip_path)
     }
     path <- list.files(shp_folder, pattern = "\\.shp$", full.names = TRUE)
   }
+
+  
   aoi <- rgdal::readOGR(path, verbose = FALSE)   
 
   return(aoi)
