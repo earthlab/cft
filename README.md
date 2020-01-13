@@ -1,37 +1,40 @@
-cstdata
 
-[![Build Status](https://travis-ci.com/earthlab/cstdata.svg?branch=master)](https://travis-ci.com/earthlab/cstdata)
-[![Codecov test coverage](https://codecov.io/gh/earthlab/cstdata/branch/master/graph/badge.svg)](https://codecov.io/gh/earthlab/cstdata?branch=master)
+<!-- README.md is generated from README.Rmd. Please edit that file -->
 
+# cstdata: climate scenarios toolkit data utilities
 
-This is a collection of methods for quickly downloading downscaled global climate model (GCM) data covering specified areas for 
-use in the USGS NCCASC Climate Scenario Toolbox.
+<!-- badges: start -->
+
+[![Build
+Status](https://travis-ci.com/earthlab/cstdata.svg?branch=master)](https://travis-ci.com/earthlab/cstdata)
+[![Codecov test
+coverage](https://codecov.io/gh/earthlab/cstdata/branch/master/graph/badge.svg)](https://codecov.io/gh/earthlab/cstdata?branch=master)
+[![Project Status: WIP – Initial development is in progress, but there
+has not yet been a stable, usable release suitable for the
+public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+<!-- badges: end -->
+
+The goal of cstdata is to provide data access utilities that facilitate
+climate scenario planning
 
 ## Installation
 
-Install the development version of the cstdata package with:
+And the development version from [GitHub](https://github.com/) with:
 
-
-```r
-remotes::install_github("earthlab/cstdata")
+``` r
+# install.packages("devtools")
+devtools::install_github("earthlab/cstdata")
 ```
-
-Then, install python dependencies via:
-
-```r
-cstdata::install_py_deps()
-```
-
-## Getting started
-
-The Climate Scenario Toolbox is an R package that allows users to quickly query downscaled Global Climate Models for
-a variety of climate variables for a specified area and future time period. 
-
-The GCM data is downscaled to a 4km resolution via the Multivariate Adaptive Constructed Analogs method (MACA). 
 
 ## Example
 
-```{r, eval = FALSE}
+To acquire precipitation data for Acadia National Park for a subset of
+climate models, you can use the `cstdata` function:
+
+``` r
+library(cstdata)
+library(raster)
+
 d <- cstdata(park = "Acadia National Park", parameters = "pr", 
              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
 ```
