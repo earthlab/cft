@@ -51,9 +51,9 @@ scatterplot <- function(file_df = NA,
   reference_period = c(1950, 2010)
   target_period = c(2080, 2099)
   file_df <- cstdata::cstdata(park = "Yellowstone National Park",
-                            years = c(1950, 2099),
-                            local_dir = "~/cstdata_test",
-                            ncores = get_ncores())
+                              years = c(1950, 2099),
+                              local_dir = "~/cstdata_test",
+                              ncores = get_ncores())
   '
   # Sample set of model outputs  <--------------------------------------------- It takes a minute to get these out. Still some trouble with open node connections.
   if (identical(file_df, NA)) {
