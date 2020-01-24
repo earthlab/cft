@@ -6,3 +6,4 @@ cstdata.proj
 /R/.Rhistory
 .Rproj.user
 .Rproj.user/*
+inst/doc

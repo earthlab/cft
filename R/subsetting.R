@@ -238,7 +238,7 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
     url_pair <- query[[1]]
 
     # Save a local file
-    ds <- xr$open_mfdataset(url_pair, concat_dim = "time")
+    ds <- xr$open_mfdataset(url_pair, concat_dim = "time", combine = "nested")
 
     # Filter dates
     days <- filter_years(start_year, end_year)

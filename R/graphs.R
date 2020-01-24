@@ -301,7 +301,7 @@ get_fun <- function(file_df, agg_fun, time_period) {
   # Check that these files contain data within the earliest reference year
   year1 <- min(as.numeric(file_df$year1))
   year2 <- min(as.numeric(file_df$year2))
-  if (year1 > time_period[[1]] | year2 < time_period[[2]]) {
+  if (time_period[[1]] < year1 | time_period[[2]] > year2) {
     msg <- paste0("The data provided does not contain the years requested.")
     stop(msg)
   }
@@ -359,11 +359,15 @@ get_fun <- function(file_df, agg_fun, time_period) {
       # Get the matrix of values
       subset <- ncdf4::ncvar_get(nc, variable)
 
-      # Filter dates for this variable
-      days <- get_days_since(time_period, months)
+      # Filter dates in days since 1950 for this variable
+      filter_days <- get_days_since(time_period, months)
+
+      # Convert filtered days since 1950 to index positions of all days in file
+      all_days <- nc$dim$time$vals
+      day_indices <- match(filter_days, all_days)
 
       # Get the matrix slices
-      subset <- subset[, , days]
+      subset <- subset[, , day_indices]
      
       # Apply the aggregation function
       value <- fun(subset, na.rm=TRUE)

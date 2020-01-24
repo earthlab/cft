@@ -12,7 +12,9 @@ Suggests:
     RCurl,
     testthat (>= 2.1.0),
     sf,
-    covr
+    covr,
+    knitr,
+    rmarkdown
 Imports:
     aws.s3,
     doParallel,
@@ -34,3 +36,4 @@ Imports:
     utils,
     rstudioapi
 RoxygenNote: 7.0.2
+VignetteBuilder: knitr

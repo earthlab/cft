@@ -1,0 +1,117 @@
+---
+title: "cstdata"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{cstdata}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r library}
+library(cstdata)
+```
+
+The cstdata packages accomplishes three goals; acquiring, subsetting, and
+plotting outputs from MACA-downscaled Global Circulation Models (GCMs) outputs
+from the Northwest Knowledge Network (link here). 
+
+### Acquiring and subsetting data
+
+1) Use the cstdata reference object within the cstdata package to learn which
+GCMs are available. 
+
+```{r references}
+references <- cstdata::argument_reference
+print(references$models)
+```
+
+2) Combine this with a location in the form of a shapefile path or a US National Park Name to call the cstdata
+function and download the data. You may specify a range of years, a set of models, a set of parameters, and a
+set of representative concentration pathways to return. Leaving these arguments empty will results in a download
+of all available data for that location.
+
+```{r download_1}
+proj_dir = "."
+file_refs <- cstdata(park = "Wind Cave National Park",
+                     years = c(1980, 2050),
+                     models = NA,
+                     parameters = c("tasmin", "vpd"),
+                     scenarios = c("rcp45", "rcp85"),
+                     local_dir = proj_dir,
+                     ncores = 4)
+```
+
+3) You may also specify a shapefile as a local path or as a remote path to a zipped file.
+
+``` {r download_2}
+
+```
+4) You may choose to save results to an Amazon Web Services s3 bucket. To do so, you will need to set the following information about your s3 bucket as environment variables:
+      "BUCKET_NAME" ?
+      "AWS_ACCESS_KEY_ID"
+      "AWS_SECRET_ACCESS_KEY"
+      "AWS_DEFAULT_REGION"
+
+This can be done at the beginning of a session with the following command: ?
+
+`sys.setenv(c("BUCKET_NAME" = <bucket name>, ?
+              "AWS_ACCESS_KEY_ID" = <value>,
+              "AWS_SECRET_ACCESS_KEY" = <value>,
+              "AWS_DEFAULT_REGION" = <value>
+              )
+            )`
+
+To automate this ...
+If you have forgotten your access key or it has expired...
+If you have forgotten you secret access key, you will have to reset it here...
+
+
+After setting your credentials, set the `s3_bucket` argument to true and run the function normally.
+
+```{r download_3}
+# proj_dir = "."
+# file_refs <- cstdata(park = "Wind Cave National Park",
+#                      years = c(1980, 2050),
+#                      models = NA,
+#                      parameters = c("tasmin", "vpd"),
+#                      scenarios = c("rcp45", "rcp85"),
+#                      local_dir = proj_dir,
+#                      s3_bucket = TRUE)
+```
+
+
+### Plotting data
+
+5) Use the file reference object that is returned from cstdata as an input to `scatterplot` (we need to change the name I think, there's another one) to create a scatterplot of two variables of your choice from multiple GCMs. You may specify the function with which to aggregate your chosen variable as well as the yearly time period months of the year to include in this calculation. If you would like to see the difference in values between a two periods, set the `difference` argument to TRUE and provide a reference period with the `reference_period` argument
+
+```{r scatterplot}
+graph_data <- scatterplot(file_refs,
+                          var1 = "tasmin",
+                          var2 = "vpd",
+                          agg_fun = "mean",
+                          difference = TRUE,
+                          target_period = c(2020, 2050),
+                          reference_period = c(1990, 2019),
+                          months1 = c(1, 2, 3),
+                          months2 = c(4, 5, 6),
+                          scenarios = c("rcp45", "rcp85"))
+```
+
+
+``` {r boxplot}
+
+```
+
+``` {r timeseries}
+
+```
+
+``` {r raw data}
+```
