@@ -28,6 +28,7 @@ Imports:
     pbapply,
     plotly,
     progress,
+    qpdf,
     raster,
     reticulate,
     rgdal,

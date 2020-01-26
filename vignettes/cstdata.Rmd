@@ -87,7 +87,7 @@ After setting your credentials, set the `s3_bucket` argument to true and run the
 ```
 
 
-### Plotting data
+### Scatter Plots
 
 5) Use the file reference object that is returned from cstdata as an input to `scatterplot` (we need to change the name I think, there's another one) to create a scatterplot of two variables of your choice from multiple GCMs. You may specify the function with which to aggregate your chosen variable as well as the yearly time period months of the year to include in this calculation. If you would like to see the difference in values between a two periods, set the `difference` argument to TRUE and provide a reference period with the `reference_period` argument
 

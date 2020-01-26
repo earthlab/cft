@@ -35,6 +35,9 @@ addons:
       - python3-virtualenv
       - python3-venv
 
+r_build_args: --no-build-vignettes
+
+r_check_args: --no-build-vignettes
 
 before_script:
   - python3 -m pip install --upgrade --ignore-installed --user travis virtualenv
@@ -42,4 +45,7 @@ before_script:
   - R -e "cstdata::install_py_deps(method='conda', python_version = 3)"
 
 after_success:
-    - Rscript -e 'covr::codecov()'
+  - Rscript -e 'covr::codecov()'
+
+after_failure:
+  - cat '/home/travis/build/earthlab/cstdata/cstdata.Rcheck/*check.log'
