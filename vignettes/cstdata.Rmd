@@ -8,6 +8,7 @@ vignette: >
 ---
 
 ```{r setup, include = FALSE}
+LOCAL <- identical(Sys.getenv("LOCAL"), "true")
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -35,8 +36,7 @@ Scenarios Toolbox was developed to help users quickly download smaller subsets.
 It will also use these subsets in a variety of plotting functions.
 
 Data is acquired from the [Northwest Knowledge Server of the University of
-Idaho](http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_macav2_catalog2.html).
-While this package only accomdates  {what are the limits of availability},
+Idaho](http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_macav2_catalog2.html). While this package only accomdates {what are the limits of availability?},
 this accounts for ~20 TB of data access. 
 
 
@@ -52,7 +52,7 @@ The `labels` field will spell out the specific meaning of each parameter, the
 sets  themselves, and the `units` field shows the measurement unit of each
 variable.
 
-```{r references_1}
+```{r references_1, eval = LOCAL}
 library(cstdata)
 references <- cstdata::argument_reference
 print(references$models)
@@ -68,7 +68,7 @@ Not every GCM has the same set of parameters available, so the
 `get_args` method within the reference object will list available information
 for each model. 
 
-```{r references_2}
+```{r references_2, eval = LOCAL}
 print(references$get_args("CCSM4"))
 ```
 
@@ -81,7 +81,7 @@ a set of representative concentration pathways to return. Leaving these
 arguments empty will results in a download of all available data for that
 location.
 
-```{r download_1}
+```{r download_1, eval = LOCAL}
 proj_dir <- "."
 file_refs <- cstdata(park = "Wind Cave National Park",
                      years = c(1980, 2050),
@@ -99,13 +99,13 @@ You may also specify a shapefile as a local path or as a url to a remote
 zipped file. Remote files will downloaded and stored for future use in the
 project directory provided to the function.
 
-``` {r download_2}
-# file_refs <- cstdata(park = "Wind Cave National Park",
-#                      years = c(1980, 2050),
-#                      models = NA,
-#                      parameters = c("tasmin", "vpd"),
-#                      scenarios = c("rcp45", "rcp85"),
-#                      ncores = 4)
+``` {r download_2, eval = FALSE}
+file_refs <- cstdata(park = "Wind Cave National Park",
+                     years = c(1980, 2050),
+                     models = NA,
+                     parameters = c("tasmin", "vpd"),
+                     scenarios = c("rcp45", "rcp85"),
+                     ncores = 4)
 ```
 
 - **Storing outputs in an s3 bucket**
@@ -121,7 +121,7 @@ environment variables:
 
 This can be done at the beginning of a session with the following command:
 
-```{r set_aws}
+```{r set_aws, eval = LOCAL}
 Sys.setenv("BUCKET_NAME" = "<bucket name>",
            "AWS_ACCESS_KEY_ID" = "<access_key>",
            "AWS_SECRET_ACCESS_KEY" = "<secret_access_key>",
@@ -135,15 +135,15 @@ If you have forgotten you secret access key, you will have to reset it here...
 After setting your credentials, set the `s3_bucket` argument to true and run
 the function normally.
 
-```{r download_3}
-# proj_dir = "."
-# file_refs <- cstdata(park = "Wind Cave National Park",
-#                      years = c(1980, 2050),
-#                      models = NA,
-#                      parameters = c("tasmin", "vpd"),
-#                      scenarios = c("rcp45", "rcp85"),
-#                      local_dir = proj_dir,
-#                      s3_bucket = TRUE)
+```{r download_3, eval = FALSE}
+proj_dir = "."
+file_refs <- cstdata(park = "Wind Cave National Park",
+                     years = c(1980, 2050),
+                     models = NA,
+                     parameters = c("tasmin", "vpd"),
+                     scenarios = c("rcp45", "rcp85"),
+                     local_dir = proj_dir,
+                     s3_bucket = TRUE)
 ```
 
 ## scatterplot
@@ -157,7 +157,7 @@ If you would like to see the difference in values between a two periods, set
 the `difference` argument to TRUE and provide a reference period with the
 `reference_period` argument
 
-```{r scatterplot}
+```{r scatterplot, eval = LOCAL}
 graph_data <- scatterplot(file_refs,
                           var1 = "tasmin",
                           var2 = "vpd",
@@ -171,14 +171,14 @@ graph_data <- scatterplot(file_refs,
 ```
 
 ## boxplot
-``` {r boxplot}
+``` {r boxplot, eval = LOCAL}
 ```
 
 ## timeseries
-``` {r timeseries}
+``` {r timeseries, eval = LOCAL}
 
 ```
 
 ## raw_data
-``` {r raw data}
+``` {r raw data, eval = LOCAL}
 ```

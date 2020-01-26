@@ -6,3 +6,5 @@
 ^README\.Rmd$
 ^doc$
 ^Meta$
+^vignettes$
+
