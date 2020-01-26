@@ -6,6 +6,14 @@ cache:
   directories:
     - $HOME/.cache/pip
 
+env:
+  global:
+    - R_BUILD_ARGS="--no-build-vignettes --no-manual"
+    - R_CHECK_ARGS="--no-build-vignettes --no-manual --timings"
+
+r_build_args: --no-build-vignettes --no-manual
+r_check_args: --no-build-vignettes --no-manual --timings
+
 before_install:
   # install libudunits2
   - sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable
