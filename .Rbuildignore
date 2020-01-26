@@ -4,3 +4,5 @@
 ^data$
 ^codecov\.yml$
 ^README\.Rmd$
+^doc$
+^Meta$

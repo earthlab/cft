@@ -7,3 +7,7 @@ cstdata.proj
 .Rproj.user
 .Rproj.user/*
 inst/doc
+/vignettes/wind_cave_national_park/*
+/vignettes/shapefiles/nps_boundary/*
+doc
+Meta

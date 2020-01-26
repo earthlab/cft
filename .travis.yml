@@ -48,4 +48,4 @@ after_success:
   - Rscript -e 'covr::codecov()'
 
 after_failure:
-  - cat '/home/travis/build/earthlab/cstdata/cstdata.Rcheck/*check.log'
+  - cat "/home/travis/build/earthlab/cstdata/cstdata.Rcheck/*check.log"

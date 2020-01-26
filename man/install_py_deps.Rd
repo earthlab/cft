@@ -4,8 +4,13 @@
 \alias{install_py_deps}
 \title{Install python dependencies}
 \usage{
-install_py_deps(method = c("auto", "virtualenv", "conda"),
-  conda = "auto", envname = NULL, restart_session = TRUE, ...)
+install_py_deps(
+  method = c("auto", "virtualenv", "conda"),
+  conda = "auto",
+  envname = NULL,
+  restart_session = TRUE,
+  ...
+)
 }
 \arguments{
 \item{method}{Installation method. By default, "auto" automatically finds a
