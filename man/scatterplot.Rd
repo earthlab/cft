@@ -4,10 +4,18 @@
 \alias{scatterplot}
 \title{Climate Scenarios Toolkit Scatterplot}
 \usage{
-scatterplot(file_df = NA, agg_fun = "mean", var1 = "tasmax",
-  var2 = "pr", months1 = "all", months2 = "all",
-  target_period = c(2080, 2099), reference_period = c(1990, 2019),
-  difference = TRUE, scenarios = c("rcp45", "rcp85"))
+scatterplot(
+  file_df = NA,
+  agg_fun = "mean",
+  var1 = "tasmax",
+  var2 = "pr",
+  months1 = "all",
+  months2 = "all",
+  target_period = c(2080, 2099),
+  reference_period = c(1990, 2019),
+  difference = TRUE,
+  scenarios = c("rcp45", "rcp85")
+)
 }
 \arguments{
 \item{file_df}{A file reference data frame output from a `cstdata` run.

@@ -4,10 +4,20 @@
 \alias{cstdata}
 \title{Climate Scenario Toolkit Data}
 \usage{
-cstdata(shp_path = NA, area_name = NA, park = NA, models = NA,
-  parameters = NA, scenarios = NA, years = c(1950, 2099),
-  store_locally = TRUE, local_dir = tempdir(), s3_bucket = NA,
-  verbose = TRUE, ncores = NA)
+cstdata(
+  shp_path = NA,
+  area_name = NA,
+  park = NA,
+  models = NA,
+  parameters = NA,
+  scenarios = NA,
+  years = c(1950, 2099),
+  store_locally = TRUE,
+  local_dir = tempdir(),
+  s3_bucket = NA,
+  verbose = TRUE,
+  ncores = NA
+)
 }
 \arguments{
 \item{shp_path}{A path to a shapefile with which to clip the resulting data
@@ -54,6 +64,9 @@ S3 bucket to store climate data.}
 
 \item{ncores}{The number of cpus to use, overrides the default of half the
 number of detected cpus. (numeric)}
+}
+\value{
+A tibble containing information about climate data files.
 }
 \description{
 Retrieves subsetted data of climate future scenarios within specified National
