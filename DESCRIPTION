@@ -33,6 +33,7 @@ Imports:
     rgdal,
     sp,
     stringdist,
+    tibble,
     utils,
     rstudioapi
 RoxygenNote: 7.0.2

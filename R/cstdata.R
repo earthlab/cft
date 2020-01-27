@@ -60,6 +60,8 @@
 #' @param ncores The number of cpus to use, overrides the default of half the
 #' number of detected cpus. (numeric)
 #' 
+#' @return A tibble containing information about climate data files. 
+#' 
 #' @examples 
 #' \dontrun{
 #' d <- cstdata(park = "Acadia National Park", parameters = "pr", 
@@ -186,6 +188,9 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
 
   # Reset index of file reference data frame
   rownames(file_references) <- seq(nrow(file_references))
+  
+  # Make a tibble
+  file_references <- tibble::as_tibble(lapply(file_references, unlist))
 
   # Return file references
   return(file_references)

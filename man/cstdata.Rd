@@ -65,6 +65,9 @@ S3 bucket to store climate data.}
 \item{ncores}{The number of cpus to use, overrides the default of half the
 number of detected cpus. (numeric)}
 }
+\value{
+A tibble containing information about climate data files.
+}
 \description{
 Retrieves subsetted data of climate future scenarios within specified National
 Parks or shapefiles in the Contiguous United States. This data is downscaled
