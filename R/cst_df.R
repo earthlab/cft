@@ -18,6 +18,7 @@
 cst_df <- function(file_reference, cores = 1) {
   message("Computing spatial averages...")
   cl <- parallel::makeCluster(cores)
+  on.exit(parallel::stopCluster(cl))
   parallel::clusterExport(cl = cl, varlist = c("r_to_df"))
   df <- pbapply::pbapply(file_reference, MARGIN = 1,
                           function(row) r_to_df(row), 
@@ -30,7 +31,6 @@ cst_df <- function(file_reference, cores = 1) {
                       names_from = "parameter", values_from = "value", 
                       cl = cl) %>%
     dplyr::bind_rows()
-  parallel::stopCluster(cl)
   wide_df
 }
 
