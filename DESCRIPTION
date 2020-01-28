@@ -14,6 +14,7 @@ Suggests:
     sf,
     covr
 Imports:
+    assertthat,
     aws.s3,
     doParallel,
     doSNOW,
@@ -32,6 +33,8 @@ Imports:
     sp,
     stringdist,
     tibble,
+    tidyr,
     utils,
-    rstudioapi
+    rstudioapi,
+    magrittr
 RoxygenNote: 7.0.2
