@@ -1,0 +1,4 @@
+*.html
+*.R
+shapefiles/*
+wind_cave_national_parl/*
