@@ -12,7 +12,9 @@ Suggests:
     RCurl,
     testthat (>= 2.1.0),
     sf,
-    covr
+    covr,
+    knitr,
+    rmarkdown
 Imports:
     assertthat,
     aws.s3,
@@ -38,3 +40,4 @@ Imports:
     rstudioapi,
     magrittr
 RoxygenNote: 7.0.2
+VignetteBuilder: knitr
