@@ -6,6 +6,7 @@ cstdata.proj
 /R/.Rhistory
 .Rproj.user
 .Rproj.user/*
+scratch.R
 inst/doc
 /vignettes/wind_cave_national_park/*
 /vignettes/shapefiles/nps_boundary/*

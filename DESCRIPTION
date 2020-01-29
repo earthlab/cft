@@ -16,6 +16,7 @@ Suggests:
     knitr,
     rmarkdown
 Imports:
+    assertthat,
     aws.s3,
     doParallel,
     doSNOW,
@@ -34,7 +35,9 @@ Imports:
     sp,
     stringdist,
     tibble,
+    tidyr,
     utils,
-    rstudioapi
+    rstudioapi,
+    magrittr
 RoxygenNote: 7.0.2
 VignetteBuilder: knitr

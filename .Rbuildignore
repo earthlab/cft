@@ -4,7 +4,7 @@
 ^data$
 ^codecov\.yml$
 ^README\.Rmd$
+scratch.R
 ^doc$
 ^Meta$
 ^vignettes$
-
