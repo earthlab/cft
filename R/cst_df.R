@@ -19,30 +19,10 @@ cst_df <- function(file_reference, cores = 1) {
   message("Computing spatial averages...")
   cl <- parallel::makeCluster(cores)
   on.exit(parallel::stopCluster(cl))
-  df <- pbapply::pbapply(
-    file_reference, 
-    MARGIN = 1,
-    function(row) {
-      # internal function that computes spatial average of raster
-      r_to_df <- function(df_row) {
-        path <- df_row["local_path"]
-        r <- raster::brick(path)
-        
-        min_date <- as.Date(paste0(df_row["year1"], "-01-01"))
-        max_date <- as.Date(paste0(df_row["year2"], "-12-31"))
-        date_seq <- seq(min_date, max_date, 1)
-        tibble::tibble(
-          value = raster::cellStats(r, stat = "mean"), 
-          parameter = df_row["parameter"], 
-          rcp = df_row["rcp"], 
-          date = date_seq, 
-          model = df_row["model"],
-          ensemble = df_row["ensemble"], 
-          area_name = df_row["area_name"]
-        )
-      }
-      r_to_df(row)
-      }, cl = cl) %>%
+  df <- pbapply::pbapply(file_reference, 
+                         MARGIN = 1, 
+                         FUN = r_to_df, 
+                         cl = cl) %>%
     dplyr::bind_rows()
   
   message("Generating climate data.frame...")
@@ -52,4 +32,23 @@ cst_df <- function(file_reference, cores = 1) {
                       cl = cl) %>%
     dplyr::bind_rows()
   wide_df
+}
+
+# internal function that computes spatial average of raster
+r_to_df <- function(df_row) {
+  path <- df_row["local_path"]
+  r <- raster::brick(path)
+  
+  min_date <- as.Date(paste0(df_row["year1"], "-01-01"))
+  max_date <- as.Date(paste0(df_row["year2"], "-12-31"))
+  date_seq <- seq(min_date, max_date, 1)
+  tibble::tibble(
+    value = raster::cellStats(r, stat = "mean"), 
+    parameter = df_row["parameter"], 
+    rcp = df_row["rcp"], 
+    date = date_seq, 
+    model = df_row["model"],
+    ensemble = df_row["ensemble"], 
+    area_name = df_row["area_name"]
+  )
 }
