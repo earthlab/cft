@@ -1,5 +1,5 @@
 # Let's not download the same file everytime
-local_dir <- tempdir()
+local_dir <- "."
 
 test_that("Test that filter years returns correct start and end days", {
   days <- filter_years(start_year = 1977, end_year = 1981,
@@ -105,7 +105,7 @@ test_that("Test that 'get_queries' returns expected paths", {
 
 test_that("Test get_aoi_info", {
   grid_ref <- Grid_Reference()
-  aoi <- get_park_boundaries("Acadia National Park")
+  aoi <- get_park_boundaries("Acadia National Park", local_dir = local_dir)
 
   aoi_info <- get_aoi_info(aoi, grid_ref)
   testthat::expect_named(aoi_info, 
@@ -138,12 +138,9 @@ test_that("Test retrieve_subset", {
   store_locally <- TRUE
 
   subset <- retrieve_subset(query, years, aoi_info, area_name, 
-                            local_dir = file.path(tempdir(), "some_subdir"),
+                            local_dir = local_dir,
                             aws_creds, store_locally, s3_bucket = NA)
 
   expect_true(file.exists(subset$local_path))
   expect_true(grepl("\\.nc$", subset$local_file))
 })
-
-# To make sure other tests don't skip anything
-unlink(local_dir)

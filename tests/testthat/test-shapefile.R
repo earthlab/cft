@@ -1,40 +1,27 @@
 test_that("Test download_shapefile for file and shapefile object", {
     url <- paste0("https://www2.census.gov/geo/tiger/TIGER2019/COUSUB/",
                   "tl_2019_44_cousub.zip")
-
-    dir <- tempdir()
+    dir <- "."
     path <- file.path(dir, "shapefiles", "tl_2019_44_cousub",
                       "tl_2019_44_cousub.shp")
-
     aoi <- get_aoi(park = NA, 
                    area_name = NA,
                    shp_path = url,
                    local_dir = dir)
-
     expect_true(file.exists(path))
     expect_s4_class(aoi, "SpatialPolygonsDataFrame")
 })
 
 test_that("Test get_park_boundaries for file and shapefile object", {
-  clean_up <- function() {
-    unlink(list.files(pattern = "nps_boundary",
-                      recursive = TRUE,
-                      full.names = TRUE,
-                      include.dirs = TRUE),
-           force = TRUE, recursive = TRUE) # ensure no previous files
-  }
-
   parkname <- "Yellowstone National Park"
 
   dir <- "."
-  clean_up()
   path <- file.path(dir, "shapefiles", "nps_boundary", "nps_boundary.shp")
 
   aoi <- get_park_boundaries(parkname, local_dir = dir)
 
   expect_true(file.exists(path))
   expect_s4_class(aoi, "SpatialPolygonsDataFrame")
-  clean_up()
 })
 
 test_that("Default NPS boundary URL is valid", {
@@ -47,6 +34,6 @@ test_that("Local shapefiles are readable", {
 })
 
 test_that("Invalid park names raise errors", {
-  expect_error(get_park_boundaries("Poodlebear National Park"),
+  expect_error(get_park_boundaries("Poodlebear National Park", local_dir = "."),
                regexp = "is not contained in the national park boundary data")
 })

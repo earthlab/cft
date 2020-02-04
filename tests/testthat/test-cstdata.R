@@ -27,7 +27,7 @@ test_that("Providing no options for data storage raises an error", {
 
 
 test_that("A full run of cstdata completes and saves an expected file", {
-  local_dir <- tempdir()
+  local_dir <- "."
   file_refs <- cstdata(park = "Acadia National Park",
                        years = c(2004, 2005),
                        models = c("bcc-csm1-1"),
