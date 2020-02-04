@@ -7,3 +7,6 @@
 scratch.R
 ^doc$
 ^Meta$
+^tests/testthat/acadia_national_park
+^.*\.nc$
+^tests/testthat/shapefiles
