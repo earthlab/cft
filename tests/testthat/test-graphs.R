@@ -1,26 +1,20 @@
-# # Could we share a file_df from a single run across all tests?
-# # VCR? R port, save response locally. 
 
-# # test_that("Test scatterplot with 'difference'", {
-# Not this one, use the one from test-cstdata?
-#   file_df <- cstdata::cstdata(park = "Yellowstone National Park",
-#                               years = c(1950, 2099),
-#                               local_dir = "~/cstdata_test",
-#                               ncores = 4)
-# 
-#   # This returns a data frame of the values and makes a graph in the viewer.
-#   graph_data <- cstdata::scatterplot(file_df,
-#                                      var1 = "tasmin",
-#                                      var2 = "vpd",
-#                                      agg_fun = "mean",
-#                                      difference = TRUE,
-#                                      target_period = c(2060, 2070),
-#                                      reference_period = c(1990, 2019),
-#                                      months1 = c(1, 2, 3),
-#                                      months2 = c(4, 5, 6),
-#                                      scenarios = c("rcp45", "rcp85"))
-# 
-#   # Okay, what do we expect in computer terms??
-#   expect_true()
-# 
-# })
+test_that("Test scatterplot with 'difference'", {
+  file_refs <- cstdata(park = "Acadia National Park",
+                       years = c(2004, 2005),
+                       models = c("bcc-csm1-1"),
+                       parameters = c("pr"),
+                       scenarios = c("rcp45"),
+                       local_dir = ".")
+  graph_data <- cstdata::scatterplot(file_refs,
+                                     var1 = "pr",
+                                     var2 = "pr",
+                                     agg_fun = "mean",
+                                     difference = TRUE,
+                                     target_period = c(2005, 2005),
+                                     reference_period = c(2004, 2004),
+                                     months1 = c(1, 2, 3),
+                                     months2 = c(4, 5, 6),
+                                     scenarios = "rcp45")
+  expect_s3_class(graph_data, "data.frame")
+})
