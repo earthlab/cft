@@ -314,77 +314,66 @@ get_fun <- function(file_df, agg_fun, time_period) {
                 "' is not available."))
   })
 
-  # Extract values
-  tryCatch({
-    ##### Attempt One (doesn't work) #####
-    # # Setup parallelization
-    # if (identical(ncores, NA)) ncores <- get_ncores()
-    # pbapply::pboptions(use_lb = FALSE)
-    # cl <- parallel::makeCluster(ncores - 1)
-    # doParallel::registerDoParallel(cl)
-    # parallel::clusterExport(cl, c("extract"))
-    # parallel::clusterEvalQ(cl, {library(ncdf4)})
-    # 
-    # # This is returning NAs with the clusters, must be ncdf4 interface
-    # file_df$agg_value <- pbapply::pbapply(file_df,
-    #                                       MARGIN = 1,
-    #                                       FUN = extract,
-    #                                       time_period = time_period,
-    #                                       fun = fun,
-    #                                       day1 = day1,
-    #                                       day2 = day2)
-    
-    ##### Attempt 2 ######
-    cl <- parallel::makeCluster(4) #get_ncores())
-    doSNOW::registerDoSNOW(cl)
-    `%dopar%` <- foreach::`%dopar%`
-    pb <- progress::progress_bar$new(format = "[:bar] |:percent ~:eta",
-                                     total = nrow(file_df), complete = "+",
-                                     incomplete = " ", current = " ",
-                                     width = 60)
-    progress_bar <- function(n) pb$tick()
-    opts <- list(progress = progress_bar)
-    values <- foreach::foreach(i = 1: nrow(file_df),
-                              .options.snow = opts,
-                              .export = "get_days_since") %dopar% {
-      # Which is which
-      row <- file_df[i, ]
-      file <- unlist(row$local_path)
-      variable <- unname(unlist(row$internal))
-      months <- row$months
+  ##### Attempt One (doesn't work) #####
+  # # Setup parallelization
+  # if (identical(ncores, NA)) ncores <- get_ncores()
+  # pbapply::pboptions(use_lb = FALSE)
+  # cl <- parallel::makeCluster(ncores - 1)
+  # doParallel::registerDoParallel(cl)
+  # parallel::clusterExport(cl, c("extract"))
+  # parallel::clusterEvalQ(cl, {library(ncdf4)})
+  # 
+  # # This is returning NAs with the clusters, must be ncdf4 interface
+  # file_df$agg_value <- pbapply::pbapply(file_df,
+  #                                       MARGIN = 1,
+  #                                       FUN = extract,
+  #                                       time_period = time_period,
+  #                                       fun = fun,
+  #                                       day1 = day1,
+  #                                       day2 = day2)
+  
+  ##### Attempt 2 ######
+  cl <- parallel::makeCluster(2)
+  on.exit(parallel::stopCluster(cl))
+  doSNOW::registerDoSNOW(cl)
+  `%dopar%` <- foreach::`%dopar%`
+  pb <- progress::progress_bar$new(format = "[:bar] |:percent ~:eta",
+                                   total = nrow(file_df), complete = "+",
+                                   incomplete = " ", current = " ",
+                                   width = 60)
+  progress_bar <- function(n) pb$tick()
+  opts <- list(progress = progress_bar)
+  values <- foreach::foreach(i = 1: nrow(file_df),
+                            .options.snow = opts,
+                            .export = "get_days_since") %dopar% {
+    # Which is which
+    row <- file_df[i, ]
+    file <- unlist(row$local_path)
+    variable <- unname(unlist(row$internal))
+    months <- row$months
 
-      # Open File
-      nc <- ncdf4::nc_open(file)
-     
-      # Get the matrix of values
-      subset <- ncdf4::ncvar_get(nc, variable)
+    # Open File
+    nc <- ncdf4::nc_open(file)
+   
+    # Get the matrix of values
+    subset <- ncdf4::ncvar_get(nc, variable)
 
-      # Filter dates in days since 1950 for this variable
-      filter_days <- get_days_since(time_period, months)
+    # Filter dates in days since 1950 for this variable
+    filter_days <- get_days_since(time_period, months)
 
-      # Convert filtered days since 1950 to index positions of all days in file
-      all_days <- nc$dim$time$vals
-      day_indices <- match(filter_days, all_days)
+    # Convert filtered days since 1950 to index positions of all days in file
+    all_days <- nc$dim$time$vals
+    day_indices <- match(filter_days, all_days)
 
-      # Get the matrix slices
-      subset <- subset[, , day_indices]
-     
-      # Apply the aggregation function
-      value <- fun(subset, na.rm=TRUE)
-     
-      return(value)
+    # Get the matrix slices
+    subset <- subset[, , day_indices]
+   
+    # Apply the aggregation function
+    value <- fun(subset, na.rm=TRUE)
+   
+    return(value)
     }
-
-    pb$terminate()
-    
-  }, error = function(e) {
-    parallel::stopCluster(cl) 
-    stop(e)
-  })
+  pb$terminate()
   
-  # Close cluster
-  parallel::stopCluster(cl)
-  
-  # Return these values
   return(values)
 }
