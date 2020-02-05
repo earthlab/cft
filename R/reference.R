@@ -115,7 +115,7 @@ Argument_Reference <- methods::setRefClass(
 
 
 #' @title Attributes
-#' @param argument_reference object containing information about input models and parameters for cstdata.
+#' @param argument_reference object containing information about input models and parameters for cst.
 #' @export
 argument_reference <- Argument_Reference()$initFields()
 

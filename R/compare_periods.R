@@ -4,15 +4,15 @@
 #' useful to understand how projected future climate differs from historical
 #' conditions. The `compare_periods` function generates climate summary 
 #' statistics for each period, and computes the difference in values between
-#' the target and reference period. Uses the output of `cstdata` as an input. 
+#' the target and reference period. Uses the output of `cstdata()` as an input. 
 #' 
-#' @param file_df A file reference data frame output from a `cstdata` run.
+#' @param file_df A file reference data frame output from a `cstdata()` run.
 #' (data.frame)
 #' @param agg_fun The aggregating function to applied to the model variables
 #' (e.g., "mean"). (character)
-#' @param var1 The x-axis variable, see cstdata::argument_reference
+#' @param var1 The x-axis variable, see cst::argument_reference
 #' (e.g., "pr"). (character).
-#' @param var2 The y-axis variable, see cstdata::argument_reference
+#' @param var2 The y-axis variable, see cst::argument_reference
 #' (e.g., "tasmax").  character)
 #' @param months1 The months of the year with which to include in the
 #' aggregation of variable 1 (e.g., 5:7 for May, June, and July. (int vector)

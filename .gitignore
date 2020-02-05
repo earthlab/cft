@@ -1,6 +1,6 @@
 /data
-/cstdata
-cstdata.proj
+/cst
+cst.proj
 .RData
 .Rhistory
 /R/.Rhistory

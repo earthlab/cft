@@ -38,10 +38,10 @@ addons:
 before_script:
   - python3 -m pip install --upgrade --ignore-installed --user travis virtualenv
   - R CMD INSTALL .
-  - R -e "cstdata::install_py_deps(method='conda', python_version = 3)"
+  - R -e "cst::install_py_deps(method='conda', python_version = 3)"
 
 after_success:
   - Rscript -e 'covr::codecov()'
 
 after_failure:
-  - cat "/home/travis/build/earthlab/cstdata/cstdata.Rcheck/*check.log"
+  - cat "/home/travis/build/earthlab/cst/cst.Rcheck/*check.log"
