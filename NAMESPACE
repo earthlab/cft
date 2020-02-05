@@ -2,10 +2,10 @@
 
 export("%>%")
 export(argument_reference)
+export(compare_periods)
 export(cst_df)
 export(cstdata)
 export(grid_reference)
 export(install_py_deps)
-export(scatterplot)
 importFrom(magrittr,"%>%")
 importFrom(methods,new)

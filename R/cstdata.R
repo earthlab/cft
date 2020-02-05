@@ -151,7 +151,7 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
   if (is.na(ncores)) ncores <- get_ncores()
   pbapply::pboptions(use_lb = TRUE)
   cl <- parallel::makeCluster(ncores)
-  doParallel::registerDoParallel(cl)
+  on.exit(parallel::stopCluster(cl))
   parallel::clusterExport(cl, c("retrieve_subset", "filter_years"),
                           envir = environment())
 
@@ -182,16 +182,11 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
 
   # Create a data frame from the file references
   file_references <- data.frame(do.call(rbind, refs), stringsAsFactors = FALSE)
-
-  # Close cluster  # <--------------------------------------------------------- Close in exception
-  parallel::stopCluster(cl)
-
-  # Reset index of file reference data frame
-  rownames(file_references) <- seq(nrow(file_references))
   
-  # Make a tibble
   file_references <- tibble::as_tibble(lapply(file_references, unlist))
-
-  # Return file references
+  file_references$parameter_long <- unlist(lapply(
+    file_references$parameter, 
+    FUN = function(x) argument_reference$variables[x]
+  ))
   return(file_references)
 }
