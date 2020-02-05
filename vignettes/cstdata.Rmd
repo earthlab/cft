@@ -4,7 +4,7 @@ author: "Travis Williams and Max Joseph"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{cstdata}
+  %\VignetteIndexEntry{cst}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -42,12 +42,12 @@ Idaho](http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_m
 this accounts for ~20 TB of data access. 
 
 
-## cstdata
+## cst
 
 - **Getting started**
 
-Load the cstdata package and use the reference object within to see the
-available argument options for the cstdata function: `models`, `parameters`,
+Load the cst package and use the reference object within to see the
+available argument options for the `cstdata()` function: `models`, `parameters`,
 and `scenarios` (as representative concentration pathways).
 The `labels` field will spell out the specific meaning of each parameter, the
 `variables` field shows the internal variable name of parameters in the data
@@ -55,8 +55,8 @@ sets  themselves, and the `units` field shows the measurement unit of each
 variable.
 
 ```{r references_1, eval = LOCAL}
-library(cstdata)
-references <- cstdata::argument_reference
+library(cst)
+references <- cst::argument_reference
 print(references$models)
 print(references$scenarios)
 print(references$parameters)
@@ -77,11 +77,11 @@ print(references$get_args("CCSM4"))
 - **Acquiring and subsetting data within National Park Service boundaries**
 
 This package was originally written with the National Park Service in mind, so
-it has the option to use the name of any park within the NPS. Use the `cstdata`
-function to specify a range of years, a set of models, a set of parameters, and 
-a set of representative concentration pathways to return. Leaving these
-arguments empty will results in a download of all available data for that
-location.
+it has the option to use the name of any park within the NPS. Use the 
+`cstdata()` function to specify a range of years, a set of models, a set of 
+parameters, and a set of representative concentration pathways to return. 
+Leaving these arguments empty will results in a download of all available data 
+for that location.
 
 ```{r download_1, eval = LOCAL}
 proj_dir <- "."
@@ -113,7 +113,7 @@ file_refs <- cstdata(park = "Wind Cave National Park",
 
 ## Comparing climate in two time periods
 
-Use the file reference object that is returned from cstdata as an input to
+Use the file reference object that is returned from cst as an input to
 `compare_periods` to compare climate between a reference and target period. You
 may specify the function with which to aggregate your chosen variable as well
 as the yearly time period months of the year to include in this calculation.

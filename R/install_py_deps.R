@@ -1,6 +1,6 @@
 #' Install python dependencies
 #'
-#' Installs python dependencies of cstdata.
+#' Installs python dependencies of cst.
 #' 
 #' The implementation and interface are adapted from the 
 #' `tensorflow::install_tensorflow()` function.
