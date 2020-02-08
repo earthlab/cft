@@ -2,20 +2,3 @@ nps_boundary_url <- function() {
   # return default nps boundary url
   "https://irma.nps.gov/DataStore/DownloadFile/633334"
 }
-
-get_ncores <- function() {
-  # Consider future::availableCores()
-  
-  # Testing/checks may impose a limit on cpu usage
-  limit <- Sys.getenv("_R_CHECK_LIMIT_CORES_", "")
-
-  # If so, use only 2 cores (if available)
-  if (nzchar(limit) && limit == "TRUE") {
-    ncores <- min(c(2L, parallel::detectCores()))
-
-  # Otherwise, use half number of all available cpus
-  } else {
-    ncores <- parallel::detectCores() / 2
-  }
-  return(ncores)
-}

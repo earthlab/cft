@@ -5,16 +5,16 @@
 \title{Climate Scenario Toolkit Data}
 \usage{
 cstdata(
-  shp_path = NA,
-  area_name = NA,
-  park = NA,
-  models = NA,
-  parameters = NA,
-  scenarios = NA,
+  shp_path,
+  area_name,
+  park,
+  models = argument_reference$models,
+  parameters = argument_reference$parameters,
+  scenarios = argument_reference$scenarios,
   years = c(1950, 2099),
   local_dir = tempdir(),
   verbose = TRUE,
-  ncores = NA
+  ncores = 1
 )
 }
 \arguments{
@@ -51,8 +51,7 @@ available of rcps is available under cstdata::argument_reference$scenarios.
 
 \item{verbose}{Print verbose output. (logical)}
 
-\item{ncores}{The number of cpus to use, overrides the default of half the
-number of detected cpus. (numeric)}
+\item{ncores}{The number of cpus to use, which defaults to 1. (numeric)}
 }
 \value{
 A tibble containing information about climate data files.
@@ -75,7 +74,8 @@ The original data sets may be found at
 \examples{
 \dontrun{
 d <- cstdata(park = "Acadia National Park", parameters = "pr", 
-             years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
+             years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85", 
+             ncores = parallel::detectCores())
 }
 
 }
