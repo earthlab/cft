@@ -190,8 +190,7 @@ get_queries <- function(aoi, area_name, years, models,
 }
 
 
-retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
-                            store_locally = TRUE) {
+retrieve_subset <- function(query, years, aoi_info, area_name, local_dir) {
 
   xr <- reticulate::import("xarray")
   np <- reticulate::import("numpy", convert = FALSE)
@@ -206,26 +205,16 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
   mask_matrix <- aoi_info[["mask_matrix"]]
   resolution <- aoi_info[["resolution"]]
 
-  # Get the destination file
-  if (store_locally == TRUE) {
-    if (!dir.exists(local_dir)) {
-      dir.create(local_dir, recursive = TRUE)
-    }
-    file_name <- query[[2]]
-    store_name <- query[[2]]
-    dst <- file.path(local_dir, file_name)
-  } else {
-    store_name <- query[[2]]
-    dst <- tempfile(fileext = ".nc")
-    file_name <- basename(dst)
-    local_dir <- dirname(dst)
-  }
-  
+  dir.create(local_dir, recursive = TRUE, showWarnings = FALSE)
+  file_name <- query[[2]]
+  store_name <- query[[2]]
+  destination_file <- file.path(local_dir, file_name)
+
   # Get data set attributes
   elements <- query[[3]]
 
   # Retrieve subset and save file locally
-  if (!file.exists(dst)) {
+  if (!file.exists(destination_file)) {
 
     # Get the combined historical and modeled url query
     url_pair <- query[[1]]
@@ -311,12 +300,12 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
     ds$attrs <- attrs2
 
     # Save to local file
-    ds$to_netcdf(dst)
+    ds$to_netcdf(destination_file)
   }
 
   # Keep track of file information
   file_dir <- normalizePath(local_dir)
-  file_name <- basename(dst)
+  file_name <- basename(destination_file)
   file_path <- file.path(file_dir, file_name)
   reference <- c(list("local_file" = file_name, "local_path" = file_path), 
                  elements)

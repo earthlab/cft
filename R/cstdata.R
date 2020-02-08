@@ -139,7 +139,6 @@ cstdata <- function(shp_path,
                             aoi_info = aoi_info,
                             area_name = area_name,
                             local_dir = location_dir,
-                            store_locally = TRUE,
                             cl = cl)
 
 
