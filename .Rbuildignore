@@ -10,3 +10,9 @@ scratch.R
 ^tests/testthat/acadia_national_park
 ^.*\.nc$
 ^tests/testthat/shapefiles
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^vignettes/cst-intro\.Rmd\.orig$
+CONTRIBUTING.md
+^CODE_OF_CONDUCT\.md$

@@ -134,12 +134,9 @@ test_that("Test retrieve_subset", {
   grid_ref <- Grid_Reference()
   aoi <- get_park_boundaries("Acadia National Park", local_dir = local_dir)
   aoi_info <- get_aoi_info(aoi, grid_ref)
-  aws_creds <- NA
-  store_locally <- TRUE
 
   subset <- retrieve_subset(query, years, aoi_info, area_name, 
-                            local_dir = local_dir,
-                            aws_creds, store_locally, s3_bucket = NA)
+                            local_dir = local_dir)
 
   expect_true(file.exists(subset$local_path))
   expect_true(grepl("\\.nc$", subset$local_file))

@@ -12,9 +12,7 @@ cstdata(
   parameters = NA,
   scenarios = NA,
   years = c(1950, 2099),
-  store_locally = TRUE,
   local_dir = tempdir(),
-  s3_bucket = NA,
   verbose = TRUE,
   ncores = NA
 )
@@ -49,16 +47,7 @@ available of rcps is available under cstdata::argument_reference$scenarios.
 
 \item{years}{The first and last years of the desired period. (vector)}
 
-\item{store_locally}{If `TRUE` this function will store the results in a
-local directory as NetCDF files. This option may be set to `FALSE` to save
-disk space, but the `store_remotely` option must be set to `TRUE` in this
-case. (logical)}
-
-\item{local_dir}{The local directory in which to save files if
-`store_locally` is set to `TRUE`. (character)}
-
-\item{s3_bucket}{Optional parameter (character) for an Amazon Web Services
-S3 bucket to store climate data.}
+\item{local_dir}{The local directory in which to save files. (character)}
 
 \item{verbose}{Print verbose output. (logical)}
 
@@ -69,32 +58,19 @@ number of detected cpus. (numeric)}
 A tibble containing information about climate data files.
 }
 \description{
-Retrieves subsetted data of climate future scenarios within specified National
+Retrieves subsetted data of climate future scenarios within National
 Parks or shapefiles in the Contiguous United States. This data is downscaled
 using the Multivariate Adaptive Constructed Analogs (MACA) technique.
 }
 \details{
 This package retrieves daily gridded data sets of General Circulation Model
-(GCM) runs clipped to specified areas of interest and returns a data frame of the
+(GCM) runs clipped to areas of interest and returns a data frame of the
 file names and they're storage paths. Each of these data sets represent
 a single GCM, climate variable and Representative Concentration Pathway (RCP)
 from 1950 to 2099. The 1950 to 2005 portion of this time period represents
-historical data while the 2006 to 2099 portion represents modeled data. These
-can be stored as NetCDF files either locally or on an Amazon Web Service S3
-bucket. The original data sets may be found at
-\url{ http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_
-CMIP5_aggregated_macav2_catalog.html}
-
-Production Notes:
-
-- The use of reticulate may enable us to use Zarr arrays, which are
-  accessible directly from an s3 bucket.
-- Xarray 0.14 will change the behaviour of open_mfdataset, 0.13 is giving 
-  deprecation warnings. Perhaps we pin xarray to 0.12 (same behavior,
-  no warnings).
-- RCurl::url_exists works in linux and osx, but sometimes fails in windows.
-  It apparently needs proxy settings in these cases. Try setting proxy
-  options next chance on a windows machine.
+historical data while the 2006 to 2099 portion represents modeled data. 
+The original data sets may be found at
+\url{http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_catalog.html}
 }
 \examples{
 \dontrun{

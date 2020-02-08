@@ -32,7 +32,7 @@ only occur within RStudio).}
 [reticulate::virtualenv_install()].}
 }
 \description{
-Installs python dependencies of cstdata.
+Installs python dependencies of cst.
 }
 \details{
 The implementation and interface are adapted from the 
