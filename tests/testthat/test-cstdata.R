@@ -1,5 +1,5 @@
 test_that("Not providing a shapefile or park name raises an error", {
-  expect_error(cstdata(shp_path = NA, park = NA),
+  expect_error(cstdata(),
                regexp = "No location data/AOI data were provided")
 })
 
@@ -13,7 +13,7 @@ test_that("Providing both a shapefile and park name raises an error", {
 test_that("Providing a shapefile but no area name raises an error", {
   shp_path <- paste0("http://www.cbrfc.noaa.gov/downloads/files/gis/",
                      "cbrfcBasinBoundary.tar.gz")
-  expect_error(cstdata(shp_path = shp_path, area_name = NA),
+  expect_error(cstdata(shp_path = shp_path),
                regexp = "Please provide the name you would like to use")
 })
 
@@ -21,10 +21,11 @@ test_that("A full run of cstdata completes and saves an expected file", {
   local_dir <- "."
   file_refs <- cstdata(park = "Acadia National Park",
                        years = c(2004, 2005),
-                       models = c("bcc-csm1-1"),
-                       parameters = c("pr"),
-                       scenarios = c("rcp45"),
-                       local_dir = local_dir)
+                       models = "bcc-csm1-1",
+                       parameters = "pr",
+                       scenarios = "rcp45",
+                       local_dir = local_dir, 
+                       ncores = 2)
 
   expected_file <- paste0("pr_acadia_national_park_bcc-csm1-1_r1i1p1_rcp45_",
                           "macav2metdata_2004_2005_daily.nc")

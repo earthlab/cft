@@ -37,27 +37,33 @@
 #' @param years The first and last years of the desired period. (vector)
 #' @param local_dir The local directory in which to save files. (character)
 #' @param verbose Print verbose output. (logical)
-#' @param ncores The number of cpus to use, overrides the default of half the
-#' number of detected cpus. (numeric)
+#' @param ncores The number of cpus to use, which defaults to 1. (numeric)
 #' 
 #' @return A tibble containing information about climate data files. 
 #' 
 #' @examples 
 #' \dontrun{
 #' d <- cstdata(park = "Acadia National Park", parameters = "pr", 
-#'              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
+#'              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85", 
+#'              ncores = parallel::detectCores())
 #' }
 #' 
 #' @importFrom methods new
 #' 
 #' @export
-cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
-                    parameters = NA, scenarios = NA, years = c(1950, 2099),
+cstdata <- function(shp_path, 
+                    area_name, 
+                    park, 
+                    models = argument_reference$models,
+                    parameters = argument_reference$parameters, 
+                    scenarios = argument_reference$scenarios, 
+                    years = c(1950, 2099),
                     local_dir = tempdir(),
-                    verbose = TRUE, ncores = NA) {
+                    verbose = TRUE, 
+                    ncores = 1) {
   
   # Make sure user is providing some kind of location information
-  if (is.na(shp_path) & is.na(park)) {
+  if (missing(shp_path) & missing(park)) {
     msg <- paste("No location data/AOI data were provided.",
                  "Please provide either a shapefile path or the name of",
                  "a national park (e.g., 'Yosemite National Park').")
@@ -65,7 +71,7 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
   }
 
   # Make sure user is not providing too much location information
-  if (!is.na(shp_path) & !is.na(park)) {
+  if (!missing(shp_path) & !missing(park)) {
     msg <- paste("Both a shapefile and a national park were provided.",
                  "Please provide either a shapefile path or the name of",
                  "a national park ('Name National Park'), but not both.")
@@ -73,15 +79,14 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
   }
 
   # If a shapefile path is provided, make sure it comes with an area name
-  if (!is.na(shp_path) & is.na(area_name)) {
+  if (!missing(shp_path) & missing(area_name)) {
     msg <- paste("Please provide the name you would like to use to reference",
                  "the location of the shapefile provided. This will be used",
                  "for both file names and directories.")
     stop(msg)
   }
 
-  # If a national park is provided without an area_name, default to park name
-  if (!is.na(park) & is.na(area_name)) {
+  if (!missing(park) & missing(area_name)) {
     area_name <- park
   }
 
@@ -110,7 +115,6 @@ cstdata <- function(shp_path = NA, area_name = NA, park = NA, models = NA,
                          arg_ref, grid_ref)
 
   # Setup parallelization
-  if (is.na(ncores)) ncores <- get_ncores()
   pbapply::pboptions(use_lb = TRUE)
   cl <- parallel::makeCluster(ncores)
   on.exit(parallel::stopCluster(cl))

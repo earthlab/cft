@@ -126,16 +126,16 @@ using the Multivariate Adaptive Constructed Analogs (MACA) technique.</p>
     </div>
 
     <pre class="usage"><span class='fu'>cstdata</span>(
-  <span class='kw'>shp_path</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
-  <span class='kw'>area_name</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
-  <span class='kw'>park</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
-  <span class='kw'>models</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
-  <span class='kw'>parameters</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
-  <span class='kw'>scenarios</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
+  <span class='no'>shp_path</span>,
+  <span class='no'>area_name</span>,
+  <span class='no'>park</span>,
+  <span class='kw'>models</span> <span class='kw'>=</span> <span class='no'>argument_reference</span>$<span class='no'>models</span>,
+  <span class='kw'>parameters</span> <span class='kw'>=</span> <span class='no'>argument_reference</span>$<span class='no'>parameters</span>,
+  <span class='kw'>scenarios</span> <span class='kw'>=</span> <span class='no'>argument_reference</span>$<span class='no'>scenarios</span>,
   <span class='kw'>years</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1950</span>, <span class='fl'>2099</span>),
   <span class='kw'>local_dir</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/tempfile.html'>tempdir</a></span>(),
   <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>ncores</span> <span class='kw'>=</span> <span class='fl'>NA</span>
+  <span class='kw'>ncores</span> <span class='kw'>=</span> <span class='fl'>1</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -194,8 +194,7 @@ available of rcps is available under cstdata::argument_reference$scenarios.
     </tr>
     <tr>
       <th>ncores</th>
-      <td><p>The number of cpus to use, overrides the default of half the
-number of detected cpus. (numeric)</p></td>
+      <td><p>The number of cpus to use, which defaults to 1. (numeric)</p></td>
     </tr>
     </table>
 
@@ -216,7 +215,8 @@ The original data sets may be found at
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
 <span class='no'>d</span> <span class='kw'>&lt;-</span> <span class='fu'>cstdata</span>(<span class='kw'>park</span> <span class='kw'>=</span> <span class='st'>"Acadia National Park"</span>, <span class='kw'>parameters</span> <span class='kw'>=</span> <span class='st'>"pr"</span>,
-             <span class='kw'>years</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>2020</span>, <span class='fl'>2021</span>), <span class='kw'>models</span> <span class='kw'>=</span> <span class='st'>"CCSM4"</span>, <span class='kw'>scenarios</span> <span class='kw'>=</span> <span class='st'>"rcp85"</span>)
+             <span class='kw'>years</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>2020</span>, <span class='fl'>2021</span>), <span class='kw'>models</span> <span class='kw'>=</span> <span class='st'>"CCSM4"</span>, <span class='kw'>scenarios</span> <span class='kw'>=</span> <span class='st'>"rcp85"</span>,
+             <span class='kw'>ncores</span> <span class='kw'>=</span> <span class='kw pkg'>parallel</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span>())
 }</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

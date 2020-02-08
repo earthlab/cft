@@ -117,11 +117,6 @@ get_queries <- function(aoi, area_name, years, models,
   x1 <- index_pos[["x1"]]
   x2 <- index_pos[["x2"]]
   
-  # Use all avalable models or user defined
-  if (all(is.na(models))) models <- arg_ref$models
-  if (all(is.na(parameters))) parameters <- arg_ref$parameters
-  if (all(is.na(scenarios))) scenarios <- arg_ref$scenarios
-  
   # Build a list of lists with historical/future model queries and a file name
   queries <- list()
   for (model in models) {
