@@ -61,11 +61,11 @@ for that location.
 ```r
 library(cst)
 library(tibble)
-library(dplyr)
 library(ggplot2)
 library(tidyr)
 library(lubridate)
 library(ggrepel)
+library(dplyr)
 ```
 
 
@@ -310,7 +310,7 @@ target periods:
 
 ```r
 comps %>%
-  select(parameter, rcp, model, year1, year2, diff_summary) %>%
+  dplyr::select(parameter, rcp, model, year1, year2, diff_summary) %>%
   pivot_wider(names_from = parameter, values_from = diff_summary) %>%
   ggplot(aes(tasmin, tasmax, color = rcp)) + 
   geom_point() + 
@@ -320,8 +320,9 @@ comps %>%
   xlab("Difference in min. temperature (C)") + 
   ylab("Difference in max. temperature (C)") + 
   scale_color_manual(values = c("dodgerblue", "red"))
-#> Error in (function (classes, fdef, mtable) : unable to find an inherited method for function 'select' for signature '"tbl_df"'
 ```
+
+<img src="./plot-comps-1.png" title="plot of chunk plot-comps" alt="plot of chunk plot-comps" width="100%" />
 
 So, nearly all model runs indicate warming, but the amount of warming varies by 
 model and emissions scenario. 

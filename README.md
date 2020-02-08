@@ -13,22 +13,33 @@ state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 <!-- badges: end -->
 
-The goal of cst is to provide data access utilities that facilitate
-climate scenario planning
+The goal of cst is to provide easy climate data access ([MACA
+v2](http://www.climatologylab.org/maca.html)) to support climate
+scenario planning. This package allows you to:
+
+1.  Quickly acquire climate data subsets for a spatial region of
+    interest, with first class support for US National Parks
+2.  Summarize climate data at daily timesteps, and compute derived
+    quantities
+3.  Contrast reference and target time periods to understand differences
+    in climate over time, and
+4.  Easily work with climate data, without having to worry about the
+    details of how it is stored or formatted
 
 ## Installation
 
-And the development version from [GitHub](https://github.com/) with:
+Install the development version of cst from
+[GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("earthlab/cst")
+# install.packages("remotes")
+remotes::install_github("earthlab/cst")
 ```
 
-## Example
+## Quickstart guide
 
-To acquire precipitation data for Acadia National Park for a subset of
-climate models, you can use the `cstdata` function:
+To acquire daily precipitation data for Acadia National Park for a
+subset of climate models, you can use the `cstdata()` function:
 
 ``` r
 library(ggplot2)
@@ -38,17 +49,16 @@ d <- cstdata(park = "Acadia National Park", parameters = "pr",
              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
 #> [1] "Retrieving Area of Interest Boundaries"
 #> [1] "Retrieving climate data for acadia_national_park"
-#> [1] "Saving local files to /tmp/RtmpDEQX87/acadia_national_park"
+#> [1] "Saving local files to /tmp/RtmphAszfa/acadia_national_park"
 ```
 
 This gives you a data frame with paths to local climate data files:
 
 ``` r
 str(d)
-#> Classes 'tbl_df', 'tbl' and 'data.frame':    1 obs. of  13 variables:
+#> Classes 'tbl_df', 'tbl' and 'data.frame':    1 obs. of  12 variables:
 #>  $ local_file    : chr "pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"
-#>  $ local_path    : chr "/tmp/RtmpDEQX87/acadia_national_park/pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"
-#>  $ aws_url       : logi NA
+#>  $ local_path    : chr "/tmp/RtmphAszfa/acadia_national_park/pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"
 #>  $ model         : chr "CCSM4"
 #>  $ parameter     : chr "pr"
 #>  $ rcp           : chr "rcp85"
@@ -79,26 +89,13 @@ str(df)
 ```
 
 Because this is a data.frame, you can use all of the normal data
-visualization and processing functionality in base R\!
-
-``` r
-plot(x = df$date, 
-     y = df$pr, 
-     type = "b", 
-     ylab = "Precipitation (mm)", 
-     xlab = "Date", 
-     main = "Acadia National Park, CCSM4, RCP 8.5")
-```
-
-<img src="man/figures/README-base-plot-1.png" width="100%" />
-
-Or, if you prefer, you can use the tidyverse:
+visualization and processing functionality in R, e.g.,
 
 ``` r
 df %>%
   ggplot(aes(date, pr)) + 
   geom_point() + 
-  geom_line() + 
+  geom_line(alpha = .1) + 
   xlab("Date") + 
   ylab("Precipitation (mm)") + 
   ggtitle("Acadia National Park, CCSM4, RCP 8.5")
@@ -106,9 +103,11 @@ df %>%
 
 <img src="man/figures/README-ggplot-precip-1.png" width="100%" />
 
+### Dive deeper
+
 This is just a small glimpse at what you can do with the cst package.
 For more, see [Getting started with the Climate Scenarios
-Toolkit](vignettes/cst-intro.Rmd)
+Toolkit](https://www.earthdatascience.org/cst/articles/cst-intro.html)
 
 ## Meta
 
@@ -117,4 +116,4 @@ Toolkit](vignettes/cst-intro.Rmd)
     contribution [guidelines](CONTRIBUTING.md), and the [Contributor
     Code of Conduct](CONDUCT.md).
   - License: GPL-3
-  - See `citation("smapr")` in R to cite this package in publications.
+  - See `citation("cst")` in R to cite this package in publications.

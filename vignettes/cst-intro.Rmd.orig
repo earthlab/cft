@@ -64,11 +64,11 @@ for that location.
 ```{r load-deps, message=FALSE, comment = NA}
 library(cst)
 library(tibble)
-library(dplyr)
 library(ggplot2)
 library(tidyr)
 library(lubridate)
 library(ggrepel)
+library(dplyr)
 ```
 
 
@@ -230,7 +230,7 @@ target periods:
 
 ```{r plot-comps, fig.height = 5, fig.width = 9}
 comps %>%
-  select(parameter, rcp, model, year1, year2, diff_summary) %>%
+  dplyr::select(parameter, rcp, model, year1, year2, diff_summary) %>%
   pivot_wider(names_from = parameter, values_from = diff_summary) %>%
   ggplot(aes(tasmin, tasmax, color = rcp)) + 
   geom_point() + 
