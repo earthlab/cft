@@ -89,16 +89,6 @@ format_months <- function(months) {
   return(months)
 }
 
-aggregate_vals <- function(row, time_period, fun, day1, day2) {
-  file <- unlist(row$local_path)
-  variable <- unname(unlist(row$parameter_long))
-  nc <- ncdf4::nc_open(file)
-  values <- ncdf4::ncvar_get(nc, variable)
-  values <- values[day1:day2]
-  aggregated_values <- fun(values, na.rm=TRUE)
-  return(aggregated_values)
-}
-
 get_fun <- function(file_df, agg_fun, time_period, new_colname) {
 
   # Check that these files contain data within the earliest reference year

@@ -42,7 +42,7 @@ test_that("Invalid filter params raise errors", {
 
 test_that("Invalid aggregation functions raise errors", {
   expect_error(
-    comparison <- compare_periods(
+    compare_periods(
       file_refs,
       var1 = "pr",
       var2 = "tasmax",
@@ -52,4 +52,17 @@ test_that("Invalid aggregation functions raise errors", {
       scenarios = "rcp45"), 
     regexp = "is not available"
   )
+})
+
+test_that("Invalid year ranges raise errors.", {
+  expect_error(
+    compare_periods(
+      file_refs,
+      var1 = "pr",
+      var2 = "tasmax",
+      agg_fun = "mean",
+      target_period = c(2222, 2223),
+      reference_period = c(2004, 2004),
+      scenarios = "rcp45"), 
+    regexp = "does not contain the years")
 })
