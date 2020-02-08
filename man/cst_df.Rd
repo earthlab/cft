@@ -12,15 +12,18 @@ cst_df(file_reference, cores = 1)
 \item{cores}{Number of cores to use (int)}
 }
 \value{
-A tibble containing climate data averaged spatially over an area of interest.
+A tibble of climate data averaged spatially over an area of interest.
 }
 \description{
 Generate a climate scenario toolkit data frame
 }
 \examples{
 \dontrun{
-file_ref <- cstdata(park = "Acadia National Park", parameters = "pr", 
-                    years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
+file_ref <- cstdata(park = "Acadia National Park", 
+                    parameters = "pr", 
+                    years = c(2020, 2021), 
+                    models = "CCSM4", 
+                    scenarios = "rcp85")
 df <- cst_df(file_ref, cores = parallel::detectCores())
 }
 

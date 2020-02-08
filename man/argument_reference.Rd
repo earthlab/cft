@@ -9,7 +9,8 @@
 argument_reference
 }
 \arguments{
-\item{argument_reference}{object containing information about input models and parameters for cstdata.}
+\item{argument_reference}{object containing information about input models 
+and parameters for cst.}
 }
 \description{
 Attributes

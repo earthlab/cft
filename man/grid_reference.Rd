@@ -9,7 +9,8 @@
 grid_reference
 }
 \arguments{
-\item{grid_reference}{Reference object containing geographical coordinate information of the full grid in which the data is provided.}
+\item{grid_reference}{Reference object containing geographical coordinate
+information of the full grid in which the data is provided.}
 }
 \description{
 Attributes

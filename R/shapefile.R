@@ -18,9 +18,9 @@ get_shapefile <- function(path, shp_name = NA, local_dir = tempdir()) {
 
   # Check if this is a url or local path
   if (RCurl::url.exists(path)) {
-    expected_file = list.files(shp_folder, 
-                               full.names = TRUE, 
-                               pattern = "\\.shp$")
+    expected_file <- list.files(shp_folder, 
+                                full.names = TRUE, 
+                                pattern = "\\.shp$")
     if (length(expected_file) == 0) {
 
       # download shapefile if it doesn't exist

@@ -4,27 +4,18 @@ test_that("Not providing a shapefile or park name raises an error", {
 })
 
 test_that("Providing both a shapefile and park name raises an error", {
-  shp_path = paste0("http://www.cbrfc.noaa.gov/downloads/files/gis/",
-                    "cbrfcBasinBoundary.tar.gz")
-  park_name = "Yellowstone National Park"
-  expect_error(cstdata(shp_path = shp_path, park = park_name),
+  shp_path <- paste0("http://www.cbrfc.noaa.gov/downloads/files/gis/",
+                     "cbrfcBasinBoundary.tar.gz")
+  expect_error(cstdata(shp_path = shp_path, park = "Yellowstone National Park"),
                regexp = "Both a shapefile and a national park were provided.")
 })
 
 test_that("Providing a shapefile but no area name raises an error", {
-  shp_path = paste0("http://www.cbrfc.noaa.gov/downloads/files/gis/",
-                    "cbrfcBasinBoundary.tar.gz")
+  shp_path <- paste0("http://www.cbrfc.noaa.gov/downloads/files/gis/",
+                     "cbrfcBasinBoundary.tar.gz")
   expect_error(cstdata(shp_path = shp_path, area_name = NA),
                regexp = "Please provide the name you would like to use")
 })
-
-
-test_that("Providing no options for data storage raises an error", {
-  expect_error(cstdata(park = "Yellowstone National Park",
-                       store_locally = FALSE),
-               regexp = "Please set the store_locally and/or the")
-})
-
 
 test_that("A full run of cstdata completes and saves an expected file", {
   local_dir <- "."

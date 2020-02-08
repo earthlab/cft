@@ -196,10 +196,8 @@ get_queries <- function(aoi, area_name, years, models,
 
 
 retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
-                            aws_creds, store_locally = TRUE,
-                            s3_bucket) {
+                            store_locally = TRUE) {
 
-  # Load xarray
   xr <- reticulate::import("xarray")
   np <- reticulate::import("numpy", convert = FALSE)
   
@@ -257,7 +255,7 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
     dsmask <- dsmask$fillna(0)
     ds <- ds$where(dsmask$data == 1)
 
-    # Update Attributes  <------------------------------------------------------ Standards: https://www.unidata.ucar.edu/software/netcdf-java/current/metadata/DataDiscoveryAttConvention.html
+    # Update Attributes
     summary <- paste0(
       "This archive contains daily downscaled meteorological and hydrological ",
       "projections for the Conterminous United States at 1/24-deg resolution ",
@@ -282,7 +280,7 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
       "formula.")
     attrs1 <- ds$attrs
 
-    # Vapor pressure is missing title information. <--------------------------- I think it might be best to create our own set of attributes from scratch.
+    # Vapor pressure is missing title information
     if ( is.null(attrs1$title) ) {
       attrs1$title <- paste("Downscaled daily meteorological data of",
                             elements["parameter"], "from", elements["model"],
@@ -314,25 +312,6 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
       "time_coverage_end" = glue::glue("{end_year}-12-31T00:0"),
       "time_coverage_duration" = glue::glue("P{end_year - start_year + 1}Y"),
       "time_coverage_resolution" = "P1D"
-      # "id" = attrs1$id,  # <-------------------------------------------------- Old attributes, these have changed since vapor pressure deficit came out recently
-      # "naming_authority" = attrs1$naming_authority,
-      # "description" = attrs1$description,
-      # "keywords" = attrs1$keywords,
-      # "cdm_data_type" = attrs1$cdm_data_type,
-      # "Metadata_Conventions" = attrs1$Metadata_Conventions,
-      # "standard_name_vocabulary" = attrs1$standard_name_vocabulary,
-      # "date_created" = attrs1$date_created,
-      # "date_issued" = attrs1$date_issued,
-      # "creator_name" = attrs1$creator_name,
-      # "creator_url" = attrs1$creator_url,
-      # "creater_email" = attrs1$creator_email,
-      # "institution" = attrs1$institution,
-      # "processing_level" = attrs1$processing_level,
-      # "contributor_name" = attrs1$contributor_name,
-      # "contributor_role" = attrs1$contributor_role,
-      # "publisher_name" = attrs1$publisher_name,
-      # "publisher_url" = attrs1$publisher_url,
-      # "license" = attrs1$license
     )
     ds$attrs <- attrs2
 
@@ -340,27 +319,11 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir,
     ds$to_netcdf(dst)
   }
 
-  # Put the file in the bucket
-  if (!is.na(s3_bucket)) {
-    region <- Sys.getenv("AWS_DEFAULT_REGION")
-    location_folder <- area_name
-    object <- file.path(location_folder, store_name)
-    aws_url <- paste0("https://s3.console.aws.amazon.com/s3/object/", s3_bucket,
-                      "/", location_folder, "/", store_name, "?region=", region,
-                      "&tab=overview")
-    if (!aws.s3::head_object(object, s3_bucket, silent = TRUE, verbose = FALSE)) {
-      aws.s3::put_folder(location_folder, s3_bucket)
-      aws.s3::put_object(file = dst, object = object, bucket = s3_bucket)
-    }
-  } else {
-    aws_url <- NA
-  }
-  
   # Keep track of file information
   file_dir <- normalizePath(local_dir)
   file_name <- basename(dst)
   file_path <- file.path(file_dir, file_name)
-  reference <- c(list("local_file" = file_name, "local_path" = file_path,
-                    "aws_url" = aws_url), elements)
+  reference <- c(list("local_file" = file_name, "local_path" = file_path), 
+                 elements)
   return(reference)
 }

@@ -111,7 +111,7 @@ get_fun <- function(file_df, agg_fun, time_period, new_colname) {
   
   # Match the aggregation function string to a function 
   tryCatch({
-    fun = match.fun(agg_fun)
+    fun <- match.fun(agg_fun)
   }, error = function(e) {
     stop(paste0("The aggregation function '", agg_fun,
                 "' is not available."))
@@ -130,15 +130,15 @@ get_fun <- function(file_df, agg_fun, time_period, new_colname) {
         months <- unlist(months)
         
         # Get all of the dates within the year range
-        base = as.Date("1950-01-01")
-        date1 = as.Date(paste0(as.character(year_range[[1]]), "-01-01"))
-        date2 = as.Date(paste0(as.character(year_range[[2]]), "-12-31"))
-        dates = seq(date1, date2, by = "day")
+        base <- as.Date("1950-01-01")
+        date1 <- as.Date(paste0(as.character(year_range[[1]]), "-01-01"))
+        date2 <- as.Date(paste0(as.character(year_range[[2]]), "-12-31"))
+        dates <- seq(date1, date2, by = "day")
         
         # Filter out dates not in the list
         dates <- dates[format(dates, "%b") %in% months]
         
-        n_days_since = dates - base
+        n_days_since <- dates - base
         return(n_days_since)
       }
       

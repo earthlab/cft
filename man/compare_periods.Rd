@@ -17,16 +17,16 @@ compare_periods(
 )
 }
 \arguments{
-\item{file_df}{A file reference data frame output from a `cstdata` run.
+\item{file_df}{A file reference data frame output from a `cstdata()` run.
 (data.frame)}
 
 \item{agg_fun}{The aggregating function to applied to the model variables
 (e.g., "mean"). (character)}
 
-\item{var1}{The x-axis variable, see cstdata::argument_reference
+\item{var1}{The x-axis variable, see cst::argument_reference
 (e.g., "pr"). (character).}
 
-\item{var2}{The y-axis variable, see cstdata::argument_reference
+\item{var2}{The y-axis variable, see cst::argument_reference
 (e.g., "tasmax").  character)}
 
 \item{months1}{The months of the year with which to include in the
@@ -53,5 +53,5 @@ Compare climate data between a reference and target period. This can be
 useful to understand how projected future climate differs from historical
 conditions. The `compare_periods` function generates climate summary 
 statistics for each period, and computes the difference in values between
-the target and reference period. Uses the output of `cstdata` as an input.
+the target and reference period. Uses the output of `cstdata()` as an input.
 }

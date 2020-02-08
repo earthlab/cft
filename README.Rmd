@@ -9,7 +9,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "100%", 
+  dpi=300
 )
 ```
 
@@ -18,7 +19,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 [![Build Status](https://travis-ci.com/earthlab/cst.svg?branch=master)](https://travis-ci.com/earthlab/cst)
 [![codecov](https://codecov.io/gh/earthlab/cst/branch/master/graph/badge.svg)](https://codecov.io/gh/earthlab/cst)
-[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 <!-- badges: end -->
 
 The goal of cst is to provide data access utilities that facilitate climate 
@@ -37,11 +38,57 @@ devtools::install_github("earthlab/cst")
 To acquire precipitation data for Acadia National Park for a subset of climate
 models, you can use the `cstdata` function:
 
-```{r, eval = FALSE}
+```{r}
+library(ggplot2)
 library(cst)
-library(raster)
 
 d <- cstdata(park = "Acadia National Park", parameters = "pr", 
              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
 ```
 
+This gives you a data frame with paths to local climate data files: 
+
+```{r print-d}
+str(d)
+```
+
+And, you can also summarize the daily data by computing a spatial average over the region of interest: 
+
+```{r summarize-data}
+df <- cst_df(d, cores = 2)
+str(df)
+```
+
+Because this is a data.frame, you can use all of the normal data visualization and processing functionality in base R!
+
+```{r base-plot}
+plot(x = df$date, 
+     y = df$pr, 
+     type = "b", 
+     ylab = "Precipitation (mm)", 
+     xlab = "Date", 
+     main = "Acadia National Park, CCSM4, RCP 8.5")
+```
+
+Or, if you prefer, you can use the tidyverse: 
+
+```{r ggplot-precip}
+df %>%
+  ggplot(aes(date, pr)) + 
+  geom_point() + 
+  geom_line() + 
+  xlab("Date") + 
+  ylab("Precipitation (mm)") + 
+  ggtitle("Acadia National Park, CCSM4, RCP 8.5")
+```
+
+This is just a small glimpse at what you can do with the cst package.
+For more, see [Getting started with the Climate Scenarios Toolkit](vignettes/cst-intro.Rmd)
+
+## Meta
+
+* Please [report any issues or bugs](https://github.com/earthlab/cst/issues),
+after reading our contribution [guidelines](CONTRIBUTING.md), and the 
+[Contributor Code of Conduct](CONDUCT.md). 
+* License: GPL-3
+* See `citation("cst")` in R to cite this package in publications. 

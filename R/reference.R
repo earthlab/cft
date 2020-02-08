@@ -115,11 +115,13 @@ Argument_Reference <- methods::setRefClass(
 
 
 #' @title Attributes
-#' @param argument_reference object containing information about input models and parameters for cst.
+#' @param argument_reference object containing information about input models 
+#' and parameters for cst.
 #' @export
 argument_reference <- Argument_Reference()$initFields()
 
 #' @title Attributes
-#' @param grid_reference Reference object containing geographical coordinate information of the full grid in which the data is provided.
+#' @param grid_reference Reference object containing geographical coordinate
+#' information of the full grid in which the data is provided.
 #' @export
 grid_reference <- Grid_Reference()$initFields()
