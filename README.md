@@ -49,7 +49,7 @@ d <- cstdata(park = "Acadia National Park", parameters = "pr",
              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
 #> [1] "Retrieving Area of Interest Boundaries"
 #> [1] "Retrieving climate data for acadia_national_park"
-#> [1] "Saving local files to /tmp/RtmphAszfa/acadia_national_park"
+#> [1] "Saving local files to /tmp/RtmpSqj9Hw/acadia_national_park"
 ```
 
 This gives you a data frame with paths to local climate data files:
@@ -58,7 +58,7 @@ This gives you a data frame with paths to local climate data files:
 str(d)
 #> Classes 'tbl_df', 'tbl' and 'data.frame':    1 obs. of  12 variables:
 #>  $ local_file    : chr "pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"
-#>  $ local_path    : chr "/tmp/RtmphAszfa/acadia_national_park/pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"
+#>  $ local_path    : chr "/tmp/RtmpSqj9Hw/acadia_national_park/pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"
 #>  $ model         : chr "CCSM4"
 #>  $ parameter     : chr "pr"
 #>  $ rcp           : chr "rcp85"
@@ -114,6 +114,6 @@ Toolkit](https://www.earthdatascience.org/cst/articles/cst-intro.html)
   - Please [report any issues or
     bugs](https://github.com/earthlab/cst/issues), after reading our
     contribution [guidelines](CONTRIBUTING.md), and the [Contributor
-    Code of Conduct](CONDUCT.md).
+    Code of Conduct](CODE_OF_CONDUCT.md).
   - License: GPL-3
   - See `citation("cst")` in R to cite this package in publications.
