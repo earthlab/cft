@@ -8,33 +8,40 @@ get_aoi <- function(park, shp_path, area_name, local_dir) {
   return(aoi)
 }
 
-get_shapefile <- function(path, shp_name = NA, local_dir = tempdir()) {
+get_shapefile <- function(shp_path, shp_name = NA, local_dir = tempdir()) {
 
-  if (is.na(shp_name)) shp_name <- tools::file_path_sans_ext(basename(path))
+  if (is.na(shp_name)) shp_name <- tools::file_path_sans_ext(basename(shp_path))
 
   # Create a path within chosen directory for this shapefile
   local_dir <- file.path(local_dir, "shapefiles")
   shp_folder <- file.path(local_dir, shp_name)
 
   # Check if this is a url or local path
-  if (RCurl::url.exists(path)) {
-    expected_file <- list.files(shp_folder, 
-                                full.names = TRUE, 
-                                pattern = "\\.shp$")
-    if (length(expected_file) == 0) {
-
-      # download shapefile if it doesn't exist
-      dir.create(shp_folder, recursive = TRUE, showWarnings = FALSE)
-      zip_path <- file.path(shp_folder, "temp.zip")
-      utils::download.file(url = path, destfile = zip_path)
-      utils::unzip(zip_path, exdir = shp_folder)
-      file.remove(zip_path)
+  if ( grepl("www.|http:|https:", shp_path) ) {
+    if ( !httr::http_error(shp_path) ) {
+      expected_file <- list.files(shp_folder, 
+                                  full.names = TRUE, 
+                                  pattern = "\\.shp$")
+      if (length(expected_file) == 0) {
+    
+        # download shapefile if it doesn't exist
+        dir.create(shp_folder, recursive = TRUE, showWarnings = FALSE)
+        zip_path <- file.path(shp_folder, "temp.zip")
+        utils::download.file(url = shp_path, destfile = zip_path, mode = "wb")
+        utils::unzip(zip_path, exdir = shp_folder)
+        file.remove(zip_path)
+      }
     }
-    path <- list.files(shp_folder, pattern = "\\.shp$", full.names = TRUE)
   }
 
-  
-  aoi <- rgdal::readOGR(path, verbose = FALSE)   
+  # Get the shapefile path from the folder
+  path <- list.files(shp_folder, pattern = "\\.shp$", full.names = TRUE)
+
+  tryCatch({  # readOGR can read the URL! We could simplify this
+    aoi <- rgdal::readOGR(path, verbose = FALSE)
+  }, error = function(e) {
+        stop(paste0("Cannot read ", shp_path))
+  })
 
   return(aoi)
 }
@@ -78,13 +85,13 @@ get_park_boundaries <- function(parkname, local_dir = tempdir()) {
 
   # Check if the National Park Shapefile is stored locally
   if (!file.exists(local_path)) {
-    path <- nps_boundary_url()
+    shp_path <- nps_boundary_url()
   } else {
-    path <- local_path
+    shp_path <- local_path
   }
   
   # Get the National Park Boundary
-  parks <- get_shapefile(path = path,
+  parks <- get_shapefile(shp_path = shp_path,
                          shp_name = "nps_boundary",
                          local_dir = local_dir)
 

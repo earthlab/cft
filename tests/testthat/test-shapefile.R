@@ -25,15 +25,20 @@ test_that("Test get_park_boundaries for file and shapefile object", {
 })
 
 test_that("Default NPS boundary URL is valid", {
-  expect_true(RCurl::url.exists(nps_boundary_url()))
+  expect_false(httr::http_error(nps_boundary_url()))
 })
 
-test_that("Local shapefiles are readable", {
-  aoi <- get_shapefile(path = system.file("shape/nc.shp", package="sf"))
-  expect_s4_class(aoi, "SpatialPolygonsDataFrame")
-})
+# test_that("Local shapefiles are readable", {
+#   aoi <- get_shapefile(path = system.file("shape/nc.shp", package="sf"))
+#   expect_s4_class(aoi, "SpatialPolygonsDataFrame")
+# })
 
 test_that("Invalid park names raise errors", {
   expect_error(get_park_boundaries("Poodlebear National Park", local_dir = "."),
                regexp = "is not contained in the national park boundary data")
+})
+
+test_that("Invalid shapefile names raise errors", {
+  expect_error(get_shapefile("poodlebear_national_park.shp", local_dir = "."),
+               regexp = "Cannot read poodlebear_national_park.shp")
 })

@@ -4,17 +4,10 @@
 \alias{compare_periods}
 \title{Compare climate data among time periods}
 \usage{
-compare_periods(
-  file_df,
-  agg_fun = "mean",
-  var1 = "tasmax",
-  var2 = "pr",
-  months1 = 1:12,
-  months2 = 1:12,
-  target_period = c(2080, 2099),
-  reference_period = c(1990, 2019),
-  scenarios = c("rcp45", "rcp85")
-)
+compare_periods(file_df, agg_fun = "mean", var1 = "tasmax",
+  var2 = "pr", months1 = 1:12, months2 = 1:12,
+  target_period = c(2080, 2099), reference_period = c(1990, 2019),
+  scenarios = c("rcp45", "rcp85"))
 }
 \arguments{
 \item{file_df}{A file reference data frame output from a `cstdata()` run.

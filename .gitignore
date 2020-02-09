@@ -12,3 +12,6 @@ inst/doc
 /vignettes/shapefiles/nps_boundary/*
 doc
 Meta
+acadia_national_park/
+shapefiles/
+
