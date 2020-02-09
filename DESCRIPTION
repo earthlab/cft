@@ -33,6 +33,7 @@ Imports:
     aws.s3,
     dplyr,
     glue,
+    httr,
     methods,
     ncdf4,
     parallel,
