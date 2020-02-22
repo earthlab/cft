@@ -36,7 +36,6 @@ addons:
       - python3-venv
 
 before_script:
-  - python3 -m pip install --upgrade --ignore-installed --user travis virtualenv
   - R CMD INSTALL .
   - R -e "cst::install_py_deps(method='conda', python_version = 3)"
 

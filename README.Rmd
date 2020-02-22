@@ -43,6 +43,15 @@ Install the development version of cst from [GitHub](https://github.com/) with:
 # install.packages("remotes")
 remotes::install_github("earthlab/cst")
 ```
+
+This package also has some python dependencies. 
+We recommend using conda (preferably [miniconda](https://docs.conda.io/en/latest/miniconda.html)) to simplify the installation process. 
+Python dependencies can be installed as follows: 
+
+``` r
+cst::install_py_deps()
+```
+
 ## Quickstart guide
 
 To acquire daily precipitation data for Acadia National Park for a subset of 
