@@ -4,10 +4,18 @@
 \alias{cstdata}
 \title{Climate Scenario Toolkit Data}
 \usage{
-cstdata(shp_path, area_name, park, models = argument_reference$models,
+cstdata(
+  shp_path,
+  area_name,
+  park,
+  models = argument_reference$models,
   parameters = argument_reference$parameters,
-  scenarios = argument_reference$scenarios, years = c(1950, 2099),
-  local_dir = tempdir(), verbose = TRUE, ncores = 1)
+  scenarios = argument_reference$scenarios,
+  years = c(1950, 2099),
+  local_dir = tempdir(),
+  verbose = TRUE,
+  ncores = 1
+)
 }
 \arguments{
 \item{shp_path}{A path to a shapefile with which to clip the resulting data

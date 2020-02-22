@@ -71,6 +71,16 @@ library(ggrepel)
 library(dplyr)
 ```
 
+If you haven't already installed the python dependencies for the package using
+conda, first make sure you have conda installed 
+([see instructions here](https://docs.conda.io/en/latest/miniconda.html)), then
+you can install the python dependencies with: 
+
+```{r install-py-deps, eval = FALSE}
+cst::install_py_deps()
+```
+
+
 ```{r set-seed, echo = FALSE}
 set.seed(1234) # for ggrepel, which randomly jitters labels
 ```
