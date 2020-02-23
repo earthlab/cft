@@ -7,7 +7,7 @@ Authors@R: c(
            family = "Williams",
            role = c("aut"),
            email = "travis.williams@colorado.edu"),
-        person(given = "Max",
+    person(given = "Max",
            family = "Joseph",
            role = c("aut", "cre"),
            email = "maxwell.b.joseph@colorado.edu",
@@ -30,7 +30,6 @@ Suggests:
     testthat (>= 2.1.0)
 Imports:
     assertthat,
-    aws.s3,
     dplyr,
     glue,
     httr,
