@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# cst: climate scenarios toolkit
+# cst: climate scenarios toolbox
 
 <!-- badges: start -->
 
@@ -58,7 +58,7 @@ d <- cstdata(park = "Acadia National Park", parameters = "pr",
              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
 #> [1] "Retrieving Area of Interest Boundaries"
 #> [1] "Retrieving climate data for acadia_national_park"
-#> [1] "Saving local files to /tmp/RtmpL4C7T1/acadia_national_park"
+#> [1] "Saving local files to /tmp/RtmppZXyFr/acadia_national_park"
 ```
 
 This gives you a data frame with paths to local climate data files:
@@ -67,7 +67,7 @@ This gives you a data frame with paths to local climate data files:
 str(d)
 #> Classes 'tbl_df', 'tbl' and 'data.frame':    1 obs. of  12 variables:
 #>  $ local_file    : chr "pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"
-#>  $ local_path    : chr "/tmp/RtmpL4C7T1/acadia_national_park/pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"
+#>  $ local_path    : chr "/tmp/RtmppZXyFr/acadia_national_park/pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"
 #>  $ model         : chr "CCSM4"
 #>  $ parameter     : chr "pr"
 #>  $ rcp           : chr "rcp85"
@@ -116,7 +116,7 @@ df %>%
 
 This is just a small glimpse at what you can do with the cst package.
 For more, see [Getting started with the Climate Scenarios
-Toolkit](https://www.earthdatascience.org/cst/articles/cst-intro.html)
+Toolbox](https://www.earthdatascience.org/cst/articles/cst-intro.html)
 
 ## Meta
 

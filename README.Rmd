@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# cst: climate scenarios toolkit
+# cst: climate scenarios toolbox
 
 <!-- badges: start -->
 [![Build Status](https://travis-ci.com/earthlab/cst.svg?branch=master)](https://travis-ci.com/earthlab/cst)
@@ -93,7 +93,7 @@ df %>%
 ### Dive deeper
 
 This is just a small glimpse at what you can do with the cst package.
-For more, see [Getting started with the Climate Scenarios Toolkit](https://www.earthdatascience.org/cst/articles/cst-intro.html)
+For more, see [Getting started with the Climate Scenarios Toolbox](https://www.earthdatascience.org/cst/articles/cst-intro.html)
 
 ## Meta
 
