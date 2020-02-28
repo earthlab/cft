@@ -36,12 +36,7 @@ get_shapefile <- function(shp_path, shp_name = NA, local_dir = tempdir()) {
 
   # Get the shapefile path from the folder
   path <- list.files(shp_folder, pattern = "\\.shp$", full.names = TRUE)
-
-  tryCatch({  # readOGR can read the URL! We could simplify this
-    aoi <- rgdal::readOGR(path, verbose = FALSE)
-  }, error = function(e) {
-        stop(paste0("Cannot read ", shp_path))
-  })
+  aoi <- rgdal::readOGR(path, verbose = FALSE)
 
   return(aoi)
 }

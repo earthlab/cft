@@ -1,4 +1,4 @@
-#' Climate Scenario Toolkit Data
+#' Climate Scenario Toolbox Data
 #' 
 #' Retrieves subsetted data of climate future scenarios within National
 #' Parks or shapefiles in the Contiguous United States. This data is downscaled
@@ -92,6 +92,9 @@ cstdata <- function(shp_path,
 
   # Get national park or area of interest
   if (verbose) print("Retrieving Area of Interest Boundaries")
+  if (missing(park)) {
+    park <- NA
+  }
   aoi <- get_aoi(park, shp_path, area_name, local_dir)
 
   # Create the target folder

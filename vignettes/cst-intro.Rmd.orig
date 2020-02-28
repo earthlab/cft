@@ -1,5 +1,5 @@
 ---
-title: "Getting started with the Climate Scenarios Toolkit"
+title: "Getting started with the Climate Scenarios Toolbox"
 author: "Travis Williams and Max Joseph"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette

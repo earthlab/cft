@@ -1,6 +1,6 @@
 Package: cst
 Type: Package
-Title: Climate Scenarios Toolkit
+Title: Climate Scenarios Toolbox
 Version: 0.1.0
 Authors@R: c(
     person(given = "Travis",

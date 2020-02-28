@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Climate Scenarios Toolkit • cst</title>
+<title>Climate Scenarios Toolbox • cst</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="Climate Scenarios Toolkit">
+<script src="pkgdown.js"></script><meta property="og:title" content="Climate Scenarios Toolbox">
 <meta property="og:description" content="Process data for the Climate Scenarios Toolkit.">
 <meta name="twitter:card" content="summary">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -54,7 +54,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/cst-intro.html">Getting started with the Climate Scenarios Toolkit</a>
+      <a href="articles/cst-intro.html">Getting started with the Climate Scenarios Toolbox</a>
     </li>
   </ul>
 </li>
@@ -71,9 +71,9 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="cst-climate-scenarios-toolkit" class="section level1">
+<div id="cst-climate-scenarios-toolbox" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
-<a href="#cst-climate-scenarios-toolkit" class="anchor"></a>cst: climate scenarios toolkit</h1></div>
+<a href="#cst-climate-scenarios-toolbox" class="anchor"></a>cst: climate scenarios toolbox</h1></div>
 <!-- badges: start -->
 
 <p>The goal of cst is to provide easy climate data access (<a href="http://www.climatologylab.org/maca.html">MACA v2</a>) to support climate scenario planning. This package allows you to:</p>
@@ -103,12 +103,12 @@
 <a class="sourceLine" id="cb3-5" data-line-number="5">             <span class="dt">years =</span> <span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="dv">2020</span>, <span class="dv">2021</span>), <span class="dt">models =</span> <span class="st">"CCSM4"</span>, <span class="dt">scenarios =</span> <span class="st">"rcp85"</span>)</a>
 <a class="sourceLine" id="cb3-6" data-line-number="6"><span class="co">#&gt; [1] "Retrieving Area of Interest Boundaries"</span></a>
 <a class="sourceLine" id="cb3-7" data-line-number="7"><span class="co">#&gt; [1] "Retrieving climate data for acadia_national_park"</span></a>
-<a class="sourceLine" id="cb3-8" data-line-number="8"><span class="co">#&gt; [1] "Saving local files to /tmp/RtmpL4C7T1/acadia_national_park"</span></a></code></pre></div>
+<a class="sourceLine" id="cb3-8" data-line-number="8"><span class="co">#&gt; [1] "Saving local files to /tmp/RtmppZXyFr/acadia_national_park"</span></a></code></pre></div>
 <p>This gives you a data frame with paths to local climate data files:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(d)</a>
 <a class="sourceLine" id="cb4-2" data-line-number="2"><span class="co">#&gt; Classes 'tbl_df', 'tbl' and 'data.frame':    1 obs. of  12 variables:</span></a>
 <a class="sourceLine" id="cb4-3" data-line-number="3"><span class="co">#&gt;  $ local_file    : chr "pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"</span></a>
-<a class="sourceLine" id="cb4-4" data-line-number="4"><span class="co">#&gt;  $ local_path    : chr "/tmp/RtmpL4C7T1/acadia_national_park/pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"</span></a>
+<a class="sourceLine" id="cb4-4" data-line-number="4"><span class="co">#&gt;  $ local_path    : chr "/tmp/RtmppZXyFr/acadia_national_park/pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"</span></a>
 <a class="sourceLine" id="cb4-5" data-line-number="5"><span class="co">#&gt;  $ model         : chr "CCSM4"</span></a>
 <a class="sourceLine" id="cb4-6" data-line-number="6"><span class="co">#&gt;  $ parameter     : chr "pr"</span></a>
 <a class="sourceLine" id="cb4-7" data-line-number="7"><span class="co">#&gt;  $ rcp           : chr "rcp85"</span></a>
@@ -143,7 +143,7 @@
 <div id="dive-deeper" class="section level3">
 <h3 class="hasAnchor">
 <a href="#dive-deeper" class="anchor"></a>Dive deeper</h3>
-<p>This is just a small glimpse at what you can do with the cst package. For more, see <a href="https://www.earthdatascience.org/cst/articles/cst-intro.html">Getting started with the Climate Scenarios Toolkit</a></p>
+<p>This is just a small glimpse at what you can do with the cst package. For more, see <a href="https://www.earthdatascience.org/cst/articles/cst-intro.html">Getting started with the Climate Scenarios Toolbox</a></p>
 </div>
 </div>
 <div id="meta" class="section level2">
