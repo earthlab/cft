@@ -2,7 +2,7 @@
 % Please edit documentation in R/cst_df.R
 \name{cst_df}
 \alias{cst_df}
-\title{Generate a climate scenario toolkit data frame}
+\title{Generate a climate data frame}
 \usage{
 cst_df(file_reference, cores = 1)
 }
@@ -15,7 +15,7 @@ cst_df(file_reference, cores = 1)
 A tibble of climate data averaged spatially over an area of interest.
 }
 \description{
-Generate a climate scenario toolkit data frame
+Generate a climate data frame
 }
 \examples{
 \dontrun{

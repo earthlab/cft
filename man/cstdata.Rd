@@ -2,7 +2,7 @@
 % Please edit documentation in R/cstdata.R
 \name{cstdata}
 \alias{cstdata}
-\title{Climate Scenario Toolkit Data}
+\title{Climate Scenario Toolbox Data}
 \usage{
 cstdata(
   shp_path,

@@ -34,3 +34,19 @@ test_that("A full run of cstdata completes and saves an expected file", {
   expect_true(file.exists(expected_path))
 })
 
+test_that("A cstdata run on a one pixel park completes successfully", {
+  local_dir <- "."
+  file_refs <- cstdata(park = "Wolf Trap National Park for the Performing Arts",
+                       years = c(2004, 2005),
+                       models = "bcc-csm1-1",
+                       parameters = "pr",
+                       scenarios = "rcp45",
+                       local_dir = local_dir, 
+                       ncores = 2)
+  expected_file <- paste0("pr_wolf_trap_national_park_for_the_performing_arts_",
+                          "bcc-csm1-1_r1i1p1_rcp45_macav2metdata_2004_2005_daily.nc")
+  expected_path <- file.path(local_dir, "wolf_trap_national_park_for_the_performing_arts",
+                             expected_file)
+  
+  expect_true(file.exists(expected_path))
+})
