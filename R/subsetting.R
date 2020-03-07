@@ -78,9 +78,9 @@ get_aoi_info <- function(aoi, grid_ref) {
   # Now create a mask as a matrix
   r <- raster::raster(ncols = length(aoilons), nrows = length(aoilats))
   raster::extent(r) <- raster::extent(aoi)
-  r1 <- rasterize(aoi, r)
-  r2 <- raster::rasterize(as(aoi, "SpatialLines"), r)
-  r <- cover(r1, r2)
+  r1 <- raster::rasterize(aoi, r)
+  r2 <- raster::rasterize(methods::as(aoi, "SpatialLines"), r)
+  r <- raster::cover(r1, r2)
   mask_grid <- r * 0 + 1
   mask_matrix <- methods::as(mask_grid, "matrix")
   
