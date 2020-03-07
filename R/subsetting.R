@@ -72,14 +72,12 @@ get_aoi_info <- function(aoi, grid_ref) {
   nx <- (x2 - x1)
   latmin <- aoi@bbox[2, 1]
   lonmin <- aoi@bbox[1, 1]
-  aoilats <- sapply(0:ny, function(x) latmin + x * res)
-  aoilons <- sapply(0:nx, function(x) lonmin + x * res)
-  
+  aoilats <- sapply(0:ny, function(x) latmin + (x * res))
+  aoilons <- sapply(0:nx, function(x) lonmin + (x * res))
+
   # Now create a mask as a matrix
   r <- raster::raster(ncols = length(aoilons), nrows = length(aoilats))
   raster::extent(r) <- raster::extent(aoi)
-  
-  # TODO: write tests for this function.
   r <- raster::rasterize(aoi, r)
   mask_grid <- r * 0 + 1
   mask_matrix <- methods::as(mask_grid, "matrix")
@@ -95,8 +93,8 @@ get_aoi_info <- function(aoi, grid_ref) {
 }
 
 
-get_queries <- function(aoi, area_name, years, models,
-                        parameters, scenarios, arg_ref, grid_ref) {
+get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
+                        arg_ref, grid_ref) {
   
   # We are building url queries from this base
   urlbase <- paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
@@ -226,12 +224,18 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir) {
     days <- filter_years(start_year, end_year)
     ds <- ds$sel(time = c(days[[1]]: days[[length(days)]]))
 
-    # Add coordinates as floats
+    # Create coordinate vectors
     lats <- np$asarray(c(as.matrix(aoilats)), dtype = np$float32)
     lons <- np$asarray(c(as.matrix(aoilons)), dtype = np$float32)
     times <- np$asarray(days, np$int32)
-    ds <- ds$assign_coords(lat = lats,
-                           lon = lons,
+
+    # For a single point
+    if (length(lats) == 1) lats = c(lats)
+    if (length(lons) == 1) lons = c(lons)
+    
+    # Assign coordinates
+    ds <- ds$assign_coords(lon = lons,
+                           lat = lats,
                            time = times)
 
     # Mask by boundary
@@ -295,10 +299,24 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir) {
       "time_coverage_start" = glue::glue("{start_year}-01-01T00:0"),
       "time_coverage_end" = glue::glue("{end_year}-12-31T00:0"),
       "time_coverage_duration" = glue::glue("P{end_year - start_year + 1}Y"),
-      "time_coverage_resolution" = "P1D"
+      "time_coverage_resolution" = "P1D",
+      "time_units" = "days since 1950-01-01"
     )
     ds$attrs <- attrs2
 
+    # Assign variable attributes - reticulate doesn't handle this well
+    x <- tryCatch({
+      ds$time$attrs <- list("long_name" = "time", "units" = "days since 1950-01-01", "calendar" = "gregorian")
+    }, error=function(e){})
+
+    x <- tryCatch({
+      ds$lon$attrs <- list("long_name" = "longitude" , "units" = "degrees_east", "standard_name" = "longitude")
+    }, error=function(e){})
+  
+    x <- tryCatch({
+      ds$lat$attrs = list("long_name" = "latitude" , "units" = "degrees_north", "standard_name" = "latitude")
+    }, error=function(e){})
+    
     # Save to local file
     ds$to_netcdf(destination_file)
   }
