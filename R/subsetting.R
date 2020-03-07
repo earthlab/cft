@@ -78,7 +78,9 @@ get_aoi_info <- function(aoi, grid_ref) {
   # Now create a mask as a matrix
   r <- raster::raster(ncols = length(aoilons), nrows = length(aoilats))
   raster::extent(r) <- raster::extent(aoi)
-  r <- raster::rasterize(aoi, r)
+  r1 <- rasterize(aoi, r)
+  r2 <- raster::rasterize(as(aoi, "SpatialLines"), r)
+  r <- cover(r1, r2)
   mask_grid <- r * 0 + 1
   mask_matrix <- methods::as(mask_grid, "matrix")
   
@@ -228,7 +230,7 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir) {
     lats <- np$asarray(c(as.matrix(aoilats)), dtype = np$float32)
     lons <- np$asarray(c(as.matrix(aoilons)), dtype = np$float32)
     times <- np$asarray(days, np$int32)
-
+    
     # For a single point
     if (length(lats) == 1) lats = c(lats)
     if (length(lons) == 1) lons = c(lons)
@@ -237,6 +239,9 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir) {
     ds <- ds$assign_coords(lon = lons,
                            lat = lats,
                            time = times)
+
+    ds <- ds$sortby('lat', ascending=FALSE)
+    
 
     # Mask by boundary
     dsmask <- xr$DataArray(mask_matrix)
