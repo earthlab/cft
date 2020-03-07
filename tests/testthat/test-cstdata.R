@@ -43,9 +43,10 @@ test_that("A cstdata run on a one pixel park completes successfully", {
                        scenarios = "rcp45",
                        local_dir = local_dir, 
                        ncores = 2)
-  expected_file <- paste0("pr_wolf_trap_national_park_for_the_performing_art_",
+  expected_file <- paste0("pr_wolf_trap_national_park_for_the_performing_arts_",
                           "bcc-csm1-1_r1i1p1_rcp45_macav2metdata_2004_2005_daily.nc")
-  expected_path <- file.path(local_dir, "acadia_national_park", expected_file)
+  expected_path <- file.path(local_dir, "wolf_trap_national_park_for_the_performing_arts",
+                             expected_file)
   
   expect_true(file.exists(expected_path))
 })
