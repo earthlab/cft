@@ -1,4 +1,4 @@
-test_that("Test download_shapefile for file and shapefile object", {
+test_that("Test download_shapefile for file and shapefile objects", {
     url <- paste0("https://www2.census.gov/geo/tiger/TIGER2019/COUSUB/",
                   "tl_2019_44_cousub.zip")
     dir <- "."
