@@ -15,6 +15,7 @@ Authors@R: c(
     )
 Maintainer: Travis Williams <travis.williams@colorado.edu>
 Description: Process data for the Climate Scenarios Toolkit.
+URL: https://github.com/earthlab/cst
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

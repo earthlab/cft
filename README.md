@@ -11,6 +11,8 @@ Status](https://travis-ci.com/earthlab/cst.svg?branch=master)](https://travis-ci
 [![Project Status: Active – The project has reached a stable, usable
 state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![R build
+status](https://github.com/earthlab/cst/workflows/R-CMD-check/badge.svg)](https://github.com/earthlab/cst/actions)
 <!-- badges: end -->
 
 The goal of cst is to provide easy climate data access ([MACA
@@ -58,7 +60,7 @@ d <- cstdata(park = "Acadia National Park", parameters = "pr",
              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
 #> [1] "Retrieving Area of Interest Boundaries"
 #> [1] "Retrieving climate data for acadia_national_park"
-#> [1] "Saving local files to /tmp/RtmppZXyFr/acadia_national_park"
+#> [1] "Saving local files to /tmp/RtmpxZyTAb/acadia_national_park"
 ```
 
 This gives you a data frame with paths to local climate data files:
@@ -67,7 +69,7 @@ This gives you a data frame with paths to local climate data files:
 str(d)
 #> Classes 'tbl_df', 'tbl' and 'data.frame':    1 obs. of  12 variables:
 #>  $ local_file    : chr "pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"
-#>  $ local_path    : chr "/tmp/RtmppZXyFr/acadia_national_park/pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"
+#>  $ local_path    : chr "/tmp/RtmpxZyTAb/acadia_national_park/pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"
 #>  $ model         : chr "CCSM4"
 #>  $ parameter     : chr "pr"
 #>  $ rcp           : chr "rcp85"
