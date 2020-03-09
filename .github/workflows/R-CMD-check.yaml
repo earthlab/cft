@@ -55,8 +55,8 @@ jobs:
           sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-          qpdf libgdal-dev gdal-bin libgeos-dev \
-          libgeos++-dev libproj-dev libcurl4-openssl-dev libssl-devnetcdf-bin
+          libgdal-dev gdal-bin libgeos-dev \
+          libgeos++-dev libproj-dev libnetcdf-dev 
       
       - name: Install dependencies
         run: |
