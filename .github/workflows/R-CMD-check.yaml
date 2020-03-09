@@ -39,7 +39,7 @@ jobs:
         with:
           pandoc-version: '2.7.3'
       - name: Setup R
-        uses: actions/setup-R@v1
+        uses: actions/setup-R@master
         with:
           r-version: ${{ matrix.r }}
       - name: Install dependencies
