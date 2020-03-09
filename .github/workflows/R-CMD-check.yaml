@@ -43,6 +43,13 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@master
       
+      
+      - name: install macOS system dependencies
+        if: runner.os == 'macOS'
+        continue-on-error: true
+        run: |
+          brew install gdal netcdf
+      
       - name: Install dependencies
         run: |
           install.packages(c("remotes", "rcmdcheck", "ggplot2"))
