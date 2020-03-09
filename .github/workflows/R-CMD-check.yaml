@@ -25,6 +25,9 @@ jobs:
           install.packages(c("remotes", "rcmdcheck"))
           remotes::install_deps(dependencies = TRUE)
         shell: Rscript {0}
+      - name: Install package
+        run: R CMD INSTALL .
+        shell: bash -l {0}
       - name: Check
         run: |
           cst::install_py_deps(method='conda', python_version = 3)
