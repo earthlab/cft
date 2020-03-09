@@ -45,8 +45,8 @@ jobs:
       
       - name: Install dependencies
         run: |
-          install.packages(c("remotes", "rcmdcheck"))
-          remotes::install_deps(dependencies = TRUE, type = 'both')
+          install.packages(c("remotes", "rcmdcheck", "ggplot2"))
+          remotes::install_deps(dependencies = TRUE)
         shell: Rscript {0}
       
       - name: Install package
