@@ -26,7 +26,7 @@
 #' @export
 install_py_deps <- function(method = c("auto", "virtualenv", "conda"),
                             conda = "auto",
-                            envname = NULL,
+                            envname = "cst",
                             restart_session = TRUE,
                             ...) {
   method <- match.arg(method)

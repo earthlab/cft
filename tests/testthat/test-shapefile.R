@@ -28,11 +28,6 @@ test_that("Default NPS boundary URL is valid", {
   expect_false(httr::http_error(nps_boundary_url()))
 })
 
-# test_that("Local shapefiles are readable", {
-#   aoi <- get_shapefile(shp_path = system.file("shape/nc.shp", package="sf"))
-#   expect_s4_class(aoi, "SpatialPolygonsDataFrame")
-# })
-
 test_that("Invalid park names raise errors", {
   expect_error(get_park_boundaries("Poodlebear National Park", local_dir = "."),
                regexp = "is not contained in the national park boundary data")
