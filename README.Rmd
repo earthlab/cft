@@ -61,6 +61,9 @@ climate models, you can use the `cstdata()` function:
 ```{r}
 library(ggplot2)
 library(cst)
+library(reticulate)
+
+use_condaenv("cst")
 
 d <- cstdata(park = "Acadia National Park", parameters = "pr", 
              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")

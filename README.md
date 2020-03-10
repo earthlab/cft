@@ -55,12 +55,15 @@ subset of climate models, you can use the `cstdata()` function:
 ``` r
 library(ggplot2)
 library(cst)
+library(reticulate)
+
+use_condaenv("cst")
 
 d <- cstdata(park = "Acadia National Park", parameters = "pr", 
              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
 #> [1] "Retrieving Area of Interest Boundaries"
 #> [1] "Retrieving climate data for acadia_national_park"
-#> [1] "Saving local files to /tmp/RtmpxZyTAb/acadia_national_park"
+#> [1] "Saving local files to /tmp/RtmppUClvR/acadia_national_park"
 ```
 
 This gives you a data frame with paths to local climate data files:
@@ -69,7 +72,7 @@ This gives you a data frame with paths to local climate data files:
 str(d)
 #> Classes 'tbl_df', 'tbl' and 'data.frame':    1 obs. of  12 variables:
 #>  $ local_file    : chr "pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"
-#>  $ local_path    : chr "/tmp/RtmpxZyTAb/acadia_national_park/pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"
+#>  $ local_path    : chr "/tmp/RtmppUClvR/acadia_national_park/pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"
 #>  $ model         : chr "CCSM4"
 #>  $ parameter     : chr "pr"
 #>  $ rcp           : chr "rcp85"
@@ -96,7 +99,7 @@ str(df)
 #>  $ model    : chr  "CCSM4" "CCSM4" "CCSM4" "CCSM4" ...
 #>  $ ensemble : chr  "r6i1p1" "r6i1p1" "r6i1p1" "r6i1p1" ...
 #>  $ area_name: chr  "acadia_national_park" "acadia_national_park" "acadia_national_park" "acadia_national_park" ...
-#>  $ pr       : num  0 6.4 0 16.8 16.4 ...
+#>  $ pr       : num  0 4.7804 0.0497 16.9338 18.5549 ...
 ```
 
 Because this is a data.frame, you can use all of the normal data
