@@ -16,3 +16,4 @@ scratch.R
 ^vignettes/cst-intro\.Rmd\.orig$
 CONTRIBUTING.md
 ^CODE_OF_CONDUCT\.md$
+^\.github$

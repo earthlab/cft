@@ -20,6 +20,7 @@ knitr::opts_chunk$set(
 [![Build Status](https://travis-ci.com/earthlab/cst.svg?branch=master)](https://travis-ci.com/earthlab/cst)
 [![codecov](https://codecov.io/gh/earthlab/cst/branch/master/graph/badge.svg)](https://codecov.io/gh/earthlab/cst)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![R build status](https://github.com/earthlab/cst/workflows/R-CMD-check/badge.svg)](https://github.com/earthlab/cst/actions)
 <!-- badges: end -->
 
 The goal of cst is to provide easy climate data access 
@@ -60,6 +61,9 @@ climate models, you can use the `cstdata()` function:
 ```{r}
 library(ggplot2)
 library(cst)
+library(reticulate)
+
+use_condaenv("cst")
 
 d <- cstdata(park = "Acadia National Park", parameters = "pr", 
              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
@@ -102,3 +106,4 @@ after reading our contribution [guidelines](CONTRIBUTING.md), and the
 [Contributor Code of Conduct](CODE_OF_CONDUCT.md). 
 * License: GPL-3
 * See `citation("cst")` in R to cite this package in publications. 
+

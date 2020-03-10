@@ -98,7 +98,12 @@
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/earthlab/cst">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -113,7 +118,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Install python dependencies</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/earthlab/cst/blob/master/R/install_py_deps.R'><code>R/install_py_deps.R</code></a></small>
     <div class="hidden name"><code>install_py_deps.Rd</code></div>
     </div>
 
@@ -124,7 +129,7 @@
     <pre class="usage"><span class='fu'>install_py_deps</span>(
   <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"auto"</span>, <span class='st'>"virtualenv"</span>, <span class='st'>"conda"</span>),
   <span class='kw'>conda</span> <span class='kw'>=</span> <span class='st'>"auto"</span>,
-  <span class='kw'>envname</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>envname</span> <span class='kw'>=</span> <span class='st'>"cst"</span>,
   <span class='kw'>restart_session</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
   <span class='no'>...</span>
 )</pre>

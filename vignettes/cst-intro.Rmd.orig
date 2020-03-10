@@ -69,6 +69,7 @@ library(tidyr)
 library(lubridate)
 library(ggrepel)
 library(dplyr)
+library(reticulate)
 ```
 
 If you haven't already installed the python dependencies for the package using
@@ -78,6 +79,7 @@ you can install the python dependencies with:
 
 ```{r install-py-deps, eval = FALSE}
 cst::install_py_deps()
+use_condaenv("cst")
 ```
 
 

@@ -1,3 +1,5 @@
+reticulate::use_condaenv("cst")
+
 test_that("cst_df generates a tibble", {
   local_dir <- "."
   file_refs <- cstdata(park = "Acadia National Park",

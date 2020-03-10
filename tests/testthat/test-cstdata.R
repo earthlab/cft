@@ -1,3 +1,5 @@
+reticulate::use_condaenv("cst")
+
 test_that("Not providing a shapefile or park name raises an error", {
   expect_error(cstdata(),
                regexp = "No location data/AOI data were provided")
