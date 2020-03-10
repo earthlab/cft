@@ -55,8 +55,9 @@ jobs:
           sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-          libgdal-dev gdal-bin libgeos-dev python3-xarray python-netcdf4 \
+          libgdal-dev gdal-bin libgeos-dev python3-xarray \
           libgeos++-dev libproj-dev libnetcdf-dev 
+          pip3 install netCDF4
       
       - name: Install dependencies
         run: |
