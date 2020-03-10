@@ -7,7 +7,7 @@
 install_py_deps(
   method = c("auto", "virtualenv", "conda"),
   conda = "auto",
-  envname = NULL,
+  envname = "cst",
   restart_session = TRUE,
   ...
 )
