@@ -121,7 +121,7 @@ df %>%
 
 This is just a small glimpse at what you can do with the cst package.
 For more, see [Getting started with the Climate Scenarios
-Toolbox](https://www.earthdatascience.org/cst/articles/cst-intro.html)
+Toolbox](https://www.earthdatascience.org/cst/articles/cst-intro.html).
 
 ## Meta
 
