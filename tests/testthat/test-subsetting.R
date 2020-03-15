@@ -129,7 +129,7 @@ test_that("Test retrieve_subset", {
                     "macav2metdata_2000_2001_daily.nc")
   area_name <- "acadia_national_park"
   elements <- c(model = "bcc-csm1-1", rcp = "rcp45", ensemble = "r1i1p1",
-                "year1" = 2000, "year2" = 2001)
+                "year1" = 2000, "year2" = 2001, internal_varname = "precipitation")
   query <- list(c(url1, url2), filename, elements)
   years <- c(2000, 2001)
   grid_ref <- Grid_Reference()

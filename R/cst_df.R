@@ -31,7 +31,8 @@ cst_df <- function(file_reference, cores = 1) {
   message("Generating climate data.frame...")
   wide_df <- split(df, df$date) %>%
     pbapply::pblapply(FUN = tidyr::pivot_wider, 
-                      names_from = "parameter", values_from = "value", 
+                      names_from = "parameter",
+                      values_from = "value", 
                       cl = cl) %>%
     dplyr::bind_rows()
   wide_df
@@ -39,9 +40,10 @@ cst_df <- function(file_reference, cores = 1) {
 
 # internal function that computes spatial average of raster
 r_to_df <- function(df_row) {
-  path <- df_row["local_path"]
-  r <- raster::brick(path)
-  
+  path <- as.character(df_row["local_path"])
+  varname = as.character(df_row["parameter_long"])
+  r <- raster::brick(x=path, varname=varname)
+
   min_date <- as.Date(paste0(df_row["year1"], "-01-01"))
   max_date <- as.Date(paste0(df_row["year2"], "-12-31"))
   date_seq <- seq(min_date, max_date, 1)
