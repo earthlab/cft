@@ -41,7 +41,7 @@ compare_periods <- function(
   reference_period = c(1990, 2019),
   scenarios = c("rcp45", "rcp85")
   ) {
-
+  
   file_df <- file_df[file_df$parameter %in% c(var1, var2), ]
   if (nrow(file_df) == 0) {
     stop("There are no stored files that contain the information requested.")
@@ -62,7 +62,7 @@ compare_periods <- function(
   
   file_df$diff_summary <- file_df$target_summary - file_df$reference_summary
 
-  file_df$label <- paste0("Difference in ", file_df$full_var_name,
+  file_df$label <- paste0("Difference in ", file_df$full_varname,
                           " (", file_df$units, ")")
   return(file_df)
 }
