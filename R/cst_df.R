@@ -40,8 +40,8 @@ cst_df <- function(file_reference, cores = 1) {
 
 # internal function that computes spatial average of raster
 r_to_df <- function(df_row) {
-  path <- as.character(df_row["local_path"])
-  varname = as.character(df_row["parameter_long"])
+  path <- df_row[["local_path"]]
+  varname <- df_row[["parameter_long"]]
   r <- raster::brick(x=path, varname=varname)
 
   min_date <- as.Date(paste0(df_row["year1"], "-01-01"))
