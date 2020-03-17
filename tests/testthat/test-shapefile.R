@@ -25,6 +25,7 @@ test_that("Test get_park_boundaries for file and shapefile object", {
 })
 
 test_that("Default NPS boundary URL is valid", {
+  skip_on_ci()
   expect_false(httr::http_error(nps_boundary_url()))
 })
 
