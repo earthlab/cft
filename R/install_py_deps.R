@@ -36,7 +36,7 @@ install_py_deps <- function(method = c("auto", "virtualenv", "conda"),
     envname = envname, 
     method = method, 
     conda = conda, 
-    pip = TRUE, 
+    pip = FALSE, 
     forge = TRUE,
     ...
   )
