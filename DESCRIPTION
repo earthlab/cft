@@ -39,6 +39,7 @@ Imports:
     raster,
     reticulate,
     rgdal,
+    rlang,
     sp,
     stringdist,
     tibble,

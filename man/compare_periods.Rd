@@ -5,7 +5,7 @@
 \title{Compare climate data among time periods}
 \usage{
 compare_periods(
-  file_df,
+  df,
   agg_fun = "mean",
   var1 = "tasmax",
   var2 = "pr",
@@ -17,7 +17,7 @@ compare_periods(
 )
 }
 \arguments{
-\item{file_df}{A file reference data frame output from a `cstdata()` run.
+\item{df}{A data frame output from a `cst_df()` run.
 (data.frame)}
 
 \item{agg_fun}{The aggregating function to applied to the model variables

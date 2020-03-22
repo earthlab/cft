@@ -91,7 +91,7 @@ cstdata <- function(shp_path,
   }
 
   # Get national park or area of interest
-  if (verbose) print("Retrieving Area of Interest Boundaries")
+  if (verbose) print("Retrieving area of interest boundaries...")
   if (missing(park)) {
     park <- NA
   }
@@ -111,6 +111,7 @@ cstdata <- function(shp_path,
   aoi <- sp::spTransform(aoi, grid_ref$crs)
 
   # Get geographic information about the aoi
+  if (verbose) print("Building area of interest grid...")
   aoi_info <- get_aoi_info(aoi, grid_ref)
 
   # Build url queries, filenames, and dataset elements
