@@ -41,7 +41,7 @@ compare_periods <- function(
   reference_period = c(1990, 2019),
   scenarios = c("rcp45", "rcp85")
   ) {
-
+  
   file_df <- file_df[file_df$parameter %in% c(var1, var2), ]
   if (nrow(file_df) == 0) {
     stop("There are no stored files that contain the information requested.")
@@ -62,8 +62,7 @@ compare_periods <- function(
   
   file_df$diff_summary <- file_df$target_summary - file_df$reference_summary
 
-  file_df$label <- paste0("Difference in ", 
-                          file_df$full_var_name,
+  file_df$label <- paste0("Difference in ", file_df$full_varname,
                           " (", file_df$units, ")")
   return(file_df)
 }
@@ -98,7 +97,7 @@ get_fun <- function(file_df, agg_fun, time_period, new_colname) {
     msg <- paste0("The data provided does not contain the years requested.")
     stop(msg)
   }
-  
+
   # Match the aggregation function string to a function 
   tryCatch({
     fun <- match.fun(agg_fun)
@@ -114,27 +113,26 @@ get_fun <- function(file_df, agg_fun, time_period, new_colname) {
     X = file_df,
     MARGIN = 1,
     FUN = function(row) {
-      
+
       # Find days since 1950-01-01 to query the netcdf objects
       days_since_1950 <- function(year_range, months) {
         months <- unlist(months)
-        
+  
         # Get all of the dates within the year range
         base <- as.Date("1950-01-01")
         date1 <- as.Date(paste0(as.character(year_range[[1]]), "-01-01"))
         date2 <- as.Date(paste0(as.character(year_range[[2]]), "-12-31"))
         dates <- seq(date1, date2, by = "day")
-        
+  
         # Filter out dates not in the list
         dates <- dates[format(dates, "%b") %in% months]
-        
+  
         n_days_since <- dates - base
         return(n_days_since)
       }
-      
+  
       file <- unlist(row["local_path"])
       variable_name <- unname(unlist(row["parameter_long"]))
-
       nc <- ncdf4::nc_open(file)
       values <- ncdf4::ncvar_get(nc, variable_name)
 
@@ -142,17 +140,17 @@ get_fun <- function(file_df, agg_fun, time_period, new_colname) {
       filter_days <- days_since_1950(time_period, row["months"])
       all_days <- nc$dim$time$vals
       day_indices <- match(filter_days, all_days)
-
       values <- values[, , day_indices]
       agg <- fun(values, na.rm=TRUE)
+  
       return(agg)
     })
   file_df[, new_colname] <- unlist(values)
-  
+
   # convert from K to C if working with temperature data
   if ("air_temperature" %in% file_df$parameter_long) {
     file_df <- convert_temperature(file_df, new_colname)
   }
-  
+
   return(file_df)
 }

@@ -174,7 +174,8 @@ get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
                       "year2" = as.numeric(years[2]),
                       "area_name" = area_name,
                       "units" = unname(arg_ref$units[unlist(var)]),
-                      "full_var_name" = unname(arg_ref$labels[unlist(param)]))
+                      "full_varname" = unname(arg_ref$labels[unlist(param)]),
+                      "internal_varname" = unname(var))
   
         # Combine everything into a query package and add to query list
         historical_url <- paste0(historical, historical_subset)
@@ -192,6 +193,7 @@ get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
 
 retrieve_subset <- function(query, years, aoi_info, area_name, local_dir) {
 
+  # Load python dependencies
   xr <- reticulate::import("xarray")
   np <- reticulate::import("numpy", convert = FALSE)
   
@@ -239,9 +241,7 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir) {
     ds <- ds$assign_coords(lon = lons,
                            lat = lats,
                            time = times)
-
     ds <- ds$sortby('lat', ascending=FALSE)
-    
 
     # Mask by boundary
     dsmask <- xr$DataArray(mask_matrix)
@@ -309,7 +309,18 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir) {
     )
     ds$attrs <- attrs2
 
-    # Assign variable attributes - reticulate doesn't handle this well
+    # Fix the variable attributes (why is grid_mapping a variable attribute?)
+    internal_varname <- elements[["internal_varname"]]
+    var_attrs <- ds[internal_varname]$attrs
+    if ("grid_mapping" %in% names(var_attrs)) {
+      var_attrs["grid_mapping"] <- NULL
+    }
+
+    # Assign attributes - reticulate doesn't handle this well
+    x <- tryCatch({
+      ds[internal_varname]$attrs <- var_attrs
+    }, error=function(e){})
+  
     x <- tryCatch({
       ds$time$attrs <- list("long_name" = "time", "units" = "days since 1950-01-01", "calendar" = "gregorian")
     }, error=function(e){})
@@ -317,11 +328,11 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir) {
     x <- tryCatch({
       ds$lon$attrs <- list("long_name" = "longitude" , "units" = "degrees_east", "standard_name" = "longitude")
     }, error=function(e){})
-  
+
     x <- tryCatch({
       ds$lat$attrs = list("long_name" = "latitude" , "units" = "degrees_north", "standard_name" = "latitude")
     }, error=function(e){})
-    
+
     # Save to local file
     ds$to_netcdf(destination_file)
   }
