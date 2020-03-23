@@ -47,7 +47,11 @@ available of rcps is available under cstdata::argument_reference$scenarios.
 
 \item{years}{The first and last years of the desired period. (vector)}
 
-\item{local_dir}{The local directory in which to save files. (character)}
+\item{local_dir}{The local directory in which to save files. By default, 
+files are saved in a temporary directory (as per CRAN guidelines), and are
+lost after your R session ends. Specify a path to a local directory with 
+this argument to retain files and avoid duplicate downloads
+in subsequent R sessions.  (character)}
 
 \item{verbose}{Print verbose output. (logical)}
 
