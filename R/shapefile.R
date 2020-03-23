@@ -62,15 +62,10 @@ suggest_parkname <- function(parkname, available_names) {
   names <- gsub("memorial", "", names)
   names <- gsub("monument", "", names)
 
-  # Get pair-wise string similarity score with each available name
-  scores <-sapply(as.character(names),
-                  FUN = stringdist::stringsim,
-                  b = parkname)
-  
-  # Find the index positions of the top five highest scores
-  sorted_scores <- sort(scores, decreasing = TRUE)
-  top_five <- sorted_scores[1:5]
-  indices <- match(top_five, scores)
+  string_similarity <-stringdist::stringsim(names, parkname)
+  sorted_string_similarity <- sort(string_similarity, decreasing = TRUE)
+  top_five <- sorted_string_similarity[1:5]
+  indices <- match(top_five, string_similarity)
 
   # Use the index position to find the character string
   suggestions <- as.character(available_names[indices])
