@@ -72,8 +72,8 @@ get_aoi_info <- function(aoi, grid_ref) {
   nx <- (x2 - x1)
   latmin <- aoi@bbox[2, 1]
   lonmin <- aoi@bbox[1, 1]
-  aoilats <- sapply(0:ny, function(x) latmin + (x * res))
-  aoilons <- sapply(0:nx, function(x) lonmin + (x * res))
+  aoilats <- latmin + (0:ny) * res
+  aoilons <- lonmin + (0:nx) * res
 
   # Now create a mask as a matrix
   r <- raster::raster(ncols = length(aoilons), nrows = length(aoilats))
