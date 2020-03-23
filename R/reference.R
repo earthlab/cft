@@ -26,10 +26,8 @@ Grid_Reference <- methods::setRefClass(
       crs <<- crs
       resolution <<- resolution
       extent <<- extent
-      lats <<- sapply(1:(nlat),
-                      function(x) extent["latmin"][[1]] + x * resolution)
-      lons <<- sapply(1:(nlon),
-                      function(x) extent["lonmin"][[1]] + x * resolution)
+      lats <<- extent$latmin + (1:nlat) * resolution
+      lons <<- extent$lonmin + (1:nlon) * resolution
       ntime_historical <<- ntime_historical
       ntime_model <<- ntime_model
     }
