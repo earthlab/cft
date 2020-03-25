@@ -48,7 +48,7 @@ cst::install_py_deps()
 
 ## Quickstart guide
 
-To acquire daily precipitation data for Acadia National Park for a subset of 
+To get daily precipitation data for Acadia National Park for a subset of 
 climate models, you can use the `cstdata()` function:
 
 
