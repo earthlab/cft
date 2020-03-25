@@ -54,6 +54,26 @@ Python dependencies can be installed as follows:
 cst::install_py_deps()
 ```
 
+### Using Docker instead of a local installation
+
+If you are having trouble installing this package locally, or simply do not want
+to install the package locally, we also provide a 
+[Docker](https://www.docker.com/) image that has the 
+package and its dependencies pre-installed, along with
+RStudio server which can run in a web browser. 
+
+To use the Docker image, you'll need to have Docker installed (see 
+[Docker installation instructions here](https://docs.docker.com/install/)), then 
+run the following command from a terminal, replacing <yourpassword> with 
+a password of your choosing.
+
+```bash
+docker run -e PASSWORD=<yourpassword> -d -p 8787:8787 earthlab/cst
+```
+
+Then, in a web browser, navigate to localhost:8787. 
+Log in with username: `rstudio`, and the password you provided. 
+
 ## Quickstart guide
 
 To get daily precipitation data for Acadia National Park for a subset of 
