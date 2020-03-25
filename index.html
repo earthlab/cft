@@ -105,21 +105,29 @@
 <span class="kw pkg">remotes</span><span class="kw ns">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span>(<span class="st">"earthlab/cst"</span>)</pre></div>
 <p>This package also has some python dependencies. We recommend using conda (preferably <a href="https://docs.conda.io/en/latest/miniconda.html">miniconda</a>) to simplify the installation process. Python dependencies can be installed as follows:</p>
 <div class="sourceCode" id="cb2"><pre class="r"><span class="kw pkg">cst</span><span class="kw ns">::</span><span class="fu"><a href="reference/install_py_deps.html">install_py_deps</a></span>()</pre></div>
+<div id="using-docker-instead-of-a-local-installation" class="section level3">
+<h3 class="hasAnchor">
+<a href="#using-docker-instead-of-a-local-installation" class="anchor"></a>Using Docker instead of a local installation</h3>
+<p>If you are having trouble installing this package locally, or simply do not want to install the package locally, we also provide a <a href="https://www.docker.com/">Docker</a> image that has the package and its dependencies pre-installed, along with RStudio server which can run in a web browser.</p>
+<p>To use the Docker image, you’ll need to have Docker installed (see <a href="https://docs.docker.com/install/">Docker installation instructions here</a>), then run the following command from a terminal, replacing <yourpassword> with a password of your choosing.</yourpassword></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="ex">docker</span> run -e PASSWORD=<span class="op">&lt;</span>yourpassword<span class="op">&gt;</span> -d -p 8787:8787 earthlab/cst</span></code></pre></div>
+<p>Then, in a web browser, navigate to localhost:8787. Log in with username: <code>rstudio</code>, and the password you provided.</p>
+</div>
 </div>
 <div id="quickstart-guide" class="section level2">
 <h2 class="hasAnchor">
 <a href="#quickstart-guide" class="anchor"></a>Quickstart guide</h2>
 <p>To acquire daily precipitation data for Acadia National Park for a subset of climate models, you can use the <code><a href="reference/cstdata.html">cstdata()</a></code> function:</p>
-<div class="sourceCode" id="cb3"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">ggplot2</span>)
+<div class="sourceCode" id="cb4"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">ggplot2</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">cst</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">reticulate</span>)
 
 <span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/use_python.html">use_condaenv</a></span>(<span class="st">"cst"</span>)</pre></div>
 <p>Then, download some data using the <code><a href="reference/cstdata.html">cstdata()</a></code> function.</p>
-<div class="sourceCode" id="cb4"><pre class="r"><span class="no">d</span> <span class="kw">&lt;-</span> <span class="fu"><a href="reference/cstdata.html">cstdata</a></span>(<span class="kw">park</span> <span class="kw">=</span> <span class="st">"Acadia National Park"</span>, <span class="kw">parameters</span> <span class="kw">=</span> <span class="st">"pr"</span>,
+<div class="sourceCode" id="cb5"><pre class="r"><span class="no">d</span> <span class="kw">&lt;-</span> <span class="fu"><a href="reference/cstdata.html">cstdata</a></span>(<span class="kw">park</span> <span class="kw">=</span> <span class="st">"Acadia National Park"</span>, <span class="kw">parameters</span> <span class="kw">=</span> <span class="st">"pr"</span>,
              <span class="kw">years</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">2020</span>, <span class="fl">2021</span>), <span class="kw">models</span> <span class="kw">=</span> <span class="st">"CCSM4"</span>, <span class="kw">scenarios</span> <span class="kw">=</span> <span class="st">"rcp85"</span>)</pre></div>
 <p>This gives you a data frame with paths to local climate data files:</p>
-<div class="sourceCode" id="cb5"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">d</span>)
+<div class="sourceCode" id="cb6"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">d</span>)
 <span class="co">#&gt; Classes 'tbl_df', 'tbl' and 'data.frame':    1 obs. of  13 variables:</span>
 <span class="co">#&gt;  $ local_file      : chr "pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"</span>
 <span class="co">#&gt;  $ local_path      : chr "/home/mjoseph/acadia_national_park/pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"</span>
@@ -135,7 +143,7 @@
 <span class="co">#&gt;  $ internal_varname: chr "precipitation"</span>
 <span class="co">#&gt;  $ parameter_long  : chr "precipitation"</span></pre></div>
 <p>And, you can also summarize the daily data by computing a spatial average over the region of interest:</p>
-<div class="sourceCode" id="cb6"><pre class="r"><span class="no">df</span> <span class="kw">&lt;-</span> <span class="fu"><a href="reference/cst_df.html">cst_df</a></span>(<span class="no">d</span>, <span class="kw">ncores</span> <span class="kw">=</span> <span class="fl">2</span>)
+<div class="sourceCode" id="cb7"><pre class="r"><span class="no">df</span> <span class="kw">&lt;-</span> <span class="fu"><a href="reference/cst_df.html">cst_df</a></span>(<span class="no">d</span>, <span class="kw">ncores</span> <span class="kw">=</span> <span class="fl">2</span>)
 <span class="co">#&gt; Computing spatial averages...</span>
 <span class="co">#&gt; Generating climate data.frame...</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">df</span>)
@@ -147,7 +155,7 @@
 <span class="co">#&gt;  $ area_name: chr  "acadia_national_park" "acadia_national_park" "acadia_national_park" "acadia_national_park" ...</span>
 <span class="co">#&gt;  $ pr       : num  0 4.7804 0.0497 16.9338 18.5549 ...</span></pre></div>
 <p>Because this is a data.frame, you can use all of the normal data visualization and processing functionality in R, e.g.,</p>
-<div class="sourceCode" id="cb7"><pre class="r"><span class="no">df</span> <span class="kw">%&gt;%</span>
+<div class="sourceCode" id="cb8"><pre class="r"><span class="no">df</span> <span class="kw">%&gt;%</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="no">date</span>, <span class="no">pr</span>)) +
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span>() +
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span>(<span class="kw">alpha</span> <span class="kw">=</span> <span class="fl">.1</span>) +
@@ -168,7 +176,7 @@
 <h3 class="hasAnchor">
 <a href="#building-documentation" class="anchor"></a>Building documentation</h3>
 <p>The vignettes in this package are pre-rendered because they take a while to execute. The <code>Makefile</code> contains instructions for rendering the vignettes, as well as the manual and README.md file. To build the documentation, execute the following command from the terminal:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">make</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1"></a><span class="fu">make</span></span></code></pre></div>
 </div>
 </div>
 <div id="meta" class="section level2">
