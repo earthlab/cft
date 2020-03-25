@@ -4,7 +4,9 @@
 \name{argument_reference}
 \alias{argument_reference}
 \title{Attributes}
-\format{An object of class \code{Argument_Reference} of length 1.}
+\format{
+An object of class \code{Argument_Reference} of length 1.
+}
 \usage{
 argument_reference
 }

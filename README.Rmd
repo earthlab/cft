@@ -64,7 +64,21 @@ library(cst)
 library(reticulate)
 
 use_condaenv("cst")
+```
 
+Then, download some data using the `cstdata()` function. 
+
+```{r, include = FALSE}
+# this 'secret' code chunk sets a local directory so that the data aren't 
+# downloaded every time we build the README.md file, but it would be impolite
+# to write to the user's home directory for this example without permission.
+d <- cstdata(park = "Acadia National Park", 
+             parameters = "pr", local_dir = "~",
+             years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
+```
+
+
+```{r, eval = FALSE}
 d <- cstdata(park = "Acadia National Park", parameters = "pr", 
              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
 ```
@@ -78,7 +92,7 @@ str(d)
 And, you can also summarize the daily data by computing a spatial average over the region of interest: 
 
 ```{r summarize-data}
-df <- cst_df(d, cores = 2)
+df <- cst_df(d, ncores = 2)
 str(df)
 ```
 
@@ -98,6 +112,20 @@ df %>%
 
 This is just a small glimpse at what you can do with the cst package.
 For more, see [Getting started with the Climate Scenarios Toolbox](https://www.earthdatascience.org/cst/articles/cst-intro.html).
+
+## Development instructions
+
+### Building documentation
+
+The vignettes in this package are pre-rendered because they take a while to 
+execute. 
+The `Makefile` contains instructions for rendering the vignettes, as well as
+the manual, README.md file, and pkgdown website. 
+To build the documentation, execute the following command from the terminal: 
+
+```bash
+make
+```
 
 ## Meta
 
