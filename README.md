@@ -135,7 +135,7 @@ For more, see [Getting started with the Climate Scenarios Toolbox](https://www.e
 The vignettes in this package are pre-rendered because they take a while to 
 execute. 
 The `Makefile` contains instructions for rendering the vignettes, as well as
-the documentation, README.md file, and pkgdown website. 
+the manual, README.md file, and pkgdown website. 
 To build the documentation, execute the following command from the terminal: 
 
 ```bash
