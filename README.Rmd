@@ -21,6 +21,7 @@ knitr::opts_chunk$set(
 [![codecov](https://codecov.io/gh/earthlab/cst/branch/master/graph/badge.svg)](https://codecov.io/gh/earthlab/cst)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![R build status](https://github.com/earthlab/cst/workflows/R-CMD-check/badge.svg)](https://github.com/earthlab/cst/actions)
+[![R build status](https://github.com/earthlab/cst/workflows/pkgdown/badge.svg)](https://github.com/earthlab/cst/actions)
 <!-- badges: end -->
 
 The goal of cst is to provide easy climate data access 
@@ -120,7 +121,7 @@ For more, see [Getting started with the Climate Scenarios Toolbox](https://www.e
 The vignettes in this package are pre-rendered because they take a while to 
 execute. 
 The `Makefile` contains instructions for rendering the vignettes, as well as
-the manual, README.md file, and pkgdown website. 
+the manual and README.md file. 
 To build the documentation, execute the following command from the terminal: 
 
 ```bash

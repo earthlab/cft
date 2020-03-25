@@ -1,14 +1,11 @@
 
-all: manual vignette README.md website
+all: manual vignettes/cst-intro.Rmd README.md
 
 manual: 
 	Rscript -e "devtools::document()"
 
-vignette: vignettes/cst-intro.Rmd.orig
+vignettes/cst-intro.Rmd: vignettes/cst-intro.Rmd.orig
 	Rscript --vanilla vignettes/precompile.R
 
 README.md: README.Rmd
 	Rscript -e "knitr::knit('README.Rmd')"
-
-website: 
-	Rscript -e "pkgdown::build_site()"
