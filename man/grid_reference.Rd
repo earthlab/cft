@@ -4,7 +4,9 @@
 \name{grid_reference}
 \alias{grid_reference}
 \title{Attributes}
-\format{An object of class \code{Grid_Reference} of length 1.}
+\format{
+An object of class \code{Grid_Reference} of length 1.
+}
 \usage{
 grid_reference
 }
