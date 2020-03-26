@@ -3,46 +3,8 @@ get_aoi <- function(park, shp_path, area_name, local_dir) {
   if (!is.na(park)) {
     aoi <- get_park_boundaries(park, local_dir = local_dir)
   } else {
-    aoi <- get_shapefile(shp_path, local_dir = local_dir) 
+    aoi <- rgdal::readOGR(shp_path, verbose = FALSE)
   }
-  return(aoi)
-}
-
-get_shapefile <- function(shp_path, shp_name = NA, local_dir = tempdir()) {
-
-  if (is.na(shp_name)) shp_name <- tools::file_path_sans_ext(basename(shp_path))
-
-  # Create a path within chosen directory for this shapefile
-  local_dir <- file.path(local_dir, "shapefiles")
-  shp_folder <- file.path(local_dir, shp_name)
-
-  # Check if this is a url or local path
-  if ( grepl("www.|http:|https:", shp_path) ) {
-    if ( !httr::http_error(shp_path) ) {
-      expected_file <- list.files(shp_folder, 
-                                  full.names = TRUE, 
-                                  pattern = "\\.shp$")
-      if (length(expected_file) == 0) {
-    
-        # download shapefile if it doesn't exist
-        dir.create(shp_folder, recursive = TRUE, showWarnings = FALSE)
-        zip_path <- file.path(shp_folder, "temp.zip")
-        utils::download.file(url = shp_path, destfile = zip_path, mode = "wb")
-        utils::unzip(zip_path, exdir = shp_folder)
-        file.remove(zip_path)
-      }
-    }
-  }
-
-  # Get the shapefile path from the folder
-  path <- list.files(shp_folder, pattern = "\\.shp$", full.names = TRUE)
-  
-  tryCatch({  # readOGR can read the URL! We could simplify this
-    aoi <- rgdal::readOGR(path, verbose = FALSE)
-  }, error = function(e) {
-    stop(paste0("Cannot read ", shp_path))
-  })
-
   return(aoi)
 }
 
@@ -75,21 +37,28 @@ suggest_parkname <- function(parkname, available_names) {
 
 
 get_park_boundaries <- function(parkname, local_dir = tempdir()) {
-  local_path <- file.path(local_dir, "shapefiles", "nps_boundary",
-                          "nps_boundary.shp")
+  local_prefix <- file.path(local_dir, "shapefiles", "nps_boundary")
+  local_path <- file.path(local_prefix, "nps_boundary.shp")
 
   # Check if the National Park Shapefile is stored locally
   if (!file.exists(local_path)) {
-    shp_path <- nps_boundary_url()
-  } else {
-    shp_path <- local_path
+    dir.create(local_prefix, showWarnings = FALSE, recursive = TRUE)
+    zip_path <- file.path(local_prefix, "nps.zip")
+    utils::download.file(nps_boundary_url(), destfile = zip_path)
+    utils::unzip(zip_path, exdir = local_prefix)
+    if(!file.exists(local_path)) {
+      stop(
+        paste(
+          "Expected file", local_path, "to exist, but it was not found.", 
+          "The files in that directory include: ", 
+          paste(list.files(path=local_prefix, full.names = TRUE), 
+                collapse = ", ")
+        )
+      )
+    }
   }
   
-  # Get the National Park Boundary
-  parks <- get_shapefile(shp_path = shp_path,
-                         shp_name = "nps_boundary",
-                         local_dir = local_dir)
-
+  parks <- rgdal::readOGR(local_path, verbose = FALSE)
   
   # Check that the supplied name is available
   avail_names <- parks$UNIT_NAME
@@ -108,4 +77,3 @@ get_park_boundaries <- function(parkname, local_dir = tempdir()) {
 
   return(aoi)
 }
-

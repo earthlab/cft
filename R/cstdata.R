@@ -14,9 +14,7 @@
 #' \url{http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_catalog.html}
 #'
 #' @param shp_path A path to a shapefile with which to clip the resulting data
-#'  sets. This path may be to a local .shp file or a url to a zipped remote
-#'  file. If this option is used, leave the `park` argument empty or set
-#'  to NA. (character)
+#'  sets. (character)
 #' @param area_name If a shapefile path is used, provide a name to use as a
 #'  reference to the location. This will be used in file names, attributes, and
 #'  directories. (character)' 

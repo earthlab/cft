@@ -19,9 +19,7 @@ cstdata(
 }
 \arguments{
 \item{shp_path}{A path to a shapefile with which to clip the resulting data
-sets. This path may be to a local .shp file or a url to a zipped remote
-file. If this option is used, leave the `park` argument empty or set
-to NA. (character)}
+sets. (character)}
 
 \item{area_name}{If a shapefile path is used, provide a name to use as a
 reference to the location. This will be used in file names, attributes, and

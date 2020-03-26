@@ -6,7 +6,7 @@ file_refs <- cstdata(park = "Acadia National Park",
                      models = c("bcc-csm1-1"),
                      parameters = c("pr", "tasmax"),
                      scenarios = c("rcp45"),
-                     local_dir = ".", 
+                     local_dir = getwd(), 
                      ncores = 2)
 
 df <- cst_df(file_reference = file_refs, ncores = 2)
