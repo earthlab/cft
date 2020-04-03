@@ -1,4 +1,8 @@
 get_aoi <- function(park, shp_path, area_name, local_dir) {
+
+  # Use either a park or a shape file path
+  if (missing(park)) park <- NA
+
   # Choose which to area of interest to return.
   if (!is.na(park)) {
     aoi <- get_park_boundaries(park, local_dir = local_dir)
@@ -12,32 +16,36 @@ get_shapefile <- function(shp_path, shp_name = NA, local_dir = tempdir()) {
 
   if (is.na(shp_name)) shp_name <- tools::file_path_sans_ext(basename(shp_path))
 
-  # Create a path within chosen directory for this shapefile
-  local_dir <- file.path(local_dir, "shapefiles")
-  shp_folder <- file.path(local_dir, shp_name)
-
   # Check if this is a url or local path
   if ( grepl("www.|http:|https:", shp_path) ) {
+  
+    # Create a local path within chosen local directory for this shapefile
+    local_dir <- file.path(local_dir, "shapefiles")
+    shp_folder <- file.path(local_dir, shp_name)
     if ( !httr::http_error(shp_path) ) {
-      expected_file <- list.files(shp_folder, 
-                                  full.names = TRUE, 
+      expected_file <- list.files(shp_folder, full.names = TRUE, 
                                   pattern = "\\.shp$")
       if (length(expected_file) == 0) {
-    
-        # download shapefile if it doesn't exist
+
+        # Download shapefile if it doesn't exist
         dir.create(shp_folder, recursive = TRUE, showWarnings = FALSE)
         zip_path <- file.path(shp_folder, "temp.zip")
         utils::download.file(url = shp_path, destfile = zip_path, mode = "wb")
         utils::unzip(zip_path, exdir = shp_folder)
         file.remove(zip_path)
       }
+
+      # Now get whatever the shapefile is path from the folder
+      path <- list.files(shp_folder, pattern = "\\.shp$", full.names = TRUE)
     }
+  } else {
+  
+    # Just use the given shapefile path
+    path <- shp_path
   }
 
-  # Get the shapefile path from the folder
-  path <- list.files(shp_folder, pattern = "\\.shp$", full.names = TRUE)
-  
-  tryCatch({  # readOGR can read the URL! We could simplify this
+  # Now read locally
+  tryCatch({
     aoi <- rgdal::readOGR(path, verbose = FALSE)
   }, error = function(e) {
     stop(paste0("Cannot read ", shp_path))
