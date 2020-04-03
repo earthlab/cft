@@ -20,7 +20,7 @@ test_that("Providing a shapefile but no area name raises an error", {
 })
 
 test_that("A full run of cstdata completes and saves an expected file", {
-  local_dir <- "."
+  local_dir <- "~/data"
   file_refs <- cstdata(park = "Acadia National Park",
                        years = c(2004, 2005),
                        models = "bcc-csm1-1",
