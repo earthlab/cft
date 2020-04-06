@@ -27,16 +27,6 @@ test_that("Months can be formatted from integers", {
   expect_identical(month_string, c("Jan", "Feb", "Mar"))
 })
 
-test_that("Temperature conversion succeeds", {
-  test_df <- data.frame(parameter_long = "air_temperature", 
-                        units = "K", 
-                        value = 273.15, 
-                        stringsAsFactors = FALSE)
-  out_df <- convert_temperature(test_df, "value")
-  expect_equal(out_df$value, 0)
-  expect_equal(out_df$units, "C")
-})
-
 test_that("Invalid filter params raise errors", {
   expect_error(compare_periods(df, var1 = "foo", var2 = "bar"), 
                regexp = "The requested variables are not present")
@@ -104,4 +94,3 @@ test_that("Providing invalid scenario raises errors.", {
                                   scenarios = "rcp9000"),
     regexp = "The requested scenarios are not present")
 })
-

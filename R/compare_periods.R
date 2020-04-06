@@ -91,18 +91,6 @@ compare_periods <- function(
   return(cdf)
 }
 
-
-# convert file reference object temperature from kelvin to celsius if necessary
-convert_temperature <- function(file_df, column) {
-  temperature_rows <- grep("air_temperature", file_df$parameter_long)
-  temperature_kelvin <- unlist(file_df[[column]][temperature_rows])
-  temperature_c <- temperature_kelvin - 273.15
-  file_df[[column]][temperature_rows] <- temperature_c
-  file_df$units[temperature_rows] <- "C"
-  return(file_df)
-}
-
-
 # Get the difference in values for one variable
 df_difference <- function(df, variable, agg_fun, target_period, reference_period, month_map) {
 

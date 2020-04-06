@@ -19,15 +19,21 @@
 #' 
 #' @export
 cst_df <- function(file_reference, ncores = 1) {
+  
+  # Create long form data frame
   message("Computing spatial averages...")
   cl <- parallel::makeCluster(ncores)
   on.exit(parallel::stopCluster(cl))
-  df <- pbapply::pbapply(file_reference, 
-                         MARGIN = 1, 
-                         FUN = r_to_df, 
+  df <- pbapply::pbapply(file_reference,
+                         MARGIN = 1,
+                         FUN = r_to_df,
                          cl = cl) %>%
     dplyr::bind_rows()
-  
+
+  # Convert Kelvin to Celsius
+  df = to_celsius(df)
+
+  # Conver to wide form
   message("Generating climate data.frame...")
   wide_df <- split(df, df$date) %>%
     pbapply::pblapply(FUN = tidyr::pivot_wider, 
@@ -56,4 +62,21 @@ r_to_df <- function(df_row) {
     ensemble = df_row["ensemble"], 
     area_name = df_row["area_name"]
   )
+}
+
+# convert file reference object temperature from kelvin to celsius if necessary
+to_celsius <- function(df) {
+
+  # Check for temperature variables ("tasmin" or "tasmax")
+  temperature_rows <- grep("tas", df$parameter)
+
+  # Alert user to conversion if temperature is found
+  if (length(temperature_rows) > 0) message("Converting Kelvin to Celsius...")
+
+  # And convert
+  temperature_kelvin <- unlist(df[["value"]][temperature_rows])
+  temperature_c <- temperature_kelvin - 273.15
+  df[["value"]][temperature_rows] <- temperature_c
+
+  return(df)
 }
