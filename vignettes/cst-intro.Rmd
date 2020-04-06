@@ -50,7 +50,7 @@ scale estimates. The cst package uses one downscaled climate model called MACA
 
 ## Installation
 
-There are a few steps required for the `cst` package to work:
+There are a three steps required for the `cst` package to work:
 
 1) Install 
 [rgdal](https://cran.r-project.org/web/packages/rgdal/rgdal.pdf) and
@@ -82,7 +82,7 @@ cst::install_py_deps()
 reticulate::use_condaenv("cst")
 ```
 
-Alternatively, for users with existing Python installations who prefer a quicker
+> Alternatively, for users with existing Python installations who prefer a quicker
 method, you may use the `virtualenv` package to store your Python dependencies:
 
 ```r
@@ -90,17 +90,16 @@ cst::install_py_deps(method = "virtualenv")
 reticulate::use_virtualenv("cst")
 ```
 
-Both methods will create isolated virtual python environments stored in your home
+> Both methods will create isolated virtual python environments stored in your home
 directory in a folder called "cst". To access the paths associated with these
 environments use :
 
 ```r
 # For conda
-reticulate::conda_list()
+print(reticulate::conda_list())
 
 # For virtualenv
-reticulate::virtualenv_root()
-reticulate::virtualenv_list()
+print(reticulate::virtualenv_root())
 ```
 
 
@@ -129,7 +128,9 @@ library(reticulate)
 
 
 ```r
-# choose a project directory to store data
+# Choose a project directory to store data
+# (Leaving this argument empty will download data to a temporary directory)
+
 proj_dir <- "~" 
 
 # download data
