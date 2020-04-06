@@ -81,7 +81,7 @@ manages dependencies well. First make sure you have conda installed
 you can install the python dependencies with: 
 
 
-```r
+```{r}
 cst::install_py_deps()
 reticulate::use_condaenv("cst")
 ```
@@ -89,23 +89,10 @@ reticulate::use_condaenv("cst")
 > Alternatively, for users with existing Python installations who prefer a quicker
 method, you may use the `virtualenv` package to store your Python dependencies:
 
-```r
+```{r}
 cst::install_py_deps(method = "virtualenv")
 reticulate::use_virtualenv("cst")
 ```
-
-> Both methods will create isolated virtual python environments stored in your home
-directory in a folder called "cst". To access the paths associated with these
-environments use :
-
-```r
-# For conda
-print(reticulate::conda_list())
-
-# For virtualenv
-print(reticulate::virtualenv_root())
-```
-
 
 ### Acquiring and subsetting data within National Park Service boundaries
 
@@ -116,7 +103,7 @@ a set of parameters, and a set of representative concentration pathways to retur
 Leaving these arguments empty will results in a download of all available data 
 for that location.
 
-```r
+```{r load-deps, message=FALSE, comment = NA}
 library(cst)
 library(tibble)
 library(ggplot2)
@@ -161,8 +148,7 @@ df <- cst_df(file_refs, ncores = parallel::detectCores())
 
 Now, we have a tibble where each row represents a day by model by scenario 
 combination, where the climate parameters of interest are represented as 
-columns. Note that, in the output of `cst_df()` temperature values have been
-converted from Kelvin to Celsius and that average values represent all 2km by
+columns. Note that, in the output of `cst_df()`, average values represent all 2km by
 2km grid cells that touch the Park boundary:
 
 ```{r print-df}
@@ -292,18 +278,21 @@ glimpse(comps)
 One useful plot shows the difference in the two variables between reference and
 target periods:
 
-```{r plot-comps, fig.height = 5, fig.width = 9}
+```{r plot-comps, fig.height = 6, fig.width = 9}
+title <-  paste(comps$reference_period, comps$target_period, sep= "  vs  " )[1]
+
 comps %>%
-  dplyr::select(parameter, rcp, model, year1, year2, diff_summary) %>%
-  pivot_wider(names_from = parameter, values_from = diff_summary) %>%
+  dplyr::select(parameter, rcp, model, reference_period, target_period, difference) %>%
+  pivot_wider(names_from = parameter, values_from = difference) %>%
   ggplot(aes(tasmin, tasmax, color = rcp)) + 
+  ggtitle(title) +
   geom_point() + 
   geom_hline(yintercept = 0, alpha = .2) + 
   geom_vline(xintercept = 0, alpha = .2) +
   geom_text_repel(aes(label = model), segment.size = .3, size = 3) + 
   xlab("Difference in min. temperature (C)") + 
   ylab("Difference in max. temperature (C)") + 
-  scale_color_manual(values = c("dodgerblue", "red"))
+  scale_color_manual(values = c("dodgerblue", "red")) 
 ```
 
 So, nearly all model runs indicate warming, but the amount of warming varies by 
@@ -337,10 +326,22 @@ Here are the emissions scenarios:
 references$scenarios
 ```
 
-And here are the climate parameters
+And here are the climate parameters:
 
 ```{r printparams}
 references$parameters
+```
+
+Labels for each acronym are also available, for example:
+
+```{r labels}
+references$labels["vpd"]
+references$labels["CCSM4"]
+
+# For hyphenated acronyms, use them either as objects or with backticks
+model <- "IPSL-CM5A-MR"
+references$labels[model]
+references$labels$`IPSL-CM5A-MR`  
 ```
 
 Not every model has the same set of parameters available, and the
