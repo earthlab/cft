@@ -1,7 +1,7 @@
 ---
 title: "Getting started with the Climate Scenarios Toolbox"
 author: "Travis Williams and Max Joseph"
-date: "2020-03-25"
+date: "2020-04-06"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{cst}
@@ -47,15 +47,54 @@ scale estimates. The cst package uses one downscaled climate model called MACA
 (Multivariate Adaptive Climate Analog) Version 2 
 ([details here](http://www.climatologylab.org/maca.html)).
 
+
+## Installation
+
+There are a few steps required for the `cst` package to work:
+
+1) Install 
+[rgdal](https://cran.r-project.org/web/packages/rgdal/rgdal.pdf) and
+[ncdf4](https://cran.r-project.org/web/packages/ncdf4/ncdf4.pdf),
+which are common R packages used for dealing with gridded data sets. Both of
+these packages depend on system level libraries who installations depend on
+the user's operating system.
+
+2) Install `cst` using the package `remotes` as follows:
+
+```r
+# install.packages("remotes")
+remotes::install_github("earthlab/cst")
+```
+
+3) Install Python dependencies. To provide a consistent and relatively quick way
+to retrieve these datasets from their source, a few Python dependencies are also
+required. In `cst` these are accessed automatically through the `reticulate` R
+package, and you will not need to know any Python, but you will need to have a
+working installation. We recommend using Conda because it is the simplest way to
+ensure a functioning installation and it manages dependencies well. First make
+sure you have conda installed 
+([see instructions here](https://docs.conda.io/en/latest/miniconda.html)), then
+you can install the python dependencies with: 
+
+
+
+```r
+cst::install_py_deps()
+#> Using virtual environment 'cst' ...
+#> 
+#> Installation complete.
+reticulate::use_condaenv("cst")
+```
+
+
 ### Acquiring and subsetting data within National Park Service boundaries
 
 This package was originally written with the National Park Service in mind, so
-it has the option to use the name of any park within the NPS. Use the 
-`cstdata()` function to specify a range of years, a set of models, a set of 
-parameters, and a set of representative concentration pathways to return. 
+it has the option to use the name of any park (or monument, preserve, etc.) within
+the NPS. Use the `cstdata()` function to specify a range of years, a set of models,
+a set of parameters, and a set of representative concentration pathways to return. 
 Leaving these arguments empty will results in a download of all available data 
 for that location.
-
 
 
 ```r
@@ -69,23 +108,14 @@ library(dplyr)
 library(reticulate)
 ```
 
-If you haven't already installed the python dependencies for the package using
-conda, first make sure you have conda installed 
-([see instructions here](https://docs.conda.io/en/latest/miniconda.html)), then
-you can install the python dependencies with: 
-
-
-```r
-cst::install_py_deps()
-use_condaenv("cst")
-```
-
 
 
 
 
 ```r
-# choose a project directory to store data
+# Choose a project directory to store data
+# (Leaving this argument empty will download data to a temporary directory)
+
 proj_dir <- "~" 
 
 # download data
@@ -95,9 +125,20 @@ file_refs <- cstdata(park = "Wind Cave National Park",
                      parameters = c("tasmin", "tasmax", "uas", "vas"),
                      ncores = parallel::detectCores())
 #> [1] "Retrieving area of interest boundaries..."
+#> NOTE: rgdal::checkCRSArgs: no proj_defs.dat in PROJ.4 shared files
+#> NOTE: rgdal::checkCRSArgs: no proj_defs.dat in PROJ.4 shared files
 #> [1] "Building area of interest grid..."
+#> NOTE: rgdal::checkCRSArgs: no proj_defs.dat in PROJ.4 shared files
+#> NOTE: rgdal::checkCRSArgs: no proj_defs.dat in PROJ.4 shared files
+#> NOTE: rgdal::checkCRSArgs: no proj_defs.dat in PROJ.4 shared files
+#> NOTE: rgdal::checkCRSArgs: no proj_defs.dat in PROJ.4 shared files
+#> NOTE: rgdal::checkCRSArgs: no proj_defs.dat in PROJ.4 shared files
+#> NOTE: rgdal::checkCRSArgs: no proj_defs.dat in PROJ.4 shared files
+#> NOTE: rgdal::checkCRSArgs: no proj_defs.dat in PROJ.4 shared files
+#> NOTE: rgdal::checkCRSArgs: no proj_defs.dat in PROJ.4 shared files
+#> NOTE: rgdal::checkCRSArgs: no proj_defs.dat in PROJ.4 shared files
 #> [1] "Retrieving climate data for wind_cave_national_park"
-#> [1] "Saving local files to /home/mjoseph/wind_cave_national_park"
+#> [1] "Saving local files to /home/travis/wind_cave_national_park"
 ```
 
 The output of `cstdata` is a data.frame, where each row corresponds to one file:
@@ -105,10 +146,10 @@ The output of `cstdata` is a data.frame, where each row corresponds to one file:
 
 ```r
 glimpse(file_refs)
-#> Observations: 160
-#> Variables: 13
+#> Rows: 160
+#> Columns: 13
 #> $ local_file       <chr> "tasmin_wind_cave_national_park_bcc-csm1-1_r1i1p1_rc…
-#> $ local_path       <chr> "/home/mjoseph/wind_cave_national_park/tasmin_wind_c…
+#> $ local_path       <chr> "/home/travis/wind_cave_national_park/tasmin_wind_ca…
 #> $ model            <chr> "bcc-csm1-1", "bcc-csm1-1", "bcc-csm1-1", "bcc-csm1-…
 #> $ parameter        <chr> "tasmin", "tasmin", "tasmax", "tasmax", "uas", "uas"…
 #> $ rcp              <chr> "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "rcp85"…
@@ -134,13 +175,14 @@ df <- cst_df(file_refs, ncores = parallel::detectCores())
 
 Now, we have a tibble where each row represents a day by model by scenario 
 combination, where the climate parameters of interest are represented as 
-columns :
+columns. Note that, in the output of `cst_df()`, average values represent all 2km by
+2km grid cells that touch the Park boundary:
 
 
 ```r
 glimpse(df)
-#> Observations: 891,240
-#> Variables: 9
+#> Rows: 891,240
+#> Columns: 9
 #> $ rcp       <chr> "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "rcp85", "rcp4…
 #> $ date      <date> 1980-01-01, 1980-01-01, 1980-01-01, 1980-01-01, 1980-01-01…
 #> $ model     <chr> "bcc-csm1-1", "bcc-csm1-1", "bcc-csm1-1-m", "bcc-csm1-1-m",…
@@ -273,8 +315,8 @@ growing_seasons %>%
 
 ## Comparing climate in two time periods
 
-Use the file reference object that is returned from cst as an input to
-`compare_periods` to compare climate between a reference and target period. You
+Use the tibble object that is returned from `cst_df()` as an input to
+`compare_periods()` to compare climate between a reference and target period. You
 may specify the function with which to aggregate your chosen variable as well
 as the yearly time period months of the year to include in this calculation.
 
@@ -297,16 +339,18 @@ and reference period.
 
 ```r
 glimpse(comps)
-#> Observations: 80
-#> Variables: 7
+#> Rows: 80
+#> Columns: 9
 #> Groups: rcp [2]
-#> $ model           <chr> "bcc-csm1-1", "bcc-csm1-1-m", "BNU-ESM", "CanESM2", "…
-#> $ rcp             <chr> "rcp45", "rcp45", "rcp45", "rcp45", "rcp45", "rcp45",…
-#> $ variable        <chr> "tasmin", "tasmin", "tasmin", "tasmin", "tasmin", "ta…
-#> $ units           <chr> "K", "K", "K", "K", "K", "K", "K", "K", "K", "K", "K"…
-#> $ value_reference <dbl> 284.0221, 283.8716, 284.1512, 283.6515, 283.9051, 283…
-#> $ value_target    <dbl> 284.9774, 285.0160, 285.6242, 286.2288, 285.4229, 285…
-#> $ difference      <dbl> 0.9553126, 1.1443937, 1.4730053, 2.5772584, 1.5177512…
+#> $ model            <chr> "bcc-csm1-1", "bcc-csm1-1-m", "BNU-ESM", "CanESM2", …
+#> $ rcp              <chr> "rcp45", "rcp45", "rcp45", "rcp45", "rcp45", "rcp45"…
+#> $ parameter        <chr> "tasmin", "tasmin", "tasmin", "tasmin", "tasmin", "t…
+#> $ units            <chr> "K", "K", "K", "K", "K", "K", "K", "K", "K", "K", "K…
+#> $ reference_period <chr> "1980 - 2000", "1980 - 2000", "1980 - 2000", "1980 -…
+#> $ target_period    <chr> "2020 - 2040", "2020 - 2040", "2020 - 2040", "2020 -…
+#> $ reference_value  <dbl> 284.0221, 283.8716, 284.1512, 283.6515, 283.9051, 28…
+#> $ target_value     <dbl> 284.9774, 285.0160, 285.6242, 286.2288, 285.4229, 28…
+#> $ difference       <dbl> 0.9553126, 1.1443937, 1.4730053, 2.5772584, 1.517751…
 ```
 
 One useful plot shows the difference in the two variables between reference and
@@ -314,20 +358,23 @@ target periods:
 
 
 ```r
+title <-  paste(comps$reference_period, comps$target_period, sep= "  vs  " )[1]
+
 comps %>%
-  dplyr::select(parameter, rcp, model, year1, year2, diff_summary) %>%
-  pivot_wider(names_from = parameter, values_from = diff_summary) %>%
+  dplyr::select(parameter, rcp, model, reference_period, target_period, difference) %>%
+  pivot_wider(names_from = parameter, values_from = difference) %>%
   ggplot(aes(tasmin, tasmax, color = rcp)) + 
+  ggtitle(title) +
   geom_point() + 
   geom_hline(yintercept = 0, alpha = .2) + 
   geom_vline(xintercept = 0, alpha = .2) +
   geom_text_repel(aes(label = model), segment.size = .3, size = 3) + 
   xlab("Difference in min. temperature (C)") + 
   ylab("Difference in max. temperature (C)") + 
-  scale_color_manual(values = c("dodgerblue", "red"))
-#> Error: Can't subset columns that don't exist.
-#> [31mx[39m The column `parameter` doesn't exist.
+  scale_color_manual(values = c("dodgerblue", "red")) 
 ```
+
+<img src="./plot-comps-1.png" title="plot of chunk plot-comps" alt="plot of chunk plot-comps" width="100%" />
 
 So, nearly all model runs indicate warming, but the amount of warming varies by 
 model and emissions scenario. 
@@ -369,13 +416,33 @@ references$scenarios
 #> [1] "rcp45" "rcp85"
 ```
 
-And here are the climate parameters
+And here are the climate parameters:
 
 
 ```r
 references$parameters
 #>  [1] "tasmin" "tasmax" "rhsmin" "rhsmax" "pr"     "rsds"   "uas"    "vas"   
 #>  [9] "huss"   "vpd"
+```
+
+Labels for each acronym are also available, for example:
+
+
+```r
+references$labels["vpd"]
+#> $vpd
+#> [1] "Vapor Pressure Deficit"
+references$labels["CCSM4"]
+#> $CCSM4
+#> [1] "Community Climate System Model 4"
+
+# For hyphenated acronyms, use them either as objects or with backticks
+model <- "IPSL-CM5A-MR"
+references$labels[model]
+#> $`IPSL-CM5A-MR`
+#> [1] "Institut Pierre Simon Laplace (IPSL) - Climate Model 5A - Medium Resolution"
+references$labels$`IPSL-CM5A-MR`  
+#> [1] "Institut Pierre Simon Laplace (IPSL) - Climate Model 5A - Medium Resolution"
 ```
 
 Not every model has the same set of parameters available, and the
@@ -398,7 +465,7 @@ references$get_args("CCSM4")
 ## Why write the cst package?
 
 The amount of data generated by downscaled GCMs can be quite large
-(e.g., daily data at a few km spatial resolution). 
+(e.g., daily data at a few km spatial resolution).
 The Climate Scenarios Toolbox was developed to help users access and use 
 smaller subsets. 
 

@@ -84,27 +84,29 @@ compare_periods <- function(
   # Combine into one data frame
   cdf <- rbind(df1, df2)
 
+  # Add periods in case that's helpful
+  if ( length(unique(reference_period)) == 1 ) {
+    ref_print = as.character(reference_period[1])
+  } else {
+    ref_print = paste(reference_period[1], reference_period[2], sep = " - ")
+  }
+  if ( length(unique(target_period)) == 1 ) {
+    target_print = as.character(target_period[1])
+  } else {
+    target_print = paste(target_period[1], target_period[2], sep = " - ")
+  }
+  cdf["reference_period"] <- ref_print
+  cdf["target_period"] <- target_print
+
   # Rearrange columns
-  cdf <- cdf[c("model", "rcp", "variable", "units", "value_reference", "value_target",
-               "difference" )]
+  cdf <- cdf[c("model", "rcp", "parameter", "units", "reference_period", "target_period",
+               "reference_value", "target_value", "difference" )]
 
   return(cdf)
 }
 
-
-# convert file reference object temperature from kelvin to celsius if necessary
-convert_temperature <- function(file_df, column) {
-  temperature_rows <- grep("air_temperature", file_df$parameter_long)
-  temperature_kelvin <- unlist(file_df[[column]][temperature_rows])
-  temperature_c <- temperature_kelvin - 273.15
-  file_df[[column]][temperature_rows] <- temperature_c
-  file_df$units[temperature_rows] <- "C"
-  return(file_df)
-}
-
-
-# Get the difference in values for one variable
-df_difference <- function(df, variable, agg_fun, target_period, reference_period, month_map) {
+# Get the difference in values for one parameter
+df_difference <- function(df, parameter, agg_fun, target_period, reference_period, month_map) {
 
   # Match the aggregation function string to a function 
   tryCatch({
@@ -116,35 +118,35 @@ df_difference <- function(df, variable, agg_fun, target_period, reference_period
 
   # Reference Period
   df_ref <- df %>%
-    dplyr::select(.data$rcp, .data$model, .data$year, .data$month, variable) %>%
-    dplyr::filter(.data$month %in% month_map[[variable]]) %>%
+    dplyr::select(.data$rcp, .data$model, .data$year, .data$month, parameter) %>%
+    dplyr::filter(.data$month %in% month_map[[parameter]]) %>%
     dplyr::filter(.data$year >= reference_period[1],
                   .data$year <= reference_period[2]) %>%
     dplyr::group_by(.data$rcp, .data$model) %>%
-    dplyr::summarise("value" = fun(!!as.name(variable)))
+    dplyr::summarise("value" = fun(!!as.name(parameter)))
   
   # Target Period
   df_tar <- df %>%
-    dplyr::select(.data$rcp, .data$model, .data$year, .data$month, variable) %>%
-    dplyr::filter(.data$month %in% month_map[[variable]]) %>%
+    dplyr::select(.data$rcp, .data$model, .data$year, .data$month, parameter) %>%
+    dplyr::filter(.data$month %in% month_map[[parameter]]) %>%
     dplyr::filter(.data$year >= target_period[1],
                   .data$year <= target_period[2]) %>%
     dplyr::group_by(.data$rcp, .data$model) %>%
-    dplyr::summarise("value" = fun(!!as.name(variable)))
-  
+    dplyr::summarise("value" = fun(!!as.name(parameter)))
+
   # Join
-  df = dplyr::left_join(df_ref, df_tar, by = c("rcp", "model"),
-                        suffix = c("_reference", "_target"))
-  
+  df <- dplyr::left_join(df_ref, df_tar, by = c("rcp", "model"))
+  names(df) <- c("rcp", "model", "reference_value", "target_value")                     
+
   # Find the difference in values between target and reference periods
-  df = df %>% dplyr::mutate(difference = .data$value_target - .data$value_reference)
+  df = df %>% dplyr::mutate(difference = .data$target_value - .data$reference_value)
 
   # Add variable name
-  df$variable <- variable
+  df$parameter <- parameter
 
   # Add in units
   arg_ref <- Argument_Reference()
-  internal_var <- as.character(arg_ref$variables[ variable])
+  internal_var <- as.character(arg_ref$variables[parameter])
   units = as.character(arg_ref$units[internal_var])
   df$units <- units
 
