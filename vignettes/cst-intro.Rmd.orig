@@ -74,9 +74,9 @@ remotes::install_github("earthlab/cst")
 to retrieve these datasets from their source, a few Python dependencies are also
 required. In `cst` these are accessed automatically through the `reticulate` R
 package, and you will not need to know any Python, but you will need to have a
-working installation. If you don't have Python on your machine we recommend using
-Conda because it is the simplest way to ensure a functioning installation and it
-manages dependencies well. First make sure you have conda installed 
+working installation. We recommend using Conda because it is the simplest way to
+ensure a functioning installation and it manages dependencies well. First make
+sure you have conda installed 
 ([see instructions here](https://docs.conda.io/en/latest/miniconda.html)), then
 you can install the python dependencies with: 
 
@@ -86,13 +86,6 @@ cst::install_py_deps()
 reticulate::use_condaenv("cst")
 ```
 
-> Alternatively, for users with existing Python installations who prefer a quicker
-method, you may use the `virtualenv` package to store your Python dependencies:
-
-```{r}
-cst::install_py_deps(method = "virtualenv")
-reticulate::use_virtualenv("cst")
-```
 
 ### Acquiring and subsetting data within National Park Service boundaries
 
