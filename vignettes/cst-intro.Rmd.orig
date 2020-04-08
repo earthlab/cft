@@ -65,7 +65,7 @@ the user's operating system.
 
 2) Install `cst` using the package `remotes` as follows:
 
-```r
+```{r, eval = FALSE}
 # install.packages("remotes")
 remotes::install_github("earthlab/cst")
 ```
@@ -81,8 +81,11 @@ sure you have conda installed
 you can install the python dependencies with: 
 
 
-```{r}
+```{r installpydeps, eval = FALSE}
 cst::install_py_deps()
+```
+
+```{r useenv}
 reticulate::use_condaenv("cst")
 ```
 
