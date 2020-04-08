@@ -14,6 +14,7 @@ output: github_document
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![R build status](https://github.com/earthlab/cst/workflows/R-CMD-check/badge.svg)](https://github.com/earthlab/cst/actions)
 [![R build status](https://github.com/earthlab/cst/workflows/pkgdown/badge.svg)](https://github.com/earthlab/cst/actions)
+[![DOI](https://zenodo.org/badge/205295577.svg)](https://zenodo.org/badge/latestdoi/205295577)
 <!-- badges: end -->
 
 The goal of cst is to provide easy climate data access 
