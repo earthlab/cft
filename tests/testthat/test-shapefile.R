@@ -13,7 +13,7 @@ test_that("Test download_shapefile for file and shapefile objects", {
 })
 
 test_that("Test get_park_boundaries for file and shapefile object", {
-  parkname <- "Yellowstone National Park"
+  parkname <- "Acadia National Park"
 
   dir <- "."
   path <- file.path(dir, "shapefiles", "nps_boundary", "nps_boundary.shp")
