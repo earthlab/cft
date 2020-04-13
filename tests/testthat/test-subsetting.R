@@ -77,33 +77,6 @@ test_that("Test that 'get_queries' returns expected paths", {
   expect_true(queries[3] == ncfile)
 })
 
-
-# test_that("Test that setting 'get_queries' args to NA returns full list", {
-# 
-#   # Needed arguments
-#   area_name <- "Acadia National Park"
-#   aoi <- get_park_boundaries(area_name, local_dir = local_dir)
-#   area_name <- gsub(" ", "_", tolower(area_name))
-#   years <- c(2000, 2001)
-#   arg_ref <- Argument_Reference()
-#   grid_ref <- Grid_Reference()
-# 
-#   # Get a query object
-#   queries <- get_queries(aoi = aoi, area_name = area_name, arg_ref = arg_ref,
-#                          grid_ref = grid_ref, years = years, models = NA,
-#                          parameters = NA, scenarios = NA)
-# 
-#   # Expected length is the product of the number of different arguments
-#   len_models <- length(arg_ref$models)
-#   len_params <- length(arg_ref$parameters)
-#   len_scenarios <- length(arg_ref$scenarios)
-#   exp_len_queries <- len_models * len_params * len_scenarios
-# 
-#   # Expect the length of queries to match the product above
-#   expect_true(exp_len_queries == length(queries))
-# })
-
-
 test_that("Test get_aoi_info", {
   grid_ref <- Grid_Reference()
   aoi <- get_park_boundaries("Acadia National Park", local_dir = local_dir)
