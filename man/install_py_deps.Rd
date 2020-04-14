@@ -7,7 +7,7 @@
 install_py_deps(
   method = c("auto", "virtualenv", "conda"),
   conda = "auto",
-  envname = "cst",
+  envname = "cft",
   restart_session = TRUE,
   ...
 )
@@ -32,7 +32,7 @@ only occur within RStudio).}
 [reticulate::virtualenv_install()].}
 }
 \description{
-Installs python dependencies of cst.
+Installs python dependencies of cft.
 }
 \details{
 The implementation and interface are adapted from the 

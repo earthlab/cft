@@ -1,6 +1,6 @@
-Package: cst
+Package: cft
 Type: Package
-Title: Climate Scenarios Toolbox
+Title: Climate Futures Toolbox
 Version: 0.1.0
 Authors@R: c(
     person(given = "Travis",
@@ -14,7 +14,7 @@ Authors@R: c(
            comment = c(ORCID = "0000-0002-7745-9990"))
     )
 Maintainer: Travis Williams <travis.williams@colorado.edu>
-Description: Process data for the Climate Scenarios Toolkit.
+Description: Process data for the Climate Futures Toolkit.
 URL: https://github.com/earthlab/cst
 License: GPL-3
 Encoding: UTF-8

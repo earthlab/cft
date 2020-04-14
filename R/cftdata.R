@@ -26,13 +26,13 @@
 #'  shp_path argument empty or set to NA. (character)
 #' @param models A list of global circulation models to download. If left empty
 #' all available models will be downloaded. A list of available of models is
-#' available under cstdata::argument_reference$models. (vector)
+#' available under cft::argument_reference$models. (vector)
 #' @param parameters A list of climate parameters to download. If left empty
 #' all available parameters will be downloaded. A list of available of models is
-#' available under cstdata::argument_reference$parameters. (vector)
+#' available under cft::argument_reference$parameters. (vector)
 #' @param scenarios A list of representative concentration pathways (rcps) to
 #' download. If left empty all available rcps will be downloaded. A list of
-#' available of rcps is available under cstdata::argument_reference$scenarios.
+#' available of rcps is available under cft::argument_reference$scenarios.
 #' (vector)
 #' @param years The first and last years of the desired period. (vector)
 #' @param local_dir The local directory in which to save files. By default, 
@@ -47,7 +47,7 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' d <- cstdata(park = "Acadia National Park", parameters = "pr", 
+#' d <- cftdata(park = "Acadia National Park", parameters = "pr", 
 #'              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85", 
 #'              ncores = parallel::detectCores())
 #' }
@@ -55,7 +55,7 @@
 #' @importFrom methods new
 #' 
 #' @export
-cstdata <- function(shp_path, 
+cftdata <- function(shp_path, 
                     area_name, 
                     park, 
                     models = argument_reference$models,

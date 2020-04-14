@@ -2,9 +2,9 @@
 
 export("%>%")
 export(argument_reference)
+export(cft_df)
+export(cftdata)
 export(compare_periods)
-export(cst_df)
-export(cstdata)
 export(grid_reference)
 export(install_py_deps)
 importFrom(magrittr,"%>%")

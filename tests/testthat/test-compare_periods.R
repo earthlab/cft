@@ -1,7 +1,7 @@
 context("compare_periods")
-reticulate::use_condaenv("cst")
+reticulate::use_condaenv("cft")
 
-file_refs <- cstdata(park = "Acadia National Park",
+file_refs <- cftdata(park = "Acadia National Park",
                      years = c(2004, 2005),
                      models = c("bcc-csm1-1"),
                      parameters = c("pr", "tasmax"),
@@ -9,7 +9,7 @@ file_refs <- cstdata(park = "Acadia National Park",
                      local_dir = ".", 
                      ncores = 2)
 
-df <- cst_df(file_reference = file_refs, ncores = 2)
+df <- cft_df(file_reference = file_refs, ncores = 2)
 
 test_that("Test compare_periods", {
   comparison <- compare_periods(df,

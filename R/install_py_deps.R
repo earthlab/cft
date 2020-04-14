@@ -1,6 +1,6 @@
 #' Install python dependencies
 #'
-#' Installs python dependencies of cst.
+#' Installs python dependencies of cft.
 #' 
 #' The implementation and interface are adapted from the 
 #' `tensorflow::install_tensorflow()` function.
@@ -26,7 +26,7 @@
 #' @export
 install_py_deps <- function(method = c("auto", "virtualenv", "conda"),
                             conda = "auto",
-                            envname = "cst",
+                            envname = "cft",
                             restart_session = TRUE,
                             ...) {
   method <- match.arg(method)
