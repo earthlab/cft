@@ -1,27 +1,27 @@
-reticulate::use_condaenv("cst")
+reticulate::use_condaenv("cft")
 
 test_that("Not providing a shapefile or park name raises an error", {
-  expect_error(cstdata(),
+  expect_error(cftdata(),
                regexp = "No location data/AOI data were provided")
 })
 
 test_that("Providing both a shapefile and park name raises an error", {
   shp_path <- paste0("http://www.cbrfc.noaa.gov/downloads/files/gis/",
                      "cbrfcBasinBoundary.tar.gz")
-  expect_error(cstdata(shp_path = shp_path, park = "Yellowstone National Park"),
+  expect_error(cftdata(shp_path = shp_path, park = "Yellowstone National Park"),
                regexp = "Both a shapefile and a national park were provided.")
 })
 
 test_that("Providing a shapefile but no area name raises an error", {
   shp_path <- paste0("http://www.cbrfc.noaa.gov/downloads/files/gis/",
                      "cbrfcBasinBoundary.tar.gz")
-  expect_error(cstdata(shp_path = shp_path),
+  expect_error(cftdata(shp_path = shp_path),
                regexp = "Please provide the name you would like to use")
 })
 
-test_that("A full run of cstdata completes and saves an expected file", {
+test_that("A full run of cftdata completes and saves an expected file", {
   local_dir <- "."
-  file_refs <- cstdata(park = "Acadia National Park",
+  file_refs <- cftdata(park = "Acadia National Park",
                        years = c(2004, 2005),
                        models = "bcc-csm1-1",
                        parameters = "pr",
@@ -36,9 +36,9 @@ test_that("A full run of cstdata completes and saves an expected file", {
   expect_true(file.exists(expected_path))
 })
 
-test_that("A cstdata run on a one pixel park completes successfully", {
+test_that("A cftdata run on a one pixel park completes successfully", {
   local_dir <- "."
-  file_refs <- cstdata(park = "Wolf Trap National Park for the Performing Arts",
+  file_refs <- cftdata(park = "Wolf Trap National Park for the Performing Arts",
                        years = c(2004, 2005),
                        models = "bcc-csm1-1",
                        parameters = "pr",

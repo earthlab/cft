@@ -1,4 +1,4 @@
 library(testthat)
-library(cst)
+library(cft)
 
-test_check("cst")
+test_check("cft")

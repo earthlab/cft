@@ -12,7 +12,7 @@ argument_reference
 }
 \arguments{
 \item{argument_reference}{object containing information about input models 
-and parameters for cst.}
+and parameters for cft.}
 }
 \description{
 Attributes

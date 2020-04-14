@@ -37,10 +37,10 @@ addons:
 
 before_script:
   - R CMD INSTALL .
-  - R -e "cst::install_py_deps(method='conda', python_version = 3)"
+  - R -e "cft::install_py_deps(method='conda', python_version = 3)"
 
 after_success:
   - Rscript -e 'covr::codecov()'
 
 after_failure:
-  - cat "/home/travis/build/earthlab/cst/cst.Rcheck/*check.log"
+  - cat "/home/travis/build/earthlab/cft/cft.Rcheck/*check.log"

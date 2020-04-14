@@ -6,18 +6,18 @@ output: github_document
 
 
 
-# cst: climate scenarios toolbox
+# cft: climate futures toolbox
 
 <!-- badges: start -->
-[![Build Status](https://travis-ci.com/earthlab/cst.svg?branch=master)](https://travis-ci.com/earthlab/cst)
-[![codecov](https://codecov.io/gh/earthlab/cst/branch/master/graph/badge.svg)](https://codecov.io/gh/earthlab/cst)
+[![Build Status](https://travis-ci.com/earthlab/cft.svg?branch=master)](https://travis-ci.com/earthlab/cft)
+[![codecov](https://codecov.io/gh/earthlab/cft/branch/master/graph/badge.svg)](https://codecov.io/gh/earthlab/cft)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![R build status](https://github.com/earthlab/cst/workflows/R-CMD-check/badge.svg)](https://github.com/earthlab/cst/actions)
-[![R build status](https://github.com/earthlab/cst/workflows/pkgdown/badge.svg)](https://github.com/earthlab/cst/actions)
+[![R build status](https://github.com/earthlab/cft/workflows/R-CMD-check/badge.svg)](https://github.com/earthlab/cft/actions)
+[![R build status](https://github.com/earthlab/cft/workflows/pkgdown/badge.svg)](https://github.com/earthlab/cft/actions)
 [![DOI](https://zenodo.org/badge/205295577.svg)](https://zenodo.org/badge/latestdoi/205295577)
 <!-- badges: end -->
 
-The goal of cst is to provide easy climate data access 
+The goal of cft is to provide easy climate data access 
 ([MACA v2](http://www.climatologylab.org/maca.html)) to support 
 climate scenario planning.
 This package allows you to: 
@@ -32,11 +32,11 @@ how it is stored or formatted
 
 ## Installation
 
-Install the development version of cst from [GitHub](https://github.com/) with:
+Install the development version of cft from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("earthlab/cst")
+remotes::install_github("earthlab/cft")
 ```
 
 This package also has some python dependencies. 
@@ -44,7 +44,7 @@ We recommend using conda (preferably [miniconda](https://docs.conda.io/en/latest
 Python dependencies can be installed as follows: 
 
 ``` r
-cst::install_py_deps()
+cft::install_py_deps()
 ```
 
 ### Using Docker instead of a local installation
@@ -61,7 +61,7 @@ run the following command from a terminal, replacing <yourpassword> with
 a password of your choosing.
 
 ```bash
-docker run -e PASSWORD=<yourpassword> -d -p 8787:8787 earthlab/cst
+docker run -e PASSWORD=<yourpassword> -d -p 8787:8787 earthlab/cft
 ```
 
 Then, in a web browser, navigate to localhost:8787. 
@@ -70,25 +70,25 @@ Log in with username: `rstudio`, and the password you provided.
 ## Quickstart guide
 
 To get daily precipitation data for Acadia National Park for a subset of 
-climate models, you can use the `cstdata()` function:
+climate models, you can use the `cftdata()` function:
 
 
 ```r
 library(ggplot2)
-library(cst)
+library(cft)
 library(reticulate)
 
-use_condaenv("cst")
+use_condaenv("cft")
 ```
 
-Then, download some data using the `cstdata()` function. 
+Then, download some data using the `cftdata()` function. 
 
 
 
 
 
 ```r
-d <- cstdata(park = "Acadia National Park", parameters = "pr", 
+d <- cftdata(park = "Acadia National Park", parameters = "pr", 
              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
 ```
 
@@ -117,7 +117,7 @@ And, you can also summarize the daily data by computing a spatial average over t
 
 
 ```r
-df <- cst_df(d, ncores = 2)
+df <- cft_df(d, ncores = 2)
 #> Computing spatial averages...
 #> Generating climate data.frame...
 str(df)
@@ -147,8 +147,8 @@ df %>%
 
 ### Dive deeper
 
-This is just a small glimpse at what you can do with the cst package.
-For more, see [Getting started with the Climate Scenarios Toolbox](https://www.earthdatascience.org/cst/articles/cst-intro.html).
+This is just a small glimpse at what you can do with the cft package.
+For more, see [Getting started with the Climate Futures Toolbox](https://www.earthdatascience.org/cft/articles/cft-intro.html).
 
 ## Development instructions
 
@@ -166,9 +166,9 @@ make
 
 ## Meta
 
-* Please [report any issues or bugs](https://github.com/earthlab/cst/issues),
+* Please [report any issues or bugs](https://github.com/earthlab/cft/issues),
 after reading our contribution [guidelines](CONTRIBUTING.md), and the 
 [Contributor Code of Conduct](CODE_OF_CONDUCT.md). 
 * License: GPL-3
-* See `citation("cst")` in R to cite this package in publications. 
+* See `citation("cft")` in R to cite this package in publications. 
 
