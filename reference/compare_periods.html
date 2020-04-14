@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Compare climate data among time periods — compare_periods • cst</title>
+<title>Compare climate data among time periods — compare_periods • cft</title>
 
 
 <!-- jquery -->
@@ -44,7 +44,7 @@
 useful to understand how projected future climate differs from historical
 conditions. The `compare_periods` function generates climate summary 
 statistics for each period, and computes the difference in values between
-the target and reference period. Uses the output of `cstdata()` as an input." />
+the target and reference period. Uses the output of `cftdata()` as an input." />
 
 
 
@@ -75,7 +75,7 @@ the target and reference period. Uses the output of `cstdata()` as an input." />
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">cst</a>
+        <a class="navbar-link" href="../index.html">cft</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
       </span>
     </div>
@@ -99,7 +99,7 @@ the target and reference period. Uses the output of `cstdata()` as an input." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/cst-intro.html">Getting started with the Climate Scenarios Toolbox</a>
+      <a href="../articles/cst-intro.html">Getting started with the Climate Futures Toolbox</a>
     </li>
   </ul>
 </li>
@@ -134,7 +134,7 @@ the target and reference period. Uses the output of `cstdata()` as an input." />
 useful to understand how projected future climate differs from historical
 conditions. The `compare_periods` function generates climate summary 
 statistics for each period, and computes the difference in values between
-the target and reference period. Uses the output of `cstdata()` as an input.</p>
+the target and reference period. Uses the output of `cftdata()` as an input.</p>
     </div>
 
     <pre class="usage"><span class='fu'>compare_periods</span>(
@@ -154,7 +154,7 @@ the target and reference period. Uses the output of `cstdata()` as an input.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>df</th>
-      <td><p>A data frame output from a `cst_df()` run.
+      <td><p>A data frame output from a `cft_df()` run.
 (data.frame)</p></td>
     </tr>
     <tr>
@@ -164,12 +164,12 @@ the target and reference period. Uses the output of `cstdata()` as an input.</p>
     </tr>
     <tr>
       <th>var1</th>
-      <td><p>The x-axis variable, see cst::argument_reference
+      <td><p>The x-axis variable, see cft::argument_reference
 (e.g., "pr"). (character).</p></td>
     </tr>
     <tr>
       <th>var2</th>
-      <td><p>The y-axis variable, see cst::argument_reference
+      <td><p>The y-axis variable, see cft::argument_reference
 (e.g., "tasmax").  character)</p></td>
     </tr>
     <tr>
