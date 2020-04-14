@@ -58,6 +58,6 @@ jobs:
       
       - name: Check
         run: |
-          cst::install_py_deps(method='conda', python_version = 3)
+          cft::install_py_deps(method='conda', python_version = 3)
           rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
         shell: Rscript {0}
