@@ -125,7 +125,7 @@ proj_dir <- "~"
 file_refs <- cftdata(park = "Wind Cave National Park",
                      years = c(1980, 2040),
                      local_dir = proj_dir,
-                     parameters = c("tasmin", "tasmax", "uas", "vas"),
+                     parameters = c("tasmin", "tasmax", "uas", "vas", "pr"),
                      ncores = parallel::detectCores())
 ```
 
@@ -254,7 +254,7 @@ as the yearly time period months of the year to include in this calculation.
 
 ```{r comps}
 comps <- compare_periods(df,
-                         var1 = "tasmin",
+                         var1 = "pr",
                          var2 = "tasmax",
                          agg_fun = "mean",
                          target_period = c(2020, 2040),
@@ -275,24 +275,29 @@ One useful plot shows the difference in the two variables between reference and
 target periods:
 
 ```{r plot-comps, fig.height = 6, fig.width = 9}
-title <-  paste(comps$reference_period, comps$target_period, sep= "  vs  " )[1]
+title <-  paste("Change from the historical vs. reference period:", 
+                comps$reference_period, comps$target_period, sep= "  vs  " )[1]
 
 comps %>%
   dplyr::select(parameter, rcp, model, reference_period, target_period, difference) %>%
   pivot_wider(names_from = parameter, values_from = difference) %>%
-  ggplot(aes(tasmin, tasmax, color = rcp)) + 
+  ungroup %>%
+  mutate(rcp = ifelse(rcp == "rcp45", "RCP 4.5", "RCP 8.5")) %>%
+  ggplot(aes(pr, tasmax, color = rcp)) + 
   ggtitle(title) +
   geom_point() + 
   geom_hline(yintercept = 0, alpha = .2) + 
   geom_vline(xintercept = 0, alpha = .2) +
   geom_text_repel(aes(label = model), segment.size = .3, size = 3) + 
-  xlab("Difference in min. temperature (C)") + 
-  ylab("Difference in max. temperature (C)") + 
-  scale_color_manual(values = c("dodgerblue", "red")) 
+  xlab("Difference in mean daily precipitation (mm)") + 
+  ylab("Difference in mean daily max. temperature (C)") + 
+  scale_color_manual(values = c("dodgerblue", "red"), 
+                     "Greenhouse gas\ntrajectory") 
 ```
 
 So, nearly all model runs indicate warming, but the amount of warming varies by 
 model and emissions scenario. 
+Precipitation increases and decreases are predicted by different models. 
 
 ## Finding out which models and parameters are available
 

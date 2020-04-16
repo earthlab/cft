@@ -2,7 +2,7 @@
 % Please edit documentation in R/cftdata.R
 \name{cftdata}
 \alias{cftdata}
-\title{Climate Scenario Toolbox Data}
+\title{Climate Futures Toolbox Data}
 \usage{
 cftdata(
   shp_path,
