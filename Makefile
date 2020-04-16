@@ -1,10 +1,10 @@
 
-all: manual vignettes/cst-intro.Rmd README.md
+all: manual vignettes/cft-intro.Rmd README.md
 
 manual: 
 	Rscript -e "devtools::document()"
 
-vignettes/cst-intro.Rmd: vignettes/cst-intro.Rmd.orig
+vignettes/cft-intro.Rmd: vignettes/cft-intro.Rmd.orig
 	Rscript --vanilla vignettes/precompile.R
 
 README.md: README.Rmd

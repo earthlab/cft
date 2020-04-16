@@ -1,4 +1,4 @@
-#' Climate Scenario Toolbox Data
+#' Climate Futures Toolbox Data
 #' 
 #' Retrieves subsetted data of climate future scenarios within National
 #' Parks or shapefiles in the Contiguous United States. This data is downscaled

@@ -1,7 +1,7 @@
 ---
 title: "Getting started with the Climate Futures Toolbox"
 author: "Travis Williams and Max Joseph"
-date: "2020-04-14"
+date: "2020-04-16"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{cft}
@@ -124,7 +124,7 @@ proj_dir <- "~"
 file_refs <- cftdata(park = "Wind Cave National Park",
                      years = c(1980, 2040),
                      local_dir = proj_dir,
-                     parameters = c("tasmin", "tasmax", "uas", "vas"),
+                     parameters = c("tasmin", "tasmax", "uas", "vas", "pr"),
                      ncores = parallel::detectCores())
 #> [1] "Retrieving area of interest boundaries..."
 #> [1] "Building area of interest grid..."
@@ -137,7 +137,7 @@ The output of `cftdata` is a data.frame, where each row corresponds to one file:
 
 ```r
 glimpse(file_refs)
-#> Observations: 160
+#> Observations: 200
 #> Variables: 13
 #> $ local_file       <chr> "tasmin_wind_cave_national_park_bcc-csm1-1_r1i1p1_rc…
 #> $ local_path       <chr> "/home/mjoseph/wind_cave_national_park/tasmin_wind_c…
@@ -173,7 +173,7 @@ columns. Note that, in the output of `cft_df()`, average values represent all 2k
 ```r
 glimpse(df)
 #> Observations: 891,240
-#> Variables: 9
+#> Variables: 10
 #> $ rcp       <chr> "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "rcp85", "rcp4…
 #> $ date      <date> 1980-01-01, 1980-01-01, 1980-01-01, 1980-01-01, 1980-01-01…
 #> $ model     <chr> "bcc-csm1-1", "bcc-csm1-1", "bcc-csm1-1-m", "bcc-csm1-1-m",…
@@ -183,6 +183,7 @@ glimpse(df)
 #> $ tasmax    <dbl> 280.0941, 280.0941, 258.7186, 258.7186, 279.6128, 279.6128,…
 #> $ uas       <dbl> 3.0490896, 3.0490896, -1.6518571, -1.6518571, 2.6976433, 2.…
 #> $ vas       <dbl> 1.4561018, 1.4561018, -1.7092865, -1.7092865, -2.1272987, -…
+#> $ pr        <dbl> 0.0000000, 0.0000000, 1.3649577, 1.3649577, 3.9742251, 3.97…
 ```
 
 We can work with this data frame to do some basic visualizations, like time 
@@ -314,7 +315,7 @@ as the yearly time period months of the year to include in this calculation.
 
 ```r
 comps <- compare_periods(df,
-                         var1 = "tasmin",
+                         var1 = "pr",
                          var2 = "tasmax",
                          agg_fun = "mean",
                          target_period = c(2020, 2040),
@@ -335,13 +336,13 @@ glimpse(comps)
 #> Groups: rcp [2]
 #> $ model            <chr> "bcc-csm1-1", "bcc-csm1-1-m", "BNU-ESM", "CanESM2", …
 #> $ rcp              <chr> "rcp45", "rcp45", "rcp45", "rcp45", "rcp45", "rcp45"…
-#> $ parameter        <chr> "tasmin", "tasmin", "tasmin", "tasmin", "tasmin", "t…
-#> $ units            <chr> "K", "K", "K", "K", "K", "K", "K", "K", "K", "K", "K…
+#> $ parameter        <chr> "pr", "pr", "pr", "pr", "pr", "pr", "pr", "pr", "pr"…
+#> $ units            <chr> "mm", "mm", "mm", "mm", "mm", "mm", "mm", "mm", "mm"…
 #> $ reference_period <chr> "1980 - 2000", "1980 - 2000", "1980 - 2000", "1980 -…
 #> $ target_period    <chr> "2020 - 2040", "2020 - 2040", "2020 - 2040", "2020 -…
-#> $ reference_value  <dbl> 284.0221, 283.8716, 284.1512, 283.6515, 283.9051, 28…
-#> $ target_value     <dbl> 284.9774, 285.0160, 285.6242, 286.2288, 285.4229, 28…
-#> $ difference       <dbl> 0.9553126, 1.1443937, 1.4730053, 2.5772584, 1.517751…
+#> $ reference_value  <dbl> 2.225150, 2.275481, 2.372672, 2.378531, 2.258672, 2.…
+#> $ target_value     <dbl> 2.289066, 2.083733, 2.528437, 2.321464, 2.356694, 2.…
+#> $ difference       <dbl> 0.06391522, -0.19174773, 0.15576515, -0.05706760, 0.…
 ```
 
 One useful plot shows the difference in the two variables between reference and
@@ -349,26 +350,31 @@ target periods:
 
 
 ```r
-title <-  paste(comps$reference_period, comps$target_period, sep= "  vs  " )[1]
+title <-  paste("Change from the historical vs. reference period:", 
+                comps$reference_period, comps$target_period, sep= "  vs  " )[1]
 
 comps %>%
   dplyr::select(parameter, rcp, model, reference_period, target_period, difference) %>%
   pivot_wider(names_from = parameter, values_from = difference) %>%
-  ggplot(aes(tasmin, tasmax, color = rcp)) + 
+  ungroup %>%
+  mutate(rcp = ifelse(rcp == "rcp45", "RCP 4.5", "RCP 8.5")) %>%
+  ggplot(aes(pr, tasmax, color = rcp)) + 
   ggtitle(title) +
   geom_point() + 
   geom_hline(yintercept = 0, alpha = .2) + 
   geom_vline(xintercept = 0, alpha = .2) +
   geom_text_repel(aes(label = model), segment.size = .3, size = 3) + 
-  xlab("Difference in min. temperature (C)") + 
-  ylab("Difference in max. temperature (C)") + 
-  scale_color_manual(values = c("dodgerblue", "red")) 
+  xlab("Difference in mean daily precipitation (mm)") + 
+  ylab("Difference in mean daily max. temperature (C)") + 
+  scale_color_manual(values = c("dodgerblue", "red"), 
+                     "Greenhouse gas\ntrajectory") 
 ```
 
 <img src="./plot-comps-1.png" title="plot of chunk plot-comps" alt="plot of chunk plot-comps" width="100%" />
 
 So, nearly all model runs indicate warming, but the amount of warming varies by 
 model and emissions scenario. 
+Precipitation increases and decreases are predicted by different models. 
 
 ## Finding out which models and parameters are available
 
