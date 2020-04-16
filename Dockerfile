@@ -11,6 +11,6 @@ RUN wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -
   && conda info -a \
   && rm miniconda.sh
 
-RUN R -e "devtools::install_github('earthlab/cst')"
+RUN R -e "devtools::install_github('earthlab/cft')"
 
-RUN R -e "cst::install_py_deps(method='conda', python_version = 3)"
+RUN R -e "cft::install_py_deps(method='conda', python_version = 3)"
