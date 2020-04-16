@@ -1,19 +1,19 @@
 ---
-title: "cft: climate futures toolbox"
 output: github_document
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%", 
-  dpi=300
+  out.width = "100%"
 )
 ```
+
+# cft: climate futures toolbox
 
 <!-- badges: start -->
 [![Build Status](https://travis-ci.com/earthlab/cft.svg?branch=master)](https://travis-ci.com/earthlab/cft)
