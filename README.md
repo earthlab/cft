@@ -1,12 +1,11 @@
 ---
+title: "cft: climate futures toolbox"
 output: github_document
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 
-
-# cft: climate futures toolbox
 
 <!-- badges: start -->
 [![Build Status](https://travis-ci.com/earthlab/cft.svg?branch=master)](https://travis-ci.com/earthlab/cft)
