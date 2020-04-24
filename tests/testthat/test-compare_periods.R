@@ -1,5 +1,4 @@
 context("compare_periods")
-reticulate::use_condaenv("cft")
 
 file_refs <- cftdata(park = "Acadia National Park",
                      years = c(2004, 2005),

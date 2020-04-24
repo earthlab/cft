@@ -194,6 +194,7 @@ get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
 retrieve_subset <- function(query, years, aoi_info, area_name, local_dir) {
 
   # Load python dependencies
+  reticulate::use_condaenv('cft', required = TRUE) 
   xr <- reticulate::import("xarray")
   np <- reticulate::import("numpy", convert = FALSE)
   

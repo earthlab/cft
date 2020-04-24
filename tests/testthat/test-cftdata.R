@@ -1,4 +1,3 @@
-reticulate::use_condaenv("cft")
 
 test_that("Not providing a shapefile or park name raises an error", {
   expect_error(cftdata(),

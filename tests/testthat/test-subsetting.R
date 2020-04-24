@@ -1,6 +1,5 @@
 # Let's not download the same file everytime
 local_dir <- "."
-reticulate::use_condaenv("cft")
 
 test_that("Test that filter years returns correct start and end days", {
   days <- filter_years(start_year = 1977, end_year = 1981,
