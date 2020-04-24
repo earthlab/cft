@@ -78,6 +78,13 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
+
+<hr>
+<div id="output-github_document" class="section level2">
+<h2 class="hasAnchor">
+<a href="#output-github_document" class="anchor"></a>output: github_document</h2>
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+</div>
 <div id="cft-climate-futures-toolbox" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#cft-climate-futures-toolbox" class="anchor"></a>cft: climate futures toolbox</h1></div>
@@ -113,40 +120,51 @@
 <p>To get daily precipitation data for Acadia National Park for a subset of climate models, you can use the <code><a href="reference/cftdata.html">cftdata()</a></code> function:</p>
 <div class="sourceCode" id="cb4"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">ggplot2</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">cft</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">reticulate</span>)
-
-<span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/use_python.html">use_condaenv</a></span>(<span class="st">"cft"</span>)</pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">reticulate</span>)</pre></div>
 <p>Then, download some data using the <code><a href="reference/cftdata.html">cftdata()</a></code> function.</p>
 <div class="sourceCode" id="cb5"><pre class="r"><span class="no">d</span> <span class="kw">&lt;-</span> <span class="fu"><a href="reference/cftdata.html">cftdata</a></span>(<span class="kw">park</span> <span class="kw">=</span> <span class="st">"Acadia National Park"</span>, <span class="kw">parameters</span> <span class="kw">=</span> <span class="st">"pr"</span>,
              <span class="kw">years</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">2020</span>, <span class="fl">2021</span>), <span class="kw">models</span> <span class="kw">=</span> <span class="st">"CCSM4"</span>, <span class="kw">scenarios</span> <span class="kw">=</span> <span class="st">"rcp85"</span>)</pre></div>
 <p>This gives you a data frame with paths to local climate data files:</p>
 <div class="sourceCode" id="cb6"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">d</span>)
-<span class="co">#&gt; Classes 'tbl_df', 'tbl' and 'data.frame':    1 obs. of  13 variables:</span>
-<span class="co">#&gt;  $ local_file      : chr "pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"</span>
-<span class="co">#&gt;  $ local_path      : chr "/home/mjoseph/acadia_national_park/pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"</span>
-<span class="co">#&gt;  $ model           : chr "CCSM4"</span>
-<span class="co">#&gt;  $ parameter       : chr "pr"</span>
-<span class="co">#&gt;  $ rcp             : chr "rcp85"</span>
-<span class="co">#&gt;  $ ensemble        : chr "r6i1p1"</span>
-<span class="co">#&gt;  $ year1           : num 2020</span>
-<span class="co">#&gt;  $ year2           : num 2021</span>
-<span class="co">#&gt;  $ area_name       : chr "acadia_national_park"</span>
-<span class="co">#&gt;  $ units           : chr "mm"</span>
-<span class="co">#&gt;  $ full_varname    : chr "Precipitation"</span>
-<span class="co">#&gt;  $ internal_varname: chr "precipitation"</span>
-<span class="co">#&gt;  $ parameter_long  : chr "precipitation"</span></pre></div>
+<span class="co">#&gt; tibble [1 × 13] (S3: tbl_df/tbl/data.frame)</span>
+<span class="co">#&gt;  $ local_file      : Named chr "pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"</span>
+<span class="co">#&gt;   ..- attr(*, "names")= chr "local_file"</span>
+<span class="co">#&gt;  $ local_path      : Named chr "/home/mjoseph/acadia_national_park/pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"</span>
+<span class="co">#&gt;   ..- attr(*, "names")= chr "local_path"</span>
+<span class="co">#&gt;  $ model           : Named chr "CCSM4"</span>
+<span class="co">#&gt;   ..- attr(*, "names")= chr "model"</span>
+<span class="co">#&gt;  $ parameter       : Named chr "pr"</span>
+<span class="co">#&gt;   ..- attr(*, "names")= chr "parameter"</span>
+<span class="co">#&gt;  $ rcp             : Named chr "rcp85"</span>
+<span class="co">#&gt;   ..- attr(*, "names")= chr "rcp"</span>
+<span class="co">#&gt;  $ ensemble        : Named chr "r6i1p1"</span>
+<span class="co">#&gt;   ..- attr(*, "names")= chr "ensemble"</span>
+<span class="co">#&gt;  $ year1           : Named num 2020</span>
+<span class="co">#&gt;   ..- attr(*, "names")= chr "year1"</span>
+<span class="co">#&gt;  $ year2           : Named num 2021</span>
+<span class="co">#&gt;   ..- attr(*, "names")= chr "year2"</span>
+<span class="co">#&gt;  $ area_name       : Named chr "acadia_national_park"</span>
+<span class="co">#&gt;   ..- attr(*, "names")= chr "area_name"</span>
+<span class="co">#&gt;  $ units           : Named chr "mm"</span>
+<span class="co">#&gt;   ..- attr(*, "names")= chr "units"</span>
+<span class="co">#&gt;  $ full_varname    : Named chr "Precipitation"</span>
+<span class="co">#&gt;   ..- attr(*, "names")= chr "full_varname"</span>
+<span class="co">#&gt;  $ internal_varname: Named chr "precipitation"</span>
+<span class="co">#&gt;   ..- attr(*, "names")= chr "internal_varname"</span>
+<span class="co">#&gt;  $ parameter_long  : Named chr "precipitation"</span>
+<span class="co">#&gt;   ..- attr(*, "names")= chr "parameter.pr"</span></pre></div>
 <p>And, you can also summarize the daily data by computing a spatial average over the region of interest:</p>
 <div class="sourceCode" id="cb7"><pre class="r"><span class="no">df</span> <span class="kw">&lt;-</span> <span class="fu"><a href="reference/cft_df.html">cft_df</a></span>(<span class="no">d</span>, <span class="kw">ncores</span> <span class="kw">=</span> <span class="fl">2</span>)
 <span class="co">#&gt; Computing spatial averages...</span>
 <span class="co">#&gt; Generating climate data.frame...</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">df</span>)
-<span class="co">#&gt; Classes 'tbl_df', 'tbl' and 'data.frame':    731 obs. of  6 variables:</span>
-<span class="co">#&gt;  $ rcp      : chr  "rcp85" "rcp85" "rcp85" "rcp85" ...</span>
-<span class="co">#&gt;  $ date     : Date, format: "2020-01-01" "2020-01-02" ...</span>
-<span class="co">#&gt;  $ model    : chr  "CCSM4" "CCSM4" "CCSM4" "CCSM4" ...</span>
-<span class="co">#&gt;  $ ensemble : chr  "r6i1p1" "r6i1p1" "r6i1p1" "r6i1p1" ...</span>
-<span class="co">#&gt;  $ area_name: chr  "acadia_national_park" "acadia_national_park" "acadia_national_park" "acadia_national_park" ...</span>
-<span class="co">#&gt;  $ pr       : num  0 4.7804 0.0497 16.9338 18.5549 ...</span></pre></div>
+<span class="co">#&gt; tibble [731 × 6] (S3: tbl_df/tbl/data.frame)</span>
+<span class="co">#&gt;  $ rcp      : chr [1:731] "rcp85" "rcp85" "rcp85" "rcp85" ...</span>
+<span class="co">#&gt;  $ date     : Date[1:731], format: "2020-01-01" "2020-01-02" ...</span>
+<span class="co">#&gt;  $ model    : chr [1:731] "CCSM4" "CCSM4" "CCSM4" "CCSM4" ...</span>
+<span class="co">#&gt;  $ ensemble : chr [1:731] "r6i1p1" "r6i1p1" "r6i1p1" "r6i1p1" ...</span>
+<span class="co">#&gt;  $ area_name: chr [1:731] "acadia_national_park" "acadia_national_park" "acadia_national_park" "acadia_national_park" ...</span>
+<span class="co">#&gt;  $ pr       : num [1:731] 0 4.7804 0.0497 16.9338 18.5549 ...</span></pre></div>
 <p>Because this is a data.frame, you can use all of the normal data visualization and processing functionality in R, e.g.,</p>
 <div class="sourceCode" id="cb8"><pre class="r"><span class="no">df</span> <span class="kw">%&gt;%</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="no">date</span>, <span class="no">pr</span>)) +
@@ -155,7 +173,7 @@
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span>(<span class="st">"Date"</span>) +
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span>(<span class="st">"Precipitation (mm)"</span>) +
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="st">"Acadia National Park, CCSM4, RCP 8.5"</span>)</pre></div>
-<p><img src="reference/figures/README-ggplot-precip-1.png" width="100%"></p>
+<p><img src="reference/figures/README-ggplot-precip-1.png" title="plot of chunk ggplot-precip" alt="plot of chunk ggplot-precip" width="100%"></p>
 <div id="dive-deeper" class="section level3">
 <h3 class="hasAnchor">
 <a href="#dive-deeper" class="anchor"></a>Dive deeper</h3>
@@ -182,6 +200,7 @@
 </ul>
 </div>
 </div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
