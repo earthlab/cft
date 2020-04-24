@@ -85,11 +85,6 @@ you can install the python dependencies with:
 cft::install_py_deps()
 ```
 
-```{r useenv}
-reticulate::use_condaenv("cft")
-```
-
-
 ### Acquiring and subsetting data within National Park Service boundaries
 
 This package was originally written with the National Park Service in mind, so

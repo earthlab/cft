@@ -83,8 +83,6 @@ climate models, you can use the `cftdata()` function:
 library(ggplot2)
 library(cft)
 library(reticulate)
-
-use_condaenv("cft")
 ```
 
 Then, download some data using the `cftdata()` function. 

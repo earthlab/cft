@@ -1,4 +1,3 @@
-reticulate::use_condaenv("cft")
 
 test_that("cft_df generates a tibble", {
   local_dir <- "."

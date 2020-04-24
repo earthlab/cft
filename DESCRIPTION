@@ -25,7 +25,6 @@ Suggests:
     ggrepel,
     knitr,
     lubridate,
-    RCurl,
     rmarkdown,
     testthat (>= 2.1.0)
 Imports:
