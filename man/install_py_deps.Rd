@@ -5,7 +5,7 @@
 \title{Install python dependencies}
 \usage{
 install_py_deps(
-  method = c("auto", "virtualenv", "conda"),
+  method = "conda",
   conda = "auto",
   envname = "cft",
   restart_session = TRUE,

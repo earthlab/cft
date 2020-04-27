@@ -24,7 +24,7 @@
 #'   [reticulate::virtualenv_install()].
 #' 
 #' @export
-install_py_deps <- function(method = c("auto", "virtualenv", "conda"),
+install_py_deps <- function(method = "conda",
                             conda = "auto",
                             envname = "cft",
                             restart_session = TRUE,
