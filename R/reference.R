@@ -1,6 +1,6 @@
 Grid_Reference <- methods::setRefClass(
   "Grid_Reference",
-  
+
   fields = list(
     crs = "character",
     extent = "list",
@@ -10,7 +10,7 @@ Grid_Reference <- methods::setRefClass(
     ntime_historical = "numeric",
     ntime_model = "numeric"
   ),
-  
+
   methods = list(
     initialize = function(crs = paste0("+proj=longlat +a=6378137 ",
                                        "+f=0.00335281066474748 +pm=0 +no_defs"),
@@ -39,6 +39,7 @@ Argument_Reference <- methods::setRefClass(
   "Argument_Reference",
   
   fields = list(
+    dataset = "character",
     models = "character",
     parameters = "character",
     scenarios = "character",
@@ -52,7 +53,7 @@ Argument_Reference <- methods::setRefClass(
                  "CNRM-CM5", "CSIRO-Mk3-6-0", "GFDL-ESM2M", "GFDL-ESM2G",
                  "HadGEM2-ES365", "HadGEM2-CC365", "inmcm4", "IPSL-CM5A-LR",
                  "IPSL-CM5A-MR", "IPSL-CM5B-LR", "MIROC5", "MIROC-ESM",
-                 "MIROC-ESM-CHEM", "MRI-CGCM3", "NorESM1-M"),
+                 "MIROC-ESM-CHEM", "MRI-CGCM3", "NorESM1-M", "GridMET"),
       parameters = c("tasmin", "tasmax", "rhsmin", "rhsmax", "pr", "rsds",
                      "uas", "vas", "huss", "vpd"),
       scenarios = c("rcp45", "rcp85"),
@@ -136,7 +137,7 @@ Argument_Reference <- methods::setRefClass(
 
 #' @title Attributes
 #' @param argument_reference object containing information about input models 
-#' and parameters for cft.
+#' and parameters for cftdata
 #' @export
 argument_reference <- Argument_Reference()$initFields()
 

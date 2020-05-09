@@ -18,7 +18,7 @@ get_shapefile <- function(shp_path, shp_name = NA, local_dir = tempdir()) {
 
   # Check if this is a url or local path
   if ( grepl("www.|http:|https:", shp_path) ) {
-  
+
     # Create a local path within chosen local directory for this shapefile
     local_dir <- file.path(local_dir, "shapefiles")
     shp_folder <- file.path(local_dir, shp_name)
@@ -39,7 +39,7 @@ get_shapefile <- function(shp_path, shp_name = NA, local_dir = tempdir()) {
       path <- list.files(shp_folder, pattern = "\\.shp$", full.names = TRUE)
     }
   } else {
-  
+
     # Just use the given shapefile path
     path <- shp_path
   }

@@ -48,7 +48,7 @@ compare_periods <- function(
     stop("The requested variables are not present in the data frame provided.")
   }
 
-  # Check that the requested scenarios are availabe and filter if so
+  # Check that the requested scenarios are available and filter if so
   if (! any(scenarios %in% df$rcp) ) {
     stop("The requested scenarios are not present in the data frame provided.")
   } else {
