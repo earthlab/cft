@@ -23,7 +23,7 @@ translations = c("pr" = "pr",
 
 parameters = c("pr" = "precipitation_amount",
                "rmax" = "relative_humidity",
-               "rmin" = "relativate_humidity",
+               "rmin" = "relative_humidity",
                "sph" = "specific_humidity",
                "srad" = "surface_downwelling_shortwave_flux_in_air",
                "th" = "wind_from_direction",
@@ -39,26 +39,62 @@ parameters = c("pr" = "precipitation_amount",
                "pet" = "potential_evaporation",
                "vpd" = "mean_vapor_pressure_deficit")
 
-labels = c("pr" = "precipitation_amount",
-           "rmax" = "relative_humidity",
-           "rmin" = "relativate_humidity",
+labels = c("pr" = "Precipitation",
+           "rmax" =  "Maximum Relative Humidity",
+           "rmin" =  "Minimum Relative Humidity",
            "sph" = "specific_humidity",
            "srad" = "surface_downwelling_shortwave_flux_in_air",
            "th" = "wind_from_direction",
-           "tmmn" = "air_temperature",
-           "tmmx" = "air_temperature",
+           "tmmn" = "Minimum Temperature",
+           "tmmx" = "Maximum Temperature",
            "vs" = "wind_speed",
            "bi" = "burning_index_g",
            "fm100" = "dead_fuel_moisture_100hr",
            "fm1000" = "dead_fuel_moisture_1000hr",
            "erc" = "energy_release_component-g",
            "pdsi" = "palmer_drought_severity_index",
-           "etr" = "potential_evaporation",
+           "etr" = "potential_evapotranspiration",
            "pet" = "potential_evaporation",
            "vpd" = "mean_vapor_pressure_deficit") 
 
+labels = list("pr" = "Daily Accumulated Precipitation",
+              "rmax" = "Daily Maximum Relative Humidity",
+              "rmin" = "Daily Minimum Relative Humidity",
+              "sph" = "Daily Mean Specific Humidity",
+              "srad" = "Daily Mean Downward Shortwave Radiation At Surface",
+              "th" = "Daily Mean Wind Direction",
+              "tmmn" = "Daily Minimum Temperature",
+              "tmmx" = "Daily Maximum Temperature",
+              "vs" = "Daily Mean Wind Speed",
+              "bi" = "Burning Index",
+              "fm100" = "100 Hour Fuel Moisture",
+              "fm1000" = "1000 Hour Fuel Moisture",
+              "erc" = "Energy Release Component",
+              "pdsi" = "Palmer Drought Severity Index",
+              "etr" = "Daily Reference Evapotranspiration (alfalfa)",
+              "pet" = "Daily Reference Evapotranspiration (short Grass)",
+              "vpd" = "Mean Vapor Presure Deficit")
 
-# Sample query for get_gridmet() (assume all locations for now)
+units = list("pr" = "mm",
+             "rmax" = "%",
+             "rmin" = "%",
+             "sph" = "kg/kg",
+             "srad" = "W m-2",
+             "th" = "Degrees Clockwise from north",
+             "tmmn" = "K",
+             "tmmx" = "K",
+             "vs" = "m/s",
+             "bi" = "Unitless",
+             "fm100" = "Percent",
+             "fm1000" = "Percent",
+             "erc" = "Unitless",
+             "pdsi" = "unitless",
+             "etr" = "mm",
+             "pet" = "mm",
+             "vpd" = "kPa")
+
+
+# Sample query for future get_gridmet function
 local_dir <- "~/cft_test"
 years = c(1979, 1985)
 parameters = c("pr", "rmax")
