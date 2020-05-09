@@ -2,98 +2,6 @@
 reticulate::use_condaenv("cft")
 xr <- reticulate::import("xarray")
 
-# Different list of parameters and internal variable names
-translations = c("pr" = "pr",
-                 "rhsmax" = "rmax",
-                 "rhsmin" = "rmin",
-                 "sph" = "huss",
-                 "srad" = NULL,
-                 "th" = NULL,
-                 "tmmn" = "tasmin",
-                 "tmmx" = "tasmax",
-                 "vs" = NULL,
-                 "bi" = NULL,
-                 "fm100" = NULL,
-                 "fm1000" = NULL,
-                 "erc" = NULL,
-                 "pdsi" = NULL,
-                 "etr" = NULL,
-                 "pet" = NULL,
-                 "vpd" = "vpd")
-
-parameters = c("pr" = "precipitation_amount",
-               "rmax" = "relative_humidity",
-               "rmin" = "relative_humidity",
-               "sph" = "specific_humidity",
-               "srad" = "surface_downwelling_shortwave_flux_in_air",
-               "th" = "wind_from_direction",
-               "tmmn" = "air_temperature",
-               "tmmx" = "air_temperature",
-               "vs" = "wind_speed",
-               "bi" = "burning_index_g",
-               "fm100" = "dead_fuel_moisture_100hr",
-               "fm1000" = "dead_fuel_moisture_1000hr",
-               "erc" = "energy_release_component-g",
-               "pdsi" = "palmer_drought_severity_index",
-               "etr" = "potential_evaporation",
-               "pet" = "potential_evaporation",
-               "vpd" = "mean_vapor_pressure_deficit")
-
-labels = c("pr" = "Precipitation",
-           "rmax" =  "Maximum Relative Humidity",
-           "rmin" =  "Minimum Relative Humidity",
-           "sph" = "specific_humidity",
-           "srad" = "surface_downwelling_shortwave_flux_in_air",
-           "th" = "wind_from_direction",
-           "tmmn" = "Minimum Temperature",
-           "tmmx" = "Maximum Temperature",
-           "vs" = "wind_speed",
-           "bi" = "burning_index_g",
-           "fm100" = "dead_fuel_moisture_100hr",
-           "fm1000" = "dead_fuel_moisture_1000hr",
-           "erc" = "energy_release_component-g",
-           "pdsi" = "palmer_drought_severity_index",
-           "etr" = "potential_evapotranspiration",
-           "pet" = "potential_evaporation",
-           "vpd" = "mean_vapor_pressure_deficit") 
-
-labels = list("pr" = "Daily Accumulated Precipitation",
-              "rmax" = "Daily Maximum Relative Humidity",
-              "rmin" = "Daily Minimum Relative Humidity",
-              "sph" = "Daily Mean Specific Humidity",
-              "srad" = "Daily Mean Downward Shortwave Radiation At Surface",
-              "th" = "Daily Mean Wind Direction",
-              "tmmn" = "Daily Minimum Temperature",
-              "tmmx" = "Daily Maximum Temperature",
-              "vs" = "Daily Mean Wind Speed",
-              "bi" = "Burning Index",
-              "fm100" = "100 Hour Fuel Moisture",
-              "fm1000" = "1000 Hour Fuel Moisture",
-              "erc" = "Energy Release Component",
-              "pdsi" = "Palmer Drought Severity Index",
-              "etr" = "Daily Reference Evapotranspiration (alfalfa)",
-              "pet" = "Daily Reference Evapotranspiration (short Grass)",
-              "vpd" = "Mean Vapor Presure Deficit")
-
-units = list("pr" = "mm",
-             "rmax" = "%",
-             "rmin" = "%",
-             "sph" = "kg/kg",
-             "srad" = "W m-2",
-             "th" = "Degrees Clockwise from north",
-             "tmmn" = "K",
-             "tmmx" = "K",
-             "vs" = "m/s",
-             "bi" = "Unitless",
-             "fm100" = "Percent",
-             "fm1000" = "Percent",
-             "erc" = "Unitless",
-             "pdsi" = "unitless",
-             "etr" = "mm",
-             "pet" = "mm",
-             "vpd" = "kPa")
-
-
 # Sample query for future get_gridmet function
 local_dir <- "~/cft_test"
 years = c(1979, 1985)
@@ -131,17 +39,12 @@ for (p in names(parameters)) {
 }
 
 
-# This call will be slightly different too since we'll have a multifile call
+# This call will be slightly different too since we don't have a multi file call
 query = queries[[1]]
 ds <- xr$open_dataset(query)
-ds$to_netcdf("~/cft_test/gridmet_test.nc")
+# ds$to_netcdf("~/cft_test/gridmet_test.nc")
 
-
-
-
-
-
-# New Functions
+# New Functions for subsetting
 year_days <- function(year, parameter) {
 
   # Two scenarios, this year or previous years
