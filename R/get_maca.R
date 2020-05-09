@@ -1,4 +1,4 @@
-#' Climate Futures Toolbox Data
+#' Climate Futures Toolbox MACA Data
 #' 
 #' Retrieves subsetted data of climate future scenarios within National
 #' Parks or shapefiles in the Contiguous United States. This data is downscaled
@@ -26,13 +26,13 @@
 #'  shp_path argument empty or set to NA. (character)
 #' @param models A list of global circulation models to download. If left empty
 #' all available models will be downloaded. A list of available of models is
-#' available under cft::argument_reference$models. (vector)
+#' available under cft::maca_reference$models. (vector)
 #' @param parameters A list of climate parameters to download. If left empty
 #' all available parameters will be downloaded. A list of available of models is
-#' available under cft::argument_reference$parameters. (vector)
+#' available under cft::maca_reference$parameters. (vector)
 #' @param scenarios A list of representative concentration pathways (rcps) to
 #' download. If left empty all available rcps will be downloaded. A list of
-#' available of rcps is available under cft::argument_reference$scenarios.
+#' available of rcps is available under cft::maca_reference$scenarios.
 #' (vector)
 #' @param years The first and last years of the desired period. (vector)
 #' @param local_dir The local directory in which to save files. By default, 
@@ -47,24 +47,24 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' d <- cftdata(park = "Acadia National Park", parameters = "pr", 
-#'              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85", 
-#'              ncores = parallel::detectCores())
+#' d <- get_maca(park = "Acadia National Park", parameters = "pr", 
+#'               years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85", 
+#'               ncores = parallel::detectCores())
 #' }
 #' 
 #' @importFrom methods new
 #' 
 #' @export
-cftdata <- function(shp_path, 
-                    area_name, 
-                    park, 
-                    models = argument_reference$models,
-                    parameters = argument_reference$parameters, 
-                    scenarios = argument_reference$scenarios, 
-                    years = c(1950, 2099),
-                    local_dir = tempdir(),
-                    verbose = TRUE, 
-                    ncores = 1) {
+get_maca <- function(shp_path, 
+                     area_name, 
+                     park, 
+                     models = maca_reference$models,
+                     parameters = maca_reference$parameters,
+                     scenarios = maca_reference$scenarios, 
+                     years = c(1950, 2099),
+                     local_dir = tempdir(),
+                     verbose = TRUE, 
+                     ncores = 1) {
   
   # Make sure user is providing some kind of location information
   if (missing(shp_path) & missing(park)) {
@@ -109,7 +109,7 @@ cftdata <- function(shp_path,
 
   # Generate reference objects
   grid_ref <- Grid_Reference()
-  arg_ref <- Argument_Reference()
+  arg_ref <- MACA_Reference()
 
   # Match coordinate systems
   aoi <- sp::spTransform(aoi, grid_ref$crs)
@@ -149,14 +149,13 @@ cftdata <- function(shp_path,
                             local_dir = location_dir,
                             cl = cl)
 
-
   # Create a data frame from the file references
   file_references <- data.frame(do.call(rbind, refs), stringsAsFactors = FALSE)
   
   file_references <- tibble::as_tibble(lapply(file_references, unlist))
   file_references$parameter_long <- unlist(lapply(
     file_references$parameter, 
-    FUN = function(x) argument_reference$variables[x]
+    FUN = function(x) maca_reference$variables[x]
   ))
   return(file_references)
 }

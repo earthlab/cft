@@ -89,7 +89,7 @@ cft::install_py_deps()
 
 This package was originally written with the National Park Service in mind, so
 it has the option to use the name of any park (or monument, preserve, etc.) within
-the NPS. Use the `cftdata()` function to specify a range of years, a set of models,
+the NPS. Use the `get_maca()` function to specify a range of years, a set of models,
 a set of parameters, and a set of representative concentration pathways to return. 
 Leaving these arguments empty will results in a download of all available data 
 for that location.
@@ -117,14 +117,14 @@ set.seed(1234) # for ggrepel, which randomly jitters labels
 proj_dir <- "~" 
 
 # download data
-file_refs <- cftdata(park = "Wind Cave National Park",
+file_refs <- get_maca(park = "Wind Cave National Park",
                      years = c(1980, 2040),
                      local_dir = proj_dir,
                      parameters = c("tasmin", "tasmax", "uas", "vas", "pr"),
                      ncores = parallel::detectCores())
 ```
 
-The output of `cftdata` is a data.frame, where each row corresponds to one file:
+The output of `get_maca` is a data.frame, where each row corresponds to one file:
 
 ```{r print-refs}
 glimpse(file_refs)
@@ -299,7 +299,7 @@ Precipitation increases and decreases are predicted by different models.
 The cft package includes a reference object that can tell you what models, 
 scenarios, and climate variables are available. 
 You can use the reference object within to see the
-available argument options for the `cftdata()` function: `models`, `parameters`,
+available argument options for the `get_maca()` function: `models`, `parameters`,
 and `scenarios` (as representative concentration pathways).
 The `labels` field will spell out the specific meaning of each parameter, the
 `variables` field shows the internal variable name of parameters in the data

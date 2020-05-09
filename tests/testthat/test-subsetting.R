@@ -46,7 +46,7 @@ test_that("Test that 'get_queries' returns expected paths", {
   models <- "bcc-csm1-1"
   parameters <- "pr"
   scenarios <-"rcp45"
-  arg_ref <- Argument_Reference()
+  arg_ref <- get_reference("maca")
   grid_ref <- Grid_Reference()
 
   # Get a query object

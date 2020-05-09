@@ -4,7 +4,7 @@
 #' useful to understand how projected future climate differs from historical
 #' conditions. The `compare_periods` function generates climate summary 
 #' statistics for each period, and computes the difference in values between
-#' the target and reference period. Uses the output of `cftdata()` as an input. 
+#' the target and reference period. Uses the output of `get_maca()` as an input. 
 #' 
 #' @param df A data frame output from a `cft_df()` run.
 #' (data.frame)
@@ -145,7 +145,7 @@ df_difference <- function(df, parameter, agg_fun, target_period, reference_perio
   df$parameter <- parameter
 
   # Add in units
-  arg_ref <- Argument_Reference()
+  arg_ref <- MACA_Reference()
   internal_var <- as.character(arg_ref$variables[parameter])
   units = as.character(arg_ref$units[internal_var])
   df$units <- units

@@ -53,5 +53,5 @@ Compare climate data between a reference and target period. This can be
 useful to understand how projected future climate differs from historical
 conditions. The `compare_periods` function generates climate summary 
 statistics for each period, and computes the difference in values between
-the target and reference period. Uses the output of `cftdata()` as an input.
+the target and reference period. Uses the output of `get_maca()` as an input.
 }

@@ -1,12 +1,12 @@
 context("compare_periods")
 
-file_refs <- cftdata(park = "Acadia National Park",
-                     years = c(2004, 2005),
-                     models = c("bcc-csm1-1"),
-                     parameters = c("pr", "tasmax"),
-                     scenarios = c("rcp45"),
-                     local_dir = ".", 
-                     ncores = 2)
+file_refs <- get_maca(park = "Acadia National Park",
+                      years = c(2004, 2005),
+                      models = c("bcc-csm1-1"),
+                      parameters = c("pr", "tasmax"),
+                      scenarios = c("rcp45"),
+                      local_dir = ".", 
+                      ncores = 2)
 
 df <- cft_df(file_reference = file_refs, ncores = 2)
 

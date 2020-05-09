@@ -1,28 +1,3 @@
-#' Return a reference object for the arguments associated with a data set used in cftdata.
-#'
-#' @param dataset A data set from which to download data using `cftdata()`. Available data
-#' sets include MACA ad GridMET.
-#' @return A reference class object containing available input parameters for `cfdata()`
-#' reference information about each.
-#' 
-#' @examples 
-#' \dontrun{
-#' file_ref <-get_reference("maca")
-#' print(file_ref$parameters)
-#' 
-#' @export
-get_reference <- function(dataset) {
-  dataset <- tolower(dataset)
-  ref <- DATASETS[[dataset]]
-  return(ref)            
-}
-
-
-DATASETS <- list("maca" = maca_reference,
-                 "gridmet" = gridmet_reference
-                 )
-
-
 GridMET_Reference <- methods::setRefClass(
   "GridMET_Reference",
 
@@ -236,13 +211,13 @@ Grid_Reference <- methods::setRefClass(
 
 #' @title Attributes
 #' @param maca_reference object containing information about input marguments
-#' for the MACA dataset in cftdata.
+#' for get_maca.
 #' @export
 maca_reference <- MACA_Reference()$initFields()
 
 #' @title Attributes
 #' @param gridmet_reference object containing information about input arguments
-#' for the GridMET dataset in cftdata.
+#' for the get_gridmet.
 #' @export
 gridmet_reference <- GridMET_Reference()$initFields()
 
@@ -251,3 +226,29 @@ gridmet_reference <- GridMET_Reference()$initFields()
 #' information of the full grid in which the data is provided.
 #' @export
 grid_reference <- Grid_Reference()$initFields()
+
+
+#' Return a reference object for the arguments associated with a data set used in cft.
+#'
+#' @param dataset A data set from which to download data. Currently available data
+#' sets include 'MACA' and 'GridMET'. (character)
+#' @return A reference class object containing available input parameters for `get_gridmet()`
+#' or `get_maca()` and reference information about each.
+#' 
+#' @examples 
+#' \dontrun{
+#' file_ref <- get_reference("maca")
+#' print(file_ref$parameters)
+#' }
+#' 
+#' @export
+get_reference <- function(dataset) {
+  dataset <- tolower(dataset)
+  ref <- DATASETS[[dataset]]
+  return(ref)            
+}
+
+
+DATASETS <- list("maca" = maca_reference,
+                 "gridmet" = gridmet_reference
+)

@@ -70,7 +70,7 @@ Log in with username: `rstudio`, and the password you provided.
 ## Quickstart guide
 
 To get daily precipitation data for Acadia National Park for a subset of 
-climate models, you can use the `cftdata()` function:
+climate models, you can use the `get_maca()` function:
 
 
 ```r
@@ -79,15 +79,15 @@ library(cft)
 library(reticulate)
 ```
 
-Then, download some data using the `cftdata()` function. 
+Then, download some data using the `get_maca()` function. 
 
 
 
 
 
 ```r
-d <- cftdata(park = "Acadia National Park", parameters = "pr", 
-             years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
+d <- get_maca(park = "Acadia National Park", parameters = "pr", 
+              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
 ```
 
 This gives you a data frame with paths to local climate data files: 

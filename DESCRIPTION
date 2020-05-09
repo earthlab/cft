@@ -6,14 +6,14 @@ Authors@R: c(
     person(given = "Travis",
            family = "Williams",
            role = c("aut"),
-           email = "travis.williams@colorado.edu"),
+           email = "travis.williams@nrel.gov"),
     person(given = "Max",
            family = "Joseph",
            role = c("aut", "cre"),
            email = "maxwell.b.joseph@colorado.edu",
            comment = c(ORCID = "0000-0002-7745-9990"))
     )
-Maintainer: Travis Williams <travis.williams@colorado.edu>
+Maintainer: Travis Williams <travis.williams@nrel.gov>
 Description: Process data for the Climate Futures Toolkit.
 URL: https://github.com/earthlab/cst
 License: GPL-3
