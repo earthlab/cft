@@ -99,7 +99,6 @@ get_maca <- function(shp_path,
   if (missing(park)) {
     park <- NA
   }
-  aoi <- get_aoi(park, shp_path, area_name, local_dir)
 
   # Create the target folder
   area_name <- gsub(" ", "_", tolower(area_name))
@@ -107,16 +106,16 @@ get_maca <- function(shp_path,
   if (!dir.exists(location_dir)) dir.create(location_dir, recursive = TRUE)
   location_dir <- normalizePath(location_dir)
 
-  # Generate reference objects
+  # Generate reference objects  # necessary?
   grid_ref <- Grid_Reference()
   arg_ref <- MACA_Reference()
 
-  # Match coordinate systems
-  aoi <- sp::spTransform(aoi, grid_ref$crs)
+  # Get area of interest shapefile object
+  aoi <- get_aoi(park, shp_path, area_name, local_dir)
 
-  # Get geographic information about the aoi
+  # Get geographic information about the aoi, including binary mask
   if (verbose) print("Building area of interest grid...")
-  aoi_info <- get_aoi_info(aoi, grid_ref)
+  aoi_info <- get_aoi_info(aoi, location_dir, area_name)
 
   # Build url queries, filenames, and dataset elements
   queries <- get_queries(aoi, area_name, years, models, parameters, scenarios,

@@ -29,7 +29,7 @@ filter_years <- function(start_year = 1950, end_year = 2099,
 }
 
 
-get_aoi_indexes <- function(aoi, grid_ref) {
+get_aoi_indexes <- function(aoi) {
   
   # Extract the bounding box of the area of interest
   lonmin <- aoi@bbox[1, 1]
@@ -38,10 +38,10 @@ get_aoi_indexes <- function(aoi, grid_ref) {
   latmax <- aoi@bbox[2, 2]
   
   # Calculate differences between bounding box and target grid coordinates
-  lonmindiffs <- abs(grid_ref$lons - lonmin)
-  lonmaxdiffs <- abs(grid_ref$lons - lonmax)
-  latmindiffs <- abs(grid_ref$lats - latmin)
-  latmaxdiffs <- abs(grid_ref$lats - latmax)
+  lonmindiffs <- abs(grid_reference$lons - lonmin)
+  lonmaxdiffs <- abs(grid_reference$lons - lonmax)
+  latmindiffs <- abs(grid_reference$lats - latmin)
+  latmaxdiffs <- abs(grid_reference$lats - latmax)
   
   # Find the index positions of the closest grid coordinates to the aoi extent
   x1 <- match(lonmindiffs[lonmindiffs == min(lonmindiffs)], lonmindiffs)
@@ -57,17 +57,17 @@ get_aoi_indexes <- function(aoi, grid_ref) {
 }
 
 
-get_aoi_info <- function(aoi, grid_ref) {
-  
+get_aoi_info <- function(aoi, local_dir, area_name) {
+
   # Get relative index positions to full grid
-  index_pos <- get_aoi_indexes(aoi, grid_ref)
+  index_pos <- get_aoi_indexes(aoi)
   y1 <- index_pos[["y1"]]
   y2 <- index_pos[["y2"]]
   x1 <- index_pos[["x1"]]
   x2 <- index_pos[["x2"]]
-  
+
   # Get list of lats and lons
-  res <- grid_ref$resolution
+  res <- grid_reference$resolution
   ny <- (y2 - y1)
   nx <- (x2 - x1)
   latmin <- aoi@bbox[2, 1]
@@ -76,20 +76,37 @@ get_aoi_info <- function(aoi, grid_ref) {
   aoilons <- lonmin + (0:nx) * res
 
   # Now create a mask as a matrix
-  r <- raster::raster(ncols = length(aoilons), nrows = length(aoilats))
-  raster::extent(r) <- raster::extent(aoi)
-  r1 <- raster::rasterize(aoi, r)
-  r2 <- raster::rasterize(methods::as(aoi, "SpatialLines"), r)
-  r <- raster::cover(r1, r2)
-  mask_grid <- r * 0 + 1
-  mask_matrix <- methods::as(mask_grid, "matrix")
+  mask_path <- file.path(local_dir, "rasters", paste0(area_name, ".tif"))
+  dir.create(dirname(mask_path), showWarnings = FALSE)
+  if ( !file.exists(mask_path) ) {
+    # Rasterize
+    r <- raster::raster(ncols = length(aoilons), nrows = length(aoilats))
+    raster::extent(r) <- raster::extent(aoi)
+    r1 <- raster::rasterize(aoi, r)
+    r2 <- raster::rasterize(methods::as(aoi, "SpatialLines"), r)
+    r <- raster::cover(r1, r2)
+
+    # Create binary mask
+    mask_grid <- r * 0 + 1
+
+    # Write as raster for later
+    raster::dataType(mask_grid) <- "INT1U"
+    raster::writeRaster(mask_grid, mask_path, "GTiff")
+
+  } else {
+    # Read mask as raster
+    mask_grid <- raster::raster(mask_path)
+  }
   
+  # Convert to a matrix
+  mask_matrix <- methods::as(mask_grid, "matrix")
+
   # Package all of this into one object
   aoi_info <- list("aoilats" = aoilats,
                    "aoilons" = aoilons,
                    "mask_matrix" = mask_matrix,
                    "resolution" = res)
-  
+
   # Done.
   return(aoi_info)
 }
@@ -111,7 +128,7 @@ get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
   ntime_model <- grid_ref$ntime_model
   
   # Get relative index positions to full grid
-  index_pos <- get_aoi_indexes(aoi, grid_ref)
+  index_pos <- get_aoi_indexes(aoi)
   y1 <- index_pos[["y1"]]
   y2 <- index_pos[["y2"]]
   x1 <- index_pos[["x1"]]
@@ -345,4 +362,39 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir) {
   reference <- c(list("local_file" = file_name, "local_path" = file_path), 
                  elements)
   return(reference)
+}
+
+
+year_days <- function(year, parameter) {
+  # Two scenarios, this year or previous years
+  today <- Sys.Date()
+  year <- as.character(year)
+  
+  if (year == format(today, "%Y")) {
+    # There is a several day lag for new daily data
+    ndays <- year_days_current(year, parameter)
+    
+  } else {
+    # Only one possible number for past years
+    last_day <- as.Date(paste(year, "12", "31", sep = "-"))
+    first_day <- as.Date(paste(year, "01", "01", sep = "-"))
+    days <- seq(first_day, last_day, by = "1 day")
+    ndays <- length(days)
+  }
+  
+  return(ndays)
+}
+
+
+year_days_current <- function(year, parameter) {
+  # Load cft conda environment
+  reticulate::use_condaenv("cft", required = TRUE)
+  xr <- reticulate::import("xarray")
+  
+  # How many days are available in current year for this parameter?
+  query <- glue::glue(paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
+                             "MET/{parameter}/{parameter}_{year}.nc?#fillmismatch"))
+  ds <- xr$open_dataset(query)
+  ndays <- length(ds$day$data)
+  return(ndays)
 }

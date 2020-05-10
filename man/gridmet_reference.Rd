@@ -12,7 +12,7 @@ gridmet_reference
 }
 \arguments{
 \item{gridmet_reference}{object containing information about input arguments
-for the get_gridmet.}
+for get_gridmet.}
 }
 \description{
 Attributes

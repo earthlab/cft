@@ -27,7 +27,7 @@ test_that("Test that 'get_aoi_indexes' returns correct spatial indices", {
   area_name <- "Acadia National Park"
   aoi <- get_park_boundaries(area_name, local_dir = local_dir)
   grid_ref <- Grid_Reference()
-  indices <- get_aoi_indexes(aoi, grid_ref)
+  indices <- get_aoi_indexes(aoi)
 
   # There is a slight possibility that the park boundary extent will change
   exp_indices <- list("y1" = 455, "y2" = 465, "x1" = 1347, "x2" = 1362)
@@ -76,13 +76,14 @@ test_that("Test that 'get_queries' returns expected paths", {
   expect_true(queries[3] == ncfile)
 })
 
-test_that("Test get_aoi_info", {
-  grid_ref <- Grid_Reference()
-  aoi <- get_park_boundaries("Acadia National Park", local_dir = local_dir)
 
-  aoi_info <- get_aoi_info(aoi, grid_ref)
-  testthat::expect_named(aoi_info, 
-                         c("aoilats", "aoilons", "mask_matrix", "resolution"))
+test_that("Test get_aoi_info", {
+  aoi <- get_park_boundaries("Acadia National Park", local_dir = local_dir)
+  area_name <- "acadia_national_park"
+  aoi_info <- get_aoi_info(aoi, local_dir, area_name)
+  tif_path <- file.path(local_dir, "rasters", "acadia_national_park.tif")
+  testthat::expect_named(aoi_info, c("aoilats", "aoilons", "mask_matrix", "resolution"))
+  expect_true(file.exists(tif_path))
 })
 
 
@@ -98,15 +99,15 @@ test_that("Test retrieve_subset", {
                 "_CONUS_daily.nc?precipitation[0:1:20453][455:1:465]",
                 "[1347:1:1362]#fillmismatch")
   filename <- paste0("pr_acadia_national_park_bcc-csm1-1_r1i1p1_rcp45_",
-                    "macav2metdata_2000_2001_daily.nc")
+                    "macav2metdata_2000_2000_daily.nc")
   area_name <- "acadia_national_park"
   elements <- c(model = "bcc-csm1-1", rcp = "rcp45", ensemble = "r1i1p1",
-                "year1" = 2000, "year2" = 2001, internal_varname = "precipitation")
+                "year1" = 2000, "year2" = 2000, internal_varname = "precipitation")
   query <- list(c(url1, url2), filename, elements)
-  years <- c(2000, 2001)
+  years <- c(2000, 2000)
   grid_ref <- Grid_Reference()
   aoi <- get_park_boundaries("Acadia National Park", local_dir = local_dir)
-  aoi_info <- get_aoi_info(aoi, grid_ref)
+  aoi_info <- get_aoi_info(aoi, local_dir, area_name)
 
   subset <- retrieve_subset(query, years, aoi_info, area_name, 
                             local_dir = local_dir)

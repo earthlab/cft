@@ -217,7 +217,7 @@ maca_reference <- MACA_Reference()$initFields()
 
 #' @title Attributes
 #' @param gridmet_reference object containing information about input arguments
-#' for the get_gridmet.
+#' for get_gridmet.
 #' @export
 gridmet_reference <- GridMET_Reference()$initFields()
 

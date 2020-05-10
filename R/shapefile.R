@@ -4,11 +4,15 @@ get_aoi <- function(park, shp_path, area_name, local_dir) {
   if (missing(park)) park <- NA
 
   # Choose which to area of interest to return.
-  if (!is.na(park)) {
+  if ( !is.na(park) ) {
     aoi <- get_park_boundaries(park, local_dir = local_dir)
   } else {
     aoi <- get_shapefile(shp_path, local_dir = local_dir) 
   }
+
+  # Match coordinate systems
+  aoi <- sp::spTransform(aoi, grid_reference$crs)
+
   return(aoi)
 }
 
