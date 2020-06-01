@@ -36,7 +36,7 @@ test_that("Test that 'get_aoi_indexes' returns correct spatial indices", {
 })
 
 
-test_that("Test that 'get_queries' returns expected paths", {
+test_that("Test that 'get_maca_queries' returns expected paths", {
 
   # Sample arguments
   area_name <- "Acadia National Park"
@@ -47,11 +47,11 @@ test_that("Test that 'get_queries' returns expected paths", {
   parameters <- "pr"
   scenarios <-"rcp45"
   arg_ref <- get_reference("maca")
-  grid_ref <- Grid_Reference()
+  grid_ref <- get_reference("grid")
 
   # Get a query object
-  queries <- get_queries(aoi, area_name, years, models, parameters,
-                         scenarios, arg_ref, grid_ref)
+  queries <- get_maca_queries(aoi, area_name, years, models, parameters,
+                              scenarios, arg_ref, grid_ref)
 
   # Unlist this object
   queries <- unlist(queries)

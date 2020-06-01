@@ -3,7 +3,7 @@ get_aoi <- function(park, shp_path, area_name, local_dir) {
   # Use either a park or a shape file path
   if (missing(park)) park <- NA
 
-  # Choose which to area of interest to return.
+  # Choose which area of interest to return.
   if ( !is.na(park) ) {
     aoi <- get_park_boundaries(park, local_dir = local_dir)
   } else {
@@ -18,7 +18,7 @@ get_aoi <- function(park, shp_path, area_name, local_dir) {
 
 get_shapefile <- function(shp_path, shp_name = NA, local_dir = tempdir()) {
 
-  if (is.na(shp_name)) shp_name <- tools::file_path_sans_ext(basename(shp_path))
+  if ( is.na(shp_name) ) shp_name <- tools::file_path_sans_ext(basename(shp_path))
 
   # Check if this is a url or local path
   if ( grepl("www.|http:|https:", shp_path) ) {

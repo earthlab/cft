@@ -5,7 +5,8 @@ GridMET_Reference <- methods::setRefClass(
     parameters = "character",
     variables = "list",
     labels = "list",
-    units = "list"
+    units = "list",
+    time_dim = "character"
     ),
 
   methods = list(
@@ -26,8 +27,8 @@ GridMET_Reference <- methods::setRefClass(
                        "fm1000" = "dead_fuel_moisture_1000hr",
                        "erc" = "energy_release_component-g",
                        "pdsi" = "palmer_drought_severity_index",
-                       "etr" = "potential_evaporation",
-                       "pet" = "potential_evaporation",
+                       "etr" = "potential_evapotranspiration",
+                       "pet" = "potential_evapotranspiration",
                        "vpd" = "mean_vapor_pressure_deficit"),
       labels = list("pr" = "Daily Accumulated Precipitation",
                     "rmax" = "Daily Maximum Relative Humidity",
@@ -62,12 +63,15 @@ GridMET_Reference <- methods::setRefClass(
                    "pdsi" = "unitless",
                    "etr" = "mm",
                    "pet" = "mm",
-                   "vpd" = "kPa")
+                   "vpd" = "kPa",
+                   "time" = "days since 1900-01-01"),
+      time_dim = "day"
     ) {
       parameters <<- parameters
       variables <<- variables
       labels <<- labels
       units <<- units
+      time_dim <<- time_dim
     }
   )
 )
@@ -82,7 +86,9 @@ MACA_Reference <- methods::setRefClass(
     scenarios = "character",
     variables = "list",
     labels = "list",
-    units = "list"),
+    units = "list",
+    time_dim = "character"
+    ),
   
   methods = list(
     initialize = function(
@@ -143,7 +149,9 @@ MACA_Reference <- methods::setRefClass(
                    "eastward_wind" = "m s-1",
                    "northward_wind" = "m s-1",
                    "specific_humidity" = "kg kg-1",
-                   "vpd" = "kPa")
+                   "vpd" = "kPa",
+                   "time" = "days since 1950-01-01"),
+      time_dim = "time"
       ) {
       models <<- models
       parameters <<- parameters
@@ -151,8 +159,9 @@ MACA_Reference <- methods::setRefClass(
       variables <<- variables
       labels <<- labels
       units <<- units
+      time_dim <<- time_dim
     },
-    
+  
     get_args = function(model) {
       args <- list()
       for (m in models) {
@@ -208,23 +217,9 @@ Grid_Reference <- methods::setRefClass(
   )
 )
 
-
-#' @title Attributes
-#' @param maca_reference object containing information about input marguments
-#' for get_maca.
-#' @export
+# Inititalize each
 maca_reference <- MACA_Reference()$initFields()
-
-#' @title Attributes
-#' @param gridmet_reference object containing information about input arguments
-#' for get_gridmet.
-#' @export
 gridmet_reference <- GridMET_Reference()$initFields()
-
-#' @title Attributes
-#' @param grid_reference Reference object containing geographical coordinate
-#' information of the full grid in which the data is provided.
-#' @export
 grid_reference <- Grid_Reference()$initFields()
 
 

@@ -91,19 +91,17 @@ get_gridmet <- function(shp_path,
   location_dir <- normalizePath(location_dir)
   
   # Generate reference objects
-  grid_ref <- Grid_Reference()
-  arg_ref <- GridMET_Reference()
+  arg_ref <- get_reference("gridmet")
 
   # Match coordinate systems
-  aoi <- sp::spTransform(aoi, grid_ref$crs)
+  aoi <- sp::spTransform(aoi, grid_reference$crs)
 
   # Get geographic information about the aoi
   if (verbose) print("Building area of interest grid...")
-  aoi_info <- get_aoi_info(aoi, grid_ref)
+  aoi_info <- get_aoi_info(aoi, local_dir, area_name)
 
   # Build url queries, filenames, and dataset elements
-  queries <- get_queries(aoi, area_name, years, parameters,
-                         arg_ref, grid_ref)
+  queries <- get_gridmet_queries(aoi, area_name, years, parameters)
 
   # Setup parallelization
   pbapply::pboptions(use_lb = TRUE)
@@ -118,11 +116,6 @@ get_gridmet <- function(shp_path,
     print(paste("Saving local files to", location_dir))
   }
 
-  # Retrieve subsets from grouped queries and create file reference data frame
-  file_references <- data.frame("local_file" = character(0),
-                                "local_path" = character(0),
-                                stringsAsFactors = FALSE)
-
   # Retrieve, subset, and write the files
   refs <- pbapply::pblapply(queries,
                             FUN = retrieve_subset,
@@ -130,6 +123,7 @@ get_gridmet <- function(shp_path,
                             aoi_info = aoi_info,
                             area_name = area_name,
                             local_dir = location_dir,
+                            arg_ref = arg_ref,
                             cl = cl)
 
   # Create a data frame from the file references

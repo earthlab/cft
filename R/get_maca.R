@@ -107,8 +107,8 @@ get_maca <- function(shp_path,
   location_dir <- normalizePath(location_dir)
 
   # Generate reference objects  # necessary?
-  grid_ref <- Grid_Reference()
-  arg_ref <- MACA_Reference()
+  grid_ref <- get_reference("grid")
+  arg_ref <- get_reference("maca")
 
   # Get area of interest shapefile object
   aoi <- get_aoi(park, shp_path, area_name, local_dir)
@@ -118,8 +118,7 @@ get_maca <- function(shp_path,
   aoi_info <- get_aoi_info(aoi, location_dir, area_name)
 
   # Build url queries, filenames, and dataset elements
-  queries <- get_queries(aoi, area_name, years, models, parameters, scenarios,
-                         arg_ref, grid_ref)
+  queries <- get_maca_queries(aoi, area_name, years, models, parameters, scenarios)
 
   # Setup parallelization
   pbapply::pboptions(use_lb = TRUE)
@@ -134,11 +133,6 @@ get_maca <- function(shp_path,
     print(paste("Saving local files to", location_dir))
   }
 
-  # Retrieve subsets from grouped queries and create file reference data frame
-  file_references <- data.frame("local_file" = character(0),
-                                "local_path" = character(0),
-                                stringsAsFactors = FALSE)
-
   # Retrieve, subset, and write the files
   refs <- pbapply::pblapply(queries,
                             FUN = retrieve_subset,
@@ -146,11 +140,11 @@ get_maca <- function(shp_path,
                             aoi_info = aoi_info,
                             area_name = area_name,
                             local_dir = location_dir,
+                            arg_ref = arg_ref,
                             cl = cl)
 
   # Create a data frame from the file references
   file_references <- data.frame(do.call(rbind, refs), stringsAsFactors = FALSE)
-  
   file_references <- tibble::as_tibble(lapply(file_references, unlist))
   file_references$parameter_long <- unlist(lapply(
     file_references$parameter, 
