@@ -30,10 +30,10 @@ test_that("A full run of get_maca completes and saves an expected file", {
                         years = years,
                         models = models,
                         parameters = parameters,
-                        scenarios = scnearios,
+                        scenarios = scenarios,
                         local_dir = local_dir, 
                         ncores = ncores)
-  
+
   expected_file <- paste0("pr_acadia_national_park_bcc-csm1-1_r1i1p1_rcp45_",
                           "macav2metdata_2004_2005_daily.nc")
   expected_path <- file.path(local_dir, "acadia_national_park", expected_file)

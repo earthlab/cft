@@ -1,36 +1,28 @@
-filter_years <- function(start_year = 1950, end_year = 2099, arg_ref, param) {
-
-  # Time formats are different between 
-  module <- class(arg_ref)[[1]]
+filter_years <- function(start_year = 1950, end_year = 2099, dataset, param) {
 
   # Choose appropriate year filtering function
-  if ( module ==  "GridMET_Reference" ) {
+  if ( dataset ==  "gridmet" ) {
     days <- filter_years_gridmet(start_year, end_year, arg_ref, param)
-  } else if ( module == "MACA_Reference") {
-    days <- filter_years_maca(start_year, end_year, arg_ref)
+  } else if ( dataset == "maca" ) {
+    days <- filter_years_maca(start_year, end_year)
   }
 
   return(days)
 }
 
 
-filter_years_maca <- function(start_year = 1950, end_year = 2099, arg_ref) {
-
-  # The base year (available start) will depend on dataset
-  units <- arg_ref$units[["time"]]
-  available1 <- as.Date(strsplit(units, " ")[[1]][3])
+filter_years_maca <- function(start_year = 1950, end_year = 2099,
+                              available_start = 1950, available_end = 2099) {
 
   # Turn these into strings, then dates
+  available1 <- as.Date(glue::glue("{available_start}-01-01"))
+  available2 <- as.Date(glue::glue("{available_end}-12-31"))
   date1 <- as.Date(glue::glue("{start_year}-01-01"))
-
-  # The latest availabe year could be static or updated frequently
-    available_end <- 2099
-    available2 <- as.Date(glue::glue("{available_end}-12-31"))
-    date2 <- as.Date(glue::glue("{end_year}-12-31"))
-
+  date2 <- as.Date(glue::glue("{end_year}-12-31"))
+  
   # Check that the end year is after the start year
   if (date2 < date1) stop("end_year is set before start_year")
-
+  
   # Check that the requested years are available
   if (date1 < available1) {
     stop(paste0("start_year is unavailable. Please choose a year between ",
@@ -40,15 +32,13 @@ filter_years_maca <- function(start_year = 1950, end_year = 2099, arg_ref) {
     stop(paste0("end_year is unavailable. Please choose a year between ",
                 available_start, " and ", available_end, "."))
   }
-
+  
   # Return the difference in days between the first available and chosen dates
   day1 <- as.integer(date1 - available1)
   day2 <- as.integer(date2 - available1)
   
   # Return these as a range
-  days <- seq(day1, day2)
-
-  return(days)
+  return(seq(day1, day2))
 }
 
 
@@ -381,8 +371,9 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir, arg_re
     ds <- xr$open_mfdataset(urls, concat_dim = time_dim, combine = "nested")
 
     # Filter MACA dates, reformat GridMET dates
-    dates <- filter_years(start_year, end_year, arg_ref, param)
-    if (dataset == "MACA_Reference") {
+    dataset <- tolower(strsplit(class(arg_ref), "_")[[1]][1])
+    dates <- filter_years(start_year, end_year, dataset, param)
+    if (dataset == "maca") {
          ds <- ds$sel(time = c(dates[[1]]: dates[[length(dates)]]))
     }
 
