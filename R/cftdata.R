@@ -1,3 +1,6 @@
+# List of Data Set Generators for cftdata
+DATASETS = list("maca" = Maca)
+
 #' Climate Futures Toolbox Data
 #' 
 #' Retrieves subsetted data of climate future scenarios within National
@@ -26,13 +29,13 @@
 #'  shp_path argument empty or set to NA. (character)
 #' @param models A list of global circulation models to download. If left empty
 #' all available models will be downloaded. A list of available of models is
-#' available under cft::argument_reference$models. (vector)
+#' available under cft::maca_reference$models. (vector)
 #' @param parameters A list of climate parameters to download. If left empty
 #' all available parameters will be downloaded. A list of available of models is
-#' available under cft::argument_reference$parameters. (vector)
+#' available under cft::maca_reference$parameters. (vector)
 #' @param scenarios A list of representative concentration pathways (rcps) to
 #' download. If left empty all available rcps will be downloaded. A list of
-#' available of rcps is available under cft::argument_reference$scenarios.
+#' available of rcps is available under cft::maca_reference$scenarios.
 #' (vector)
 #' @param years The first and last years of the desired period. (vector)
 #' @param local_dir The local directory in which to save files. By default, 
@@ -57,10 +60,11 @@
 #' @export
 cftdata <- function(shp_path, 
                     area_name, 
-                    park, 
-                    models = argument_reference$models,
-                    parameters = argument_reference$parameters, 
-                    scenarios = argument_reference$scenarios, 
+                    park,
+                    dataset = "maca",
+                    models = maca_reference$models,
+                    parameters = maca_reference$parameters, 
+                    scenarios = maca_reference$scenarios, 
                     years = c(1950, 2099),
                     local_dir = tempdir(),
                     verbose = TRUE, 
@@ -95,11 +99,14 @@ cftdata <- function(shp_path,
   }
 
   # Get national park or area of interest
-  if (verbose) print("Retrieving area of interest boundaries...")
   if (missing(park)) {
     park <- NA
   }
-  aoi <- get_aoi(park, shp_path, area_name, local_dir)
+
+  # Retrieve and initialize a dataset generator object
+  DataSet <- DATASETS[[dataset]]
+  ds <- DataSet$new(local_dir, verbose = verbose)
+
 
   # Create the target folder
   area_name <- gsub(" ", "_", tolower(area_name))
@@ -107,16 +114,7 @@ cftdata <- function(shp_path,
   if (!dir.exists(location_dir)) dir.create(location_dir, recursive = TRUE)
   location_dir <- normalizePath(location_dir)
 
-  # Generate reference objects
-  grid_ref <- Grid_Reference()
-  arg_ref <- Argument_Reference()
 
-  # Match coordinate systems
-  aoi <- sp::spTransform(aoi, grid_ref$crs)
-
-  # Get geographic information about the aoi
-  if (verbose) print("Building area of interest grid...")
-  aoi_info <- get_aoi_info(aoi, grid_ref)
 
   # Build url queries, filenames, and dataset elements
   queries <- get_queries(aoi, area_name, years, models, parameters, scenarios,
@@ -149,14 +147,13 @@ cftdata <- function(shp_path,
                             local_dir = location_dir,
                             cl = cl)
 
-
   # Create a data frame from the file references
   file_references <- data.frame(do.call(rbind, refs), stringsAsFactors = FALSE)
   
   file_references <- tibble::as_tibble(lapply(file_references, unlist))
   file_references$parameter_long <- unlist(lapply(
     file_references$parameter, 
-    FUN = function(x) argument_reference$variables[x]
+    FUN = function(x) maca_reference$variables[x]
   ))
   return(file_references)
 }

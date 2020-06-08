@@ -10,9 +10,9 @@
 #' (data.frame)
 #' @param agg_fun The aggregating function to applied to the model variables
 #' (e.g., "mean"). (character)
-#' @param var1 The x-axis variable, see cft::argument_reference
+#' @param var1 The x-axis variable, see cft::maca_reference
 #' (e.g., "pr"). (character).
-#' @param var2 The y-axis variable, see cft::argument_reference
+#' @param var2 The y-axis variable, see cft::maca_reference
 #' (e.g., "tasmax").  character)
 #' @param months1 The months of the year with which to include in the
 #' aggregation of variable 1 (e.g., 5:7 for May, June, and July. (int vector)
@@ -145,7 +145,7 @@ df_difference <- function(df, parameter, agg_fun, target_period, reference_perio
   df$parameter <- parameter
 
   # Add in units
-  arg_ref <- Argument_Reference()
+  arg_ref <- maca_reference()
   internal_var <- as.character(arg_ref$variables[parameter])
   units = as.character(arg_ref$units[internal_var])
   df$units <- units

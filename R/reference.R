@@ -35,7 +35,7 @@ Grid_Reference <- methods::setRefClass(
 )
 
 
-Argument_Reference <- methods::setRefClass(
+Maca_Reference <- methods::setRefClass(
   "Argument_Reference",
   
   fields = list(
@@ -138,10 +138,11 @@ Argument_Reference <- methods::setRefClass(
 #' @param argument_reference object containing information about input models 
 #' and parameters for cft.
 #' @export
-argument_reference <- Argument_Reference()$initFields()
+maca_reference <- Maca_Reference()$initFields()
 
 #' @title Attributes
 #' @param grid_reference Reference object containing geographical coordinate
 #' information of the full grid in which the data is provided.
 #' @export
 grid_reference <- Grid_Reference()$initFields()
+

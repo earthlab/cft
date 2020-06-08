@@ -8,9 +8,10 @@ cftdata(
   shp_path,
   area_name,
   park,
-  models = argument_reference$models,
-  parameters = argument_reference$parameters,
-  scenarios = argument_reference$scenarios,
+  dataset = "maca",
+  models = maca_reference$models,
+  parameters = maca_reference$parameters,
+  scenarios = maca_reference$scenarios,
   years = c(1950, 2099),
   local_dir = tempdir(),
   verbose = TRUE,
@@ -34,15 +35,15 @@ shp_path argument empty or set to NA. (character)}
 
 \item{models}{A list of global circulation models to download. If left empty
 all available models will be downloaded. A list of available of models is
-available under cft::argument_reference$models. (vector)}
+available under cft::maca_reference$models. (vector)}
 
 \item{parameters}{A list of climate parameters to download. If left empty
 all available parameters will be downloaded. A list of available of models is
-available under cft::argument_reference$parameters. (vector)}
+available under cft::maca_reference$parameters. (vector)}
 
 \item{scenarios}{A list of representative concentration pathways (rcps) to
 download. If left empty all available rcps will be downloaded. A list of
-available of rcps is available under cft::argument_reference$scenarios.
+available of rcps is available under cft::maca_reference$scenarios.
 (vector)}
 
 \item{years}{The first and last years of the desired period. (vector)}
