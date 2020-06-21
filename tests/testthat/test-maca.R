@@ -7,12 +7,13 @@ test_that("Maca data generator class works :)", {
   models <- "bcc-csm1-1"
   parameters <- "pr"
   scenarios <- "rcp45"
-  local_dir <- "."
+  project_dir <- "./cft_test"
   ncores <- 2
 
   # Initiate an object
-  maca <- Maca$new(local_dir)
+  maca <- Maca$new(project_dir)
 
-  # Get/Set the Area of Interest
-  maca$set_aoi(park, shp_path, area_name, verbose=TRUE)
+  # Set/Get the Area of Interest
+  maca$set_aoi(park, area_name = "acadia_national_park")  #, shp_path, area_name)
+
 })

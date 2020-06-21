@@ -48,9 +48,9 @@ available of rcps is available under cft::maca_reference$scenarios.
 
 \item{years}{The first and last years of the desired period. (vector)}
 
-\item{local_dir}{The local directory in which to save files. By default, 
+\item{local_dir}{The local directory in which to save files. By default,
 files are saved in a temporary directory (as per CRAN guidelines), and are
-lost after your R session ends. Specify a path to a local directory with 
+lost after your R session ends. Specify a path to a local directory with
 this argument to retain files and avoid duplicate downloads
 in subsequent R sessions.  (character)}
 
@@ -72,14 +72,14 @@ This package retrieves daily gridded data sets of General Circulation Model
 file names and they're storage paths. Each of these data sets represent
 a single GCM, climate variable and Representative Concentration Pathway (RCP)
 from 1950 to 2099. The 1950 to 2005 portion of this time period represents
-historical data while the 2006 to 2099 portion represents modeled data. 
+historical data while the 2006 to 2099 portion represents modeled data.
 The original data sets may be found at
 \url{http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_catalog.html}
 }
 \examples{
 \dontrun{
-d <- cftdata(park = "Acadia National Park", parameters = "pr", 
-             years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85", 
+d <- cftdata(park = "Acadia National Park", parameters = "pr",
+             years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85",
              ncores = parallel::detectCores())
 }
 

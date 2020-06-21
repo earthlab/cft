@@ -39,6 +39,7 @@ Imports:
     reticulate,
     rgdal,
     rlang,
+    R6,
     sp,
     stringdist,
     tibble,

@@ -1,8 +1,5 @@
-# List of Data Set Generators for cftdata
-DATASETS = list("maca" = Maca)
-
 #' Climate Futures Toolbox Data
-#' 
+#'
 #' Retrieves subsetted data of climate future scenarios within National
 #' Parks or shapefiles in the Contiguous United States. This data is downscaled
 #' using the Multivariate Adaptive Constructed Analogs (MACA) technique.
@@ -12,7 +9,7 @@ DATASETS = list("maca" = Maca)
 #' file names and they're storage paths. Each of these data sets represent
 #' a single GCM, climate variable and Representative Concentration Pathway (RCP)
 #' from 1950 to 2099. The 1950 to 2005 portion of this time period represents
-#' historical data while the 2006 to 2099 portion represents modeled data. 
+#' historical data while the 2006 to 2099 portion represents modeled data.
 #' The original data sets may be found at
 #' \url{http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_catalog.html}
 #'
@@ -22,7 +19,7 @@ DATASETS = list("maca" = Maca)
 #'  to NA. (character)
 #' @param area_name If a shapefile path is used, provide a name to use as a
 #'  reference to the location. This will be used in file names, attributes, and
-#'  directories. (character)' 
+#'  directories. (character)'
 #' @param park The name of a national park (e.g., "Yellowstone National
 #'  Park", "Yellowstone Park", "Yellowstone", "yellowstone", etc.). The user may
 #'  use this option in place of a shapefile path. In this case, leave the
@@ -38,38 +35,38 @@ DATASETS = list("maca" = Maca)
 #' available of rcps is available under cft::maca_reference$scenarios.
 #' (vector)
 #' @param years The first and last years of the desired period. (vector)
-#' @param local_dir The local directory in which to save files. By default, 
+#' @param project_dir The local directory in which to save files. By default,
 #' files are saved in a temporary directory (as per CRAN guidelines), and are
-#' lost after your R session ends. Specify a path to a local directory with 
+#' lost after your R session ends. Specify a path to a local directory with
 #' this argument to retain files and avoid duplicate downloads
 #' in subsequent R sessions.  (character)
 #' @param verbose Print verbose output. (logical)
 #' @param ncores The number of cpus to use, which defaults to 1. (numeric)
-#' 
-#' @return A tibble containing information about climate data files. 
-#' 
-#' @examples 
+#'
+#' @return A tibble containing information about climate data files.
+#'
+#' @examples
 #' \dontrun{
-#' d <- cftdata(park = "Acadia National Park", parameters = "pr", 
-#'              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85", 
+#' d <- cftdata(park = "Acadia National Park", parameters = "pr",
+#'              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85",
 #'              ncores = parallel::detectCores())
 #' }
-#' 
+#'
 #' @importFrom methods new
-#' 
+
 #' @export
-cftdata <- function(shp_path, 
-                    area_name, 
+cftdata <- function(shp_path,
+                    area_name,
                     park,
                     dataset = "maca",
                     models = maca_reference$models,
-                    parameters = maca_reference$parameters, 
-                    scenarios = maca_reference$scenarios, 
+                    parameters = maca_reference$parameters,
+                    scenarios = maca_reference$scenarios,
                     years = c(1950, 2099),
-                    local_dir = tempdir(),
-                    verbose = TRUE, 
+                    project_dir = tempdir(),
+                    verbose = TRUE,
                     ncores = 1) {
-  
+
   # Make sure user is providing some kind of location information
   if (missing(shp_path) & missing(park)) {
     msg <- paste("No location data/AOI data were provided.",
@@ -77,7 +74,7 @@ cftdata <- function(shp_path,
                  "a national park (e.g., 'Yosemite National Park').")
     stop(msg)
   }
-
+  
   # Make sure user is not providing too much location information
   if (!missing(shp_path) & !missing(park)) {
     msg <- paste("Both a shapefile and a national park were provided.",
@@ -85,7 +82,7 @@ cftdata <- function(shp_path,
                  "a national park ('Name National Park'), but not both.")
     stop(msg)
   }
-
+  
   # If a shapefile path is provided, make sure it comes with an area name
   if (!missing(shp_path) & missing(area_name)) {
     msg <- paste("Please provide the name you would like to use to reference",
@@ -93,67 +90,66 @@ cftdata <- function(shp_path,
                  "for both file names and directories.")
     stop(msg)
   }
-
+  
   if (!missing(park) & missing(area_name)) {
     area_name <- park
   }
-
+  
   # Get national park or area of interest
   if (missing(park)) {
     park <- NA
   }
-
   # Retrieve and initialize a dataset generator object
-  DataSet <- DATASETS[[dataset]]
-  ds <- DataSet$new(local_dir, verbose = verbose)
+  DATASETS = list("maca" = Maca)
+  ds <- DATASETS[[dataset]]$new(project_dir, verbose = verbose)
 
+  # Set the area of interest information
+  ds$set_aoi(park, shp_path, area_name)
 
-  # Create the target folder
-  area_name <- gsub(" ", "_", tolower(area_name))
-  location_dir <- file.path(local_dir, area_name)
-  if (!dir.exists(location_dir)) dir.create(location_dir, recursive = TRUE)
-  location_dir <- normalizePath(location_dir)
+  # And run the thing
+  ds$get_subset(years, models, parameters, scenarios)
 
-
-
-  # Build url queries, filenames, and dataset elements
-  queries <- get_queries(aoi, area_name, years, models, parameters, scenarios,
-                         arg_ref, grid_ref)
-
-  # Setup parallelization
-  pbapply::pboptions(use_lb = TRUE)
-  cl <- parallel::makeCluster(ncores)
-  on.exit(parallel::stopCluster(cl))
-  parallel::clusterExport(cl, c("retrieve_subset", "filter_years"),
-                          envir = environment())
-
-  # If all that works, signal that the process is starting
-  if (verbose) {
-    print(paste("Retrieving climate data for", area_name))
-    print(paste("Saving local files to", location_dir))
-  }
-
-  # Retrieve subsets from grouped queries and create file reference data frame
-  file_references <- data.frame("local_file" = character(0),
-                                "local_path" = character(0),
-                                stringsAsFactors = FALSE)
-
-  # Retrieve, subset, and write the files
-  refs <- pbapply::pblapply(queries,
-                            FUN = retrieve_subset,
-                            years = years,
-                            aoi_info = aoi_info,
-                            area_name = area_name,
-                            local_dir = location_dir,
-                            cl = cl)
-
-  # Create a data frame from the file references
-  file_references <- data.frame(do.call(rbind, refs), stringsAsFactors = FALSE)
   
-  file_references <- tibble::as_tibble(lapply(file_references, unlist))
-  file_references$parameter_long <- unlist(lapply(
-    file_references$parameter, 
-    FUN = function(x) maca_reference$variables[x]
-  ))
-  return(file_references)
+  
+
+  # # Build url queries, filenames, and dataset elements
+  # queries <- get_queries(aoi, area_name, years, models, parameters, scenarios,
+  #                        arg_ref, grid_ref)
+
+  # # Setup parallelization
+  # pbapply::pboptions(use_lb = TRUE)
+  # cl <- parallel::makeCluster(ncores)
+  # on.exit(parallel::stopCluster(cl))
+  # parallel::clusterExport(cl, c("retrieve_subset", "filter_years"),
+  #                         envir = environment())
+  #
+  # # If all that works, signal that the process is starting
+  # if (verbose) {
+  #   print(paste("Retrieving climate data for", area_name))
+  #   print(paste("Saving local files to", location_dir))
+  # }
+  #
+  # # Retrieve subsets from grouped queries and create file reference data frame
+  # file_references <- data.frame("local_file" = character(0),
+  #                               "local_path" = character(0),
+  #                               stringsAsFactors = FALSE)
+  #
+  # # Retrieve, subset, and write the files
+  # refs <- pbapply::pblapply(queries,
+  #                           FUN = retrieve_subset,
+  #                           years = years,
+  #                           aoi_info = aoi_info,
+  #                           area_name = area_name,
+  #                           project_dir = location_dir,
+  #                           cl = cl)
+  #
+  # # Create a data frame from the file references
+  # file_references <- data.frame(do.call(rbind, refs), stringsAsFactors = FALSE)
+  #
+  # file_references <- tibble::as_tibble(lapply(file_references, unlist))
+  # file_references$parameter_long <- unlist(lapply(
+  #   file_references$parameter,
+  #   FUN = function(x) maca_reference$variables[x]
+  # ))
+  # return(file_references)
 }

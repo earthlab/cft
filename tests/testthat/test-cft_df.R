@@ -6,7 +6,7 @@ test_that("cft_df generates a tibble", {
                        models = c("bcc-csm1-1"),
                        parameters = c("pr"),
                        scenarios = c("rcp45"),
-                       local_dir = local_dir)
+                       project_dir = project_dir)
   out <- cft_df(file_reference = file_refs)
   expect_s3_class(out, "data.frame")
 })

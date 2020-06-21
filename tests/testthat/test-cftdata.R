@@ -18,35 +18,46 @@ test_that("Providing a shapefile but no area name raises an error", {
                regexp = "Please provide the name you would like to use")
 })
 
-test_that("A full run of cftdata completes and saves an expected file", {
-  local_dir <- "."
-  file_refs <- cftdata(park = "Acadia National Park",
-                       years = c(2004, 2005),
-                       models = "bcc-csm1-1",
-                       parameters = "pr",
-                       scenarios = "rcp45",
-                       local_dir = local_dir, 
-                       ncores = 2)
+test_that("A full run of cftdata with maca completes and saves an expected file", {
+  project_dir <- "./cft_test"
+  park = "Acadia National Park"
+  years = c(2004, 2005)
+  models = "bcc-csm1-1"
+  parameters = "pr"
+  scenarios = "rcp45"
+  project_dir = project_dir
+  ncores = 2
+  dataset = "maca"
 
+  file_refs <- cftdata(park = park,
+                       years = year,
+                       models = models,
+                       parameters = parameters,
+                       scenarios = scenarios,
+                       project_dir = project_dir, 
+                       ncores = ncores)
+  
+  
+  
   expected_file <- paste0("pr_acadia_national_park_bcc-csm1-1_r1i1p1_rcp45_",
                           "macav2metdata_2004_2005_daily.nc")
-  expected_path <- file.path(local_dir, "acadia_national_park", expected_file)
+  expected_path <- file.path(project_dir, "acadia_national_park", expected_file)
 
   expect_true(file.exists(expected_path))
 })
 
 test_that("A cftdata run on a one pixel park completes successfully", {
-  local_dir <- "."
+  project_dir <- "."
   file_refs <- cftdata(park = "Wolf Trap National Park for the Performing Arts",
                        years = c(2004, 2005),
                        models = "bcc-csm1-1",
                        parameters = "pr",
                        scenarios = "rcp45",
-                       local_dir = local_dir, 
+                       project_dir = project_dir, 
                        ncores = 2)
   expected_file <- paste0("pr_wolf_trap_national_park_for_the_performing_arts_",
                           "bcc-csm1-1_r1i1p1_rcp45_macav2metdata_2004_2005_daily.nc")
-  expected_path <- file.path(local_dir, "wolf_trap_national_park_for_the_performing_arts",
+  expected_path <- file.path(project_dir, "wolf_trap_national_park_for_the_performing_arts",
                              expected_file)
   
   expect_true(file.exists(expected_path))

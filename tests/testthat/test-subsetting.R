@@ -1,5 +1,5 @@
 # Let's not download the same file everytime
-local_dir <- "."
+project_dir <- "."
 
 test_that("Test that filter years returns correct start and end days", {
   days <- filter_years(start_year = 1977, end_year = 1981,
@@ -25,7 +25,7 @@ test_that("Test that incorrect inputs in 'filter_years' returns errors", {
 
 test_that("Test that 'get_aoi_indexes' returns correct spatial indices", {
   area_name <- "Acadia National Park"
-  aoi <- get_park_boundaries(area_name, local_dir = local_dir)
+  aoi <- get_park_boundaries(area_name, project_dir = project_dir)
   grid_ref <- Grid_Reference()
   indices <- get_aoi_indexes(aoi, grid_ref)
 
@@ -40,7 +40,7 @@ test_that("Test that 'get_queries' returns expected paths", {
 
   # Sample arguments
   area_name <- "Acadia National Park"
-  aoi <- get_park_boundaries(area_name, local_dir = local_dir)
+  aoi <- get_park_boundaries(area_name, project_dir = project_dir)
   area_name <- gsub(" ", "_", tolower(area_name))
   years <- c(2000, 2001)
   models <- "bcc-csm1-1"
@@ -78,7 +78,7 @@ test_that("Test that 'get_queries' returns expected paths", {
 
 test_that("Test get_aoi_info", {
   grid_ref <- Grid_Reference()
-  aoi <- get_park_boundaries("Acadia National Park", local_dir = local_dir)
+  aoi <- get_park_boundaries("Acadia National Park", project_dir = project_dir)
 
   aoi_info <- get_aoi_info(aoi, grid_ref)
   testthat::expect_named(aoi_info, 
@@ -105,11 +105,11 @@ test_that("Test retrieve_subset", {
   query <- list(c(url1, url2), filename, elements)
   years <- c(2000, 2001)
   grid_ref <- Grid_Reference()
-  aoi <- get_park_boundaries("Acadia National Park", local_dir = local_dir)
+  aoi <- get_park_boundaries("Acadia National Park", project_dir = project_dir)
   aoi_info <- get_aoi_info(aoi, grid_ref)
 
   subset <- retrieve_subset(query, years, aoi_info, area_name, 
-                            local_dir = local_dir)
+                            project_dir = project_dir)
 
   expect_true(file.exists(subset$local_path))
   expect_true(grepl("\\.nc$", subset$local_file))
