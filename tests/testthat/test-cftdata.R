@@ -19,7 +19,7 @@ test_that("Providing a shapefile but no area name raises an error", {
 })
 
 test_that("A full run of cftdata with maca completes and saves an expected file", {
-  project_dir <- "./cft_test"
+  project_dir <- "."
   park = "Acadia National Park"
   years = c(2004, 2005)
   models = "bcc-csm1-1"
@@ -28,17 +28,17 @@ test_that("A full run of cftdata with maca completes and saves an expected file"
   project_dir = project_dir
   ncores = 2
   dataset = "maca"
+  verbose = TRUE
 
   file_refs <- cftdata(park = park,
-                       years = year,
+                       years = years,
                        models = models,
                        parameters = parameters,
                        scenarios = scenarios,
                        project_dir = project_dir, 
-                       ncores = ncores)
-  
-  
-  
+                       ncores = ncores,
+                       verbose = TRUE)
+
   expected_file <- paste0("pr_acadia_national_park_bcc-csm1-1_r1i1p1_rcp45_",
                           "macav2metdata_2004_2005_daily.nc")
   expected_path <- file.path(project_dir, "acadia_national_park", expected_file)

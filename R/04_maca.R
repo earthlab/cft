@@ -59,6 +59,7 @@ Maca <- R6::R6Class(
 
       # Reformat the area name
       area_name <- gsub(" ", "_", tolower(area_name))
+      self$area_name = area_name
 
       # Reset the directory to a subdirectory for the area of interest
       area_dir <- file.path(self$project_dir, area_name)
@@ -66,50 +67,82 @@ Maca <- R6::R6Class(
       area_dir = normalizePath(area_dir)
       self$area_dir = area_dir
 
+      # Get the area of intereset shapefile object
+      print("Retrieving area of interest boundaries...")
+      aoi <- get_aoi(park, shp_path, area_name, self$project_dir)
+
+      # Match coordinate systems
+      aoi <- sp::spTransform(aoi, self$grid_ref$crs)
+
       # Check if this raster has been saved yet
       raster_dir = file.path(self$project_dir, "rasters")
       raster_path = file.path(raster_dir, paste0(area_name, ".tif"))
       if ( !file.exists(raster_path) ) {
-        
-        # Get the area raster object
-        if ( self$verbose ) print("Retrieving area of interest boundaries...")
-        aoi <- get_aoi(park, shp_path, area_name, self$project_dir)
-
-        # Match coordinate systems
-        aoi <- sp::spTransform(aoi, self$grid_ref$crs)
-
-        # Get geographic information about the aoi
-        if ( self$verbose ) print("Building area of interest grid...")
-        aoi_info <- get_aoi_info(aoi, self$project_dir, area_name, self$grid_ref)
-
-        # Assign as attributes
-        self$aoi <- aoi
-        self$aoi_info <- aoi_info
+          if ( self$verbose ) {
+            print("Building area of interest grid...")
+          }
       }
+
+      # Get geographic information about the aoi
+      aoi_info <- get_aoi_info(aoi, self$project_dir, area_name, self$grid_ref)
+
+      # Assign as attributes
+      self$aoi <- aoi
+      self$aoi_info <- aoi_info
     },
 
     # For executing the request
     get_subset = function(years, models, parameters, scenarios) {
-       private$set_queries(years, models, parameters, scenarios)
-       print("Queries are set ...")
+
+      # Getting the queries list
+      queries <- private$get_queries(years, models, parameters, scenarios)
+
+      # Setup parallelization
+      pbapply::pboptions(use_lb = TRUE)
+      cl <- parallel::makeCluster(ncores)
+      on.exit(parallel::stopCluster(cl))
+      parallel::clusterExport(cl, c("retrieve_subset", "filter_years"),
+                              envir = environment())
+
+      # If all that works, signal that the process is starting
+      if (verbose) {
+        print(paste("Retrieving climate data for", self$area_name))
+        print(paste("Saving local files to", self$area_dir))
+      }
+
+      # Retrieve, subset, and write the files
+      refs <- pbapply::pblapply(queries,
+                                FUN = retrieve_subset,
+                                years = years,
+                                aoi_info = self$aoi_info,
+                                area_name = self$area_name,
+                                area_dir = self$area_dir,
+                                cl = cl)
+
+      # Create a data frame from the file references
+      file_references <- data.frame(do.call(rbind, refs), stringsAsFactors = FALSE)
+      file_references <- tibble::as_tibble(lapply(file_references, unlist))
+      file_references$parameter_long <- unlist(lapply(
+        file_references$parameter, 
+        FUN = function(x) self$arg_ref$variables[x]
+      ))
+
+      # Set file_references as an attribute
+      self$file_references <- file_references
     }
   ),
 
   private = list(
 
     # For building the queries
-    set_queries = function(years, models, parameters, scenarios) {
-      aoi = self$aoi
-      area_name = self$area_name
-      arg_ref = self$arg_ref
-      grid_ref = self$grid_ref
-      private$queries = get_queries(aoi, area_name, years, models, parameters,
-                                    scenarios, arg_ref, grid_ref)
-    },
-
-    # For subsetting the datset
-    subset = function() {
-      print("Working on it ...")
+    get_queries = function(years, models, parameters, scenarios) {
+      aoi <- self$aoi
+      area_name <- self$area_name
+      arg_ref <- self$arg_ref
+      grid_ref <- self$grid_ref
+      queries <- get_queries(aoi, area_name, years, models, parameters,
+                             scenarios, arg_ref, grid_ref)
+      return(queries)
     }
   ),
 
@@ -139,7 +172,7 @@ Maca <- R6::R6Class(
 
     # Check available AOIs
     existing_aois = function() {
-  
+
       # The raster directory is set here
       raster_dir <- file.path(self$project_dir, "rasters")
       if ( dir.exists(raster_dir) ) {

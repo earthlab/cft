@@ -203,13 +203,13 @@ get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
       }
     }
   }
-  
+
   # Done.
   return(queries)
 }
 
 
-retrieve_subset <- function(query, years, aoi_info, area_name, project_dir) {
+retrieve_subset <- function(query, years, aoi_info, area_name, area_dir) {
 
   # Load python dependencies
   reticulate::use_condaenv('cft', required = TRUE) 
@@ -226,10 +226,10 @@ retrieve_subset <- function(query, years, aoi_info, area_name, project_dir) {
   mask_matrix <- aoi_info[["mask_matrix"]]
   resolution <- aoi_info[["resolution"]]
 
-  dir.create(project_dir, recursive = TRUE, showWarnings = FALSE)
+  dir.create(area_dir, recursive = TRUE, showWarnings = FALSE)
   file_name <- query[[2]]
   store_name <- query[[2]]
-  destination_file <- file.path(project_dir, file_name)
+  destination_file <- file.path(area_dir, file_name)
 
   # Get data set attributes
   elements <- query[[3]]
@@ -357,7 +357,7 @@ retrieve_subset <- function(query, years, aoi_info, area_name, project_dir) {
   }
 
   # Keep track of file information
-  file_dir <- normalizePath(project_dir)
+  file_dir <- normalizePath(area_dir)
   file_name <- basename(destination_file)
   file_path <- file.path(file_dir, file_name)
   reference <- c(list("local_file" = file_name, "local_path" = file_path), 

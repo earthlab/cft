@@ -26,7 +26,7 @@ test_that("Test that incorrect inputs in 'filter_years' returns errors", {
 test_that("Test that 'get_aoi_indexes' returns correct spatial indices", {
   area_name <- "Acadia National Park"
   aoi <- get_park_boundaries(area_name, project_dir = project_dir)
-  grid_ref <- Grid_Reference()
+  grid_ref <- get_reference("grid")
   indices <- get_aoi_indexes(aoi, grid_ref)
 
   # There is a slight possibility that the park boundary extent will change
@@ -46,8 +46,8 @@ test_that("Test that 'get_queries' returns expected paths", {
   models <- "bcc-csm1-1"
   parameters <- "pr"
   scenarios <-"rcp45"
-  arg_ref <- Argument_Reference()
-  grid_ref <- Grid_Reference()
+  arg_ref <- get_reference("maca")
+  grid_ref <- get_reference("grid")
 
   # Get a query object
   queries <- get_queries(aoi, area_name, years, models, parameters,
@@ -77,10 +77,11 @@ test_that("Test that 'get_queries' returns expected paths", {
 })
 
 test_that("Test get_aoi_info", {
-  grid_ref <- Grid_Reference()
+  area_name <- "Acadia National Park"
+  area_name <- gsub(" ", "_", tolower(area_name))
+  grid_ref <- get_reference("grid")
   aoi <- get_park_boundaries("Acadia National Park", project_dir = project_dir)
-
-  aoi_info <- get_aoi_info(aoi, grid_ref)
+  aoi_info <- get_aoi_info(aoi, project_dir, area_name, grid_ref)
   testthat::expect_named(aoi_info, 
                          c("aoilats", "aoilons", "mask_matrix", "resolution"))
 })
@@ -104,13 +105,11 @@ test_that("Test retrieve_subset", {
                 "year1" = 2000, "year2" = 2001, internal_varname = "precipitation")
   query <- list(c(url1, url2), filename, elements)
   years <- c(2000, 2001)
-  grid_ref <- Grid_Reference()
+  grid_ref <- get_reference("grid")
   aoi <- get_park_boundaries("Acadia National Park", project_dir = project_dir)
-  aoi_info <- get_aoi_info(aoi, grid_ref)
-
+  aoi_info <- get_aoi_info(aoi, project_dir, area_name, grid_ref)
   subset <- retrieve_subset(query, years, aoi_info, area_name, 
-                            project_dir = project_dir)
-
+                            area_dir = project_dir)
   expect_true(file.exists(subset$local_path))
   expect_true(grepl("\\.nc$", subset$local_file))
 })

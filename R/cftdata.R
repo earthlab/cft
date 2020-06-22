@@ -74,7 +74,7 @@ cftdata <- function(shp_path,
                  "a national park (e.g., 'Yosemite National Park').")
     stop(msg)
   }
-  
+
   # Make sure user is not providing too much location information
   if (!missing(shp_path) & !missing(park)) {
     msg <- paste("Both a shapefile and a national park were provided.",
@@ -82,7 +82,7 @@ cftdata <- function(shp_path,
                  "a national park ('Name National Park'), but not both.")
     stop(msg)
   }
-  
+
   # If a shapefile path is provided, make sure it comes with an area name
   if (!missing(shp_path) & missing(area_name)) {
     msg <- paste("Please provide the name you would like to use to reference",
@@ -99,6 +99,7 @@ cftdata <- function(shp_path,
   if (missing(park)) {
     park <- NA
   }
+
   # Retrieve and initialize a dataset generator object
   DATASETS = list("maca" = Maca)
   ds <- DATASETS[[dataset]]$new(project_dir, verbose = verbose)
@@ -109,47 +110,7 @@ cftdata <- function(shp_path,
   # And run the thing
   ds$get_subset(years, models, parameters, scenarios)
 
+  # Return file reference
+  return(ds$file_references)
   
-  
-
-  # # Build url queries, filenames, and dataset elements
-  # queries <- get_queries(aoi, area_name, years, models, parameters, scenarios,
-  #                        arg_ref, grid_ref)
-
-  # # Setup parallelization
-  # pbapply::pboptions(use_lb = TRUE)
-  # cl <- parallel::makeCluster(ncores)
-  # on.exit(parallel::stopCluster(cl))
-  # parallel::clusterExport(cl, c("retrieve_subset", "filter_years"),
-  #                         envir = environment())
-  #
-  # # If all that works, signal that the process is starting
-  # if (verbose) {
-  #   print(paste("Retrieving climate data for", area_name))
-  #   print(paste("Saving local files to", location_dir))
-  # }
-  #
-  # # Retrieve subsets from grouped queries and create file reference data frame
-  # file_references <- data.frame("local_file" = character(0),
-  #                               "local_path" = character(0),
-  #                               stringsAsFactors = FALSE)
-  #
-  # # Retrieve, subset, and write the files
-  # refs <- pbapply::pblapply(queries,
-  #                           FUN = retrieve_subset,
-  #                           years = years,
-  #                           aoi_info = aoi_info,
-  #                           area_name = area_name,
-  #                           project_dir = location_dir,
-  #                           cl = cl)
-  #
-  # # Create a data frame from the file references
-  # file_references <- data.frame(do.call(rbind, refs), stringsAsFactors = FALSE)
-  #
-  # file_references <- tibble::as_tibble(lapply(file_references, unlist))
-  # file_references$parameter_long <- unlist(lapply(
-  #   file_references$parameter,
-  #   FUN = function(x) maca_reference$variables[x]
-  # ))
-  # return(file_references)
 }

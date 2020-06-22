@@ -13,7 +13,7 @@ cftdata(
   parameters = maca_reference$parameters,
   scenarios = maca_reference$scenarios,
   years = c(1950, 2099),
-  local_dir = tempdir(),
+  project_dir = tempdir(),
   verbose = TRUE,
   ncores = 1
 )
@@ -48,7 +48,7 @@ available of rcps is available under cft::maca_reference$scenarios.
 
 \item{years}{The first and last years of the desired period. (vector)}
 
-\item{local_dir}{The local directory in which to save files. By default,
+\item{project_dir}{The local directory in which to save files. By default,
 files are saved in a temporary directory (as per CRAN guidelines), and are
 lost after your R session ends. Specify a path to a local directory with
 this argument to retain files and avoid duplicate downloads
