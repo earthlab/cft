@@ -14,3 +14,5 @@ RUN wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -
 RUN R -e "devtools::install_github('earthlab/cft')"
 
 RUN R -e "cft::install_py_deps(method='conda', python_version = 3)"
+
+RUN install2.r ggrepel
