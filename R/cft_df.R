@@ -14,7 +14,7 @@
 #'                     years = c(2020, 2021), 
 #'                     models = "CCSM4", 
 #'                     scenarios = "rcp85")
-#' df <- cft_df(file_ref, cores = parallel::detectCores())
+#' df <- cft_df(file_ref, ncores = parallel::detectCores())
 #' }
 #' 
 #' @importFrom magrittr %>%
