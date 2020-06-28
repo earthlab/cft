@@ -23,10 +23,10 @@ compare_periods(
 \item{agg_fun}{The aggregating function to applied to the model variables
 (e.g., "mean"). (character)}
 
-\item{var1}{The x-axis variable, see cft::maca_reference
+\item{var1}{The x-axis variable.
 (e.g., "pr"). (character).}
 
-\item{var2}{The y-axis variable, see cft::maca_reference
+\item{var2}{The y-axis variable.
 (e.g., "tasmax").  character)}
 
 \item{months1}{The months of the year with which to include in the

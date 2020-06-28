@@ -1,6 +1,5 @@
-
 test_that("cft_df generates a tibble", {
-  local_dir <- "."
+  project_dir <- "."
   dataset = "maca"
   file_refs <- cftdata(park = "Acadia National Park",
                        years = c(2004, 2005),

@@ -14,6 +14,6 @@ test_that("Maca data generator class works :)", {
   maca <- Maca$new(project_dir)
 
   # Set/Get the Area of Interest
-  maca$set_aoi(park, area_name = "acadia_national_park")
+  maca$set_aoi(shp_path, park, area_name = "acadia_national_park")
 
 })

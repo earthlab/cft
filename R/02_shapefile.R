@@ -4,21 +4,22 @@ get_aoi <- function(park, shp_path, area_name, project_dir) {
   if ( !is.na(park) ) {
     aoi <- get_park_boundaries(park, project_dir)
   } else {
-    aoi <- get_shapefile(shp_path, project_dir) 
+    aoi <- get_shapefile(shp_path, area_name, project_dir) 
   }
   return(aoi)
 }
 
-get_shapefile <- function(shp_path, shp_name = NA, project_dir = tempdir()) {
+get_shapefile <- function(shp_path, area_name = NA, project_dir = tempdir()) {
 
-  if (is.na(shp_name)) shp_name <- tools::file_path_sans_ext(basename(shp_path))
+  if (is.na(area_name)) area_name <- tools::file_path_sans_ext(basename(shp_path))
+  project_dir = normalizePath(project_dir)
 
   # Check if this is a url or local path
   if ( grepl("www.|http:|https:", shp_path) ) {
   
     # Create a local path within chosen local directory for this shapefile
-    project_dir <- file.path(project_dir, "shapefiles")
-    shp_folder <- file.path(project_dir, shp_name)
+    shp_dir <- file.path(project_dir, "shapefiles")
+    shp_folder <- file.path(shp_dir, area_name)
     if ( !httr::http_error(shp_path) ) {
       expected_file <- list.files(shp_folder, full.names = TRUE, 
                                   pattern = "\\.shp$")
@@ -34,6 +35,7 @@ get_shapefile <- function(shp_path, shp_name = NA, project_dir = tempdir()) {
 
       # Now get whatever the shapefile is path from the folder
       path <- list.files(shp_folder, pattern = "\\.shp$", full.names = TRUE)
+      print(path)
     }
   } else {
   
@@ -92,7 +94,7 @@ get_park_boundaries <- function(parkname, project_dir = tempdir()) {
   
   # Get the National Park Boundary
   parks <- get_shapefile(shp_path = shp_path,
-                         shp_name = "nps_boundary",
+                         area_name = "nps_boundary",
                          project_dir = project_dir)
 
   

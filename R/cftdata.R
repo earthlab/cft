@@ -1,10 +1,10 @@
 #' Climate Futures Toolbox Data
 #'
-#' Retrieves subsetted data of climate future scenarios within National
-#' Parks or shapefiles in the Contiguous United States. This data is downscaled
-#' using the Multivariate Adaptive Constructed Analogs (MACA) technique.
+#' Retrieves subsetts of historical or projected climate datsets.
+#' Available datasets include a Multivariate Adaptive Constructed Analogs (MACA)
+#' dataset and the Gridded Surface Meteorological Dataset (gridMET).
 #'
-#' This package retrieves daily gridded data sets of General Circulation Model
+#' This package retrieves daily gridded data sets of General Circulation Model  # We need to rephrase this
 #' (GCM) runs clipped to areas of interest and returns a data frame of the
 #' file names and they're storage paths. Each of these data sets represent
 #' a single GCM, climate variable and Representative Concentration Pathway (RCP)
@@ -24,30 +24,37 @@
 #'  Park", "Yellowstone Park", "Yellowstone", "yellowstone", etc.). The user may
 #'  use this option in place of a shapefile path. In this case, leave the
 #'  shp_path argument empty or set to NA. (character)
-#' @param models A list of global circulation models to download. If left empty
-#' all available models will be downloaded. A list of available of models is
-#' available under cft::maca_reference$models. (vector)
+#' @param dataset The name of the data source from which to retrieve data. Defaults
+#' to "maca". (character)
+#'  \itemize{
+#'    \item "maca" = Multivariate Adaptive Constructed Analogs
+#'    \item "gridmet" = Gridded Surface Meteorological Dataset
+#'  }
+#' @param models A list of global circulation models to download. Only available
+#'  for GCMs. If left empty all available models will be downloaded. A list of
+#'  currently available models is available under cft::get_reference("maca")$models.
+#'  (vector)
 #' @param parameters A list of climate parameters to download. If left empty
-#' all available parameters will be downloaded. A list of available of models is
-#' available under cft::maca_reference$parameters. (vector)
+#'  all available parameters will be downloaded. A list of available of models is
+#'  available under cft::get_reference(<dataset>)$parameters. (vector)
 #' @param scenarios A list of representative concentration pathways (rcps) to
-#' download. If left empty all available rcps will be downloaded. A list of
-#' available of rcps is available under cft::maca_reference$scenarios.
-#' (vector)
+#'  download. If left empty all available rcps will be downloaded. A list of
+#'  available of rcps is available under cft::get_reference(<dataset>)$scenarios.
+#'  (vector)
 #' @param years The first and last years of the desired period. (vector)
 #' @param project_dir The local directory in which to save files. By default,
-#' files are saved in a temporary directory (as per CRAN guidelines), and are
-#' lost after your R session ends. Specify a path to a local directory with
-#' this argument to retain files and avoid duplicate downloads
-#' in subsequent R sessions.  (character)
+#'  files are saved in a temporary directory (as per CRAN guidelines), and are
+#'  lost after your R session ends. Specify a path to a local directory with
+#'  this argument to retain files and avoid duplicate downloads
+#'  in subsequent R sessions.  (character)
 #' @param verbose Print verbose output. (logical)
 #' @param ncores The number of cpus to use, which defaults to 1. (numeric)
 #'
 #' @return A tibble containing information about climate data files.
 #'
 #' @examples
-#' \dontrun{
-#' d <- cftdata(park = "Acadia National Park", parameters = "pr",
+#' \donttest{
+#' d <- cftdata(park = "Acadia National Park", parameters = "pr", dataset = "maca",
 #'              years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85",
 #'              ncores = parallel::detectCores())
 #' }
@@ -59,9 +66,9 @@ cftdata <- function(shp_path,
                     area_name,
                     park,
                     dataset = "maca",
-                    models = maca_reference$models,
-                    parameters = maca_reference$parameters,
-                    scenarios = maca_reference$scenarios,
+                    models = get_reference("maca")$models,
+                    parameters = get_reference("maca")$parameters,
+                    scenarios = get_reference("maca")$scenarios,
                     years = c(1950, 2099),
                     project_dir = tempdir(),
                     verbose = TRUE,
@@ -105,10 +112,10 @@ cftdata <- function(shp_path,
   ds <- DATASETS[[dataset]]$new(project_dir, verbose = verbose)
 
   # Set the area of interest information
-  ds$set_aoi(park, shp_path, area_name)
+  ds$set_aoi(shp_path, area_name, park)
 
   # And run the thing
-  ds$get_subset(years, models, parameters, scenarios)
+  ds$get_subset(models, parameters, scenarios, years, ncores)
 
   # Return file reference
   return(ds$file_references)

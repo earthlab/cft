@@ -5,7 +5,9 @@ CATALOG_URL = paste0("http://thredds.northwestknowledge.net:8080/thredds/",
                      "reacch_climate_CMIP5_macav2_catalog2.html")
 
 
-#' @export
+#' @title MACA Subset generator
+#'
+#' @description An R6 class data subset generator for the MACA dataset.
 Maca <- R6::R6Class(
 
   classname = "Maca",
@@ -13,17 +15,27 @@ Maca <- R6::R6Class(
   portable = TRUE,
   public = list(
 
-    # MACA Specific OpenDAP and catalog URLs
+    #' @field base_url Base URL for data queries.
     base_url = BASE_URL,
+
+    #' @field catalog_url URL to catalog of all available full.
     catalog_url = CATALOG_URL,
 
-    # Referenceobjects
+    #' @field arg_ref Argument options and parameter attributes.
     arg_ref = get_reference("maca"),
+
+    #' @field grid_ref Grid attributes.
     grid_ref = get_reference("grid"),
 
-    # Initalize arguments
+    #' @field project_dir The local directory in which to save files.
     project_dir = NULL,
+
+    #' @field verbose Print verbose output.
     verbose = NULL,
+
+    #' @description Initialize Maca Object
+    #' @param project_dir The local directory in which to save files. (character)
+    #' @param verbose Print verbose output. (logical)
     initialize = function(project_dir = ".", verbose = FALSE) {
 
       # Create and store project directory path
@@ -38,8 +50,10 @@ Maca <- R6::R6Class(
       }
     },
 
-    # This is like __repr__
+    #' @description Print Maca attributes
+    #' @param ... Arguments
     print = function(...) {
+
       # Print high level paths
       cat(class(self)[[1]], "Data Generator Class \n")
       cat("  OpenDAP URL: ", self$base_url, "\n", sep = "")
@@ -54,8 +68,19 @@ Maca <- R6::R6Class(
       invisible(self)
     },
 
-    # For building the AOI
-    set_aoi = function(park, shp_path, area_name) {
+    #' @description Set the area of interest for the next query.
+    #' @param shp_path A path to a shapefile with which to clip the resulting data
+    #'  sets. This path may be to a local .shp file or a url to a zipped remote
+    #'  file. If this option is used, leave the `park` argument empty or set
+    #'  to NA. (character)
+    #' @param area_name If a shapefile path is used, provide a name to use as a
+    #'  reference to the location. This will be used in file names, attributes, and
+    #'  directories. (character)'
+    #' @param park The name of a national park (e.g., "Yellowstone National
+    #'  Park", "Yellowstone Park", "Yellowstone", "yellowstone", etc.). The user may
+    #'  use this option in place of a shapefile path. In this case, leave the
+    #'  shp_path argument empty or set to NA. (character)
+    set_aoi = function(shp_path, area_name, park) {
 
       # Reformat the area name
       area_name <- gsub(" ", "_", tolower(area_name))
@@ -91,10 +116,23 @@ Maca <- R6::R6Class(
       self$aoi_info <- aoi_info
     },
 
-    # For executing the request
-    get_subset = function(years, models, parameters, scenarios) {
+    #' @description Retrieve subset of MACA data with currently set parameters.
+    #' @param models A list of global circulation models to download. Only available
+    #'  for GCMs. If left empty all available models will be downloaded. A list of
+    #'  currently available models is available under cft::get_reference("maca")$models.
+    #'  (vector)
+    #' @param parameters A list of climate parameters to download. If left empty
+    #'  all available parameters will be downloaded. A list of available of models is
+    #'  available under cft::get_reference(<dataset>)$parameters. (vector)
+    #' @param scenarios A list of representative concentration pathways (rcps) to
+    #'  download. If left empty all available rcps will be downloaded. A list of
+    #'  available of rcps is available under cft::get_reference(<dataset>)$scenarios.
+    #'  (vector)
+    #' @param ncores The number of cpus to use, which defaults to 1. (numeric)
+    #' @param years The first and last years of the desired period. (vector)
+    get_subset = function(models, parameters, scenarios, years, ncores = 1) {
 
-      # Getting the queries list
+      # Getting the queries list (private to avoid mismatches)
       queries <- private$get_queries(years, models, parameters, scenarios)
 
       # Setup parallelization
@@ -105,7 +143,7 @@ Maca <- R6::R6Class(
                               envir = environment())
 
       # If all that works, signal that the process is starting
-      if (verbose) {
+      if (self$verbose) {
         print(paste("Retrieving climate data for", self$area_name))
         print(paste("Saving local files to", self$area_dir))
       }
@@ -148,7 +186,8 @@ Maca <- R6::R6Class(
 
   active = list(
 
-    # Check access to server
+    #' @field server_open
+    #'  Check access to server.
     server_open = function() {
 
       # Load python dependency
@@ -161,7 +200,7 @@ Maca <- R6::R6Class(
                           "vpd_BNU-ESM_r1i1p1_rcp85_2096_2099_CONUS_daily.nc",
                           "#fillmismatch")
 
-      # Try to open a remote file from base url (what would the exception be?)
+      # Try to open a remote file from base url.
       tryCatch({
         xr$open_dataset(sample_url)
         return(TRUE)
@@ -170,7 +209,8 @@ Maca <- R6::R6Class(
       })
     },
 
-    # Check available AOIs
+    #' @field existing_aois
+    #'  Check previously downloaded AOI rasters in currently set project directory.
     existing_aois = function() {
 
       # The raster directory is set here
@@ -183,7 +223,8 @@ Maca <- R6::R6Class(
       return(existing_aois)
     },
 
-    # Check existing climate files for the currently set aoi  ( will break before aoi is set)
+    #' @field project_contents
+    #'  Check existing climate files for the currently set aoi.
     project_contents = function() {
         existing_dirs = list.dirs(self$project_dir)
         existing_files = list.files(self$project_dir, recursive = TRUE)

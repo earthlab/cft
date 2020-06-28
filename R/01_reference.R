@@ -133,13 +133,23 @@ Maca_Reference <- methods::setRefClass(
   )
 )
 
-
-
 references <- list(
   "maca" = Maca_Reference()$initFields(),
   "grid" = Grid_Reference()$initFields()
 )
 
+#' Get Climate Futures Toolbox Argument Reference object.
+#' 
+#' Retrieve a cftdata argument reference object for a given dataset.
+#' @param dataset The name of the data source from which to retrieve options for
+#'  cftdata. Defaults to "maca". (character)
+#'  \itemize{
+#'    \item "maca" = Multivariate Adaptive Constructed Analogs
+#'    \item "gridmet" = Gridded Surface Meteorological Dataset
+#'  }
+
+#' @return A reference class object containing argument options of parameter
+#'  attributes for the chosen dataset.
 #' @export
 get_reference <- function(dataset) {
  return(references[[dataset]])
