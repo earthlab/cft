@@ -135,6 +135,7 @@ Maca_Reference <- methods::setRefClass(
 
 references <- list(
   "maca" = Maca_Reference()$initFields(),
+  "gridmet" = GridMet_Reference()$initFields(),
   "grid" = Grid_Reference()$initFields()
 )
 
@@ -146,6 +147,7 @@ references <- list(
 #'  \itemize{
 #'    \item "maca" = Multivariate Adaptive Constructed Analogs
 #'    \item "gridmet" = Gridded Surface Meteorological Dataset
+#'    \item "grid" = Shared grid attributes
 #'  }
 
 #' @return A reference class object containing argument options of parameter

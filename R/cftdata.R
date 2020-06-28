@@ -1,6 +1,6 @@
 #' Climate Futures Toolbox Data
 #'
-#' Retrieves subsetts of historical or projected climate datsets.
+#' Retrieves subsets of historical or projected climate datsets.
 #' Available datasets include a Multivariate Adaptive Constructed Analogs (MACA)
 #' dataset and the Gridded Surface Meteorological Dataset (gridMET).
 #'
