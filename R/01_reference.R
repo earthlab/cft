@@ -113,6 +113,7 @@ Maca_Reference <- methods::setRefClass(
       variables <<- variables
       labels <<- labels
       units <<- units
+      time_dim <<- 
     },
     
     get_args = function(model) {
@@ -132,6 +133,85 @@ Maca_Reference <- methods::setRefClass(
     }
   )
 )
+
+GridMet_Reference <- methods::setRefClass(
+  "GridMET_Reference",
+  
+  fields = list(
+    parameters = "character",
+    variables = "list",
+    labels = "list",
+    units = "list",
+    time_dim = "character"
+  ),
+  
+  methods = list(
+    initialize = function(
+      parameters = c("pr", "rmax", "rmin", "sph", "srad", "th", "tmmn", "tmmx", "vs","bi",
+                     "fm100", "fm1000", "erc", "pdsi", "etr", "pet", "vpd"),
+      variables = list("pr" = "precipitation_amount",
+                       "rmax" = "relative_humidity",
+                       "rmin" = "relative_humidity",
+                       "sph" = "specific_humidity",
+                       "srad" = "surface_downwelling_shortwave_flux_in_air",
+                       "th" = "wind_from_direction",
+                       "tmmn" = "air_temperature",
+                       "tmmx" = "air_temperature",
+                       "vs" = "wind_speed",
+                       "bi" = "burning_index_g",
+                       "fm100" = "dead_fuel_moisture_100hr",
+                       "fm1000" = "dead_fuel_moisture_1000hr",
+                       "erc" = "energy_release_component-g",
+                       "pdsi" = "palmer_drought_severity_index",
+                       "etr" = "potential_evapotranspiration",
+                       "pet" = "potential_evapotranspiration",
+                       "vpd" = "mean_vapor_pressure_deficit"),
+      labels = list("pr" = "Daily Accumulated Precipitation",
+                    "rmax" = "Daily Maximum Relative Humidity",
+                    "rmin" = "Daily Minimum Relative Humidity",
+                    "sph" = "Daily Mean Specific Humidity",
+                    "srad" = "Daily Mean Downward Shortwave Radiation At Surface",
+                    "th" = "Daily Mean Wind Direction",
+                    "tmmn" = "Daily Minimum Temperature",
+                    "tmmx" = "Daily Maximum Temperature",
+                    "vs" = "Daily Mean Wind Speed",
+                    "bi" = "Burning Index",
+                    "fm100" = "100 Hour Fuel Moisture",
+                    "fm1000" = "1000 Hour Fuel Moisture",
+                    "erc" = "Energy Release Component",
+                    "pdsi" = "Palmer Drought Severity Index",
+                    "etr" = "Daily Reference Evapotranspiration (alfalfa)",
+                    "pet" = "Daily Reference Evapotranspiration (short Grass)",
+                    "vpd" = "Mean Vapor Presure Deficit"),
+      units = list("pr" = "mm",
+                   "rmax" = "%",
+                   "rmin" = "%",
+                   "sph" = "kg/kg",
+                   "srad" = "W m-2",
+                   "th" = "Degrees Clockwise from north",
+                   "tmmn" = "K",
+                   "tmmx" = "K",
+                   "vs" = "m/s",
+                   "bi" = "Unitless",
+                   "fm100" = "Percent",
+                   "fm1000" = "Percent",
+                   "erc" = "Unitless",
+                   "pdsi" = "unitless",
+                   "etr" = "mm",
+                   "pet" = "mm",
+                   "vpd" = "kPa",
+                   "time" = "days since 1900-01-01"),
+      time_dim = "day"
+    ) {
+      parameters <<- parameters
+      variables <<- variables
+      labels <<- labels
+      units <<- units
+      time_dim <<- time_dim
+    }
+  )
+)
+
 
 references <- list(
   "maca" = Maca_Reference()$initFields(),

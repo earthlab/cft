@@ -4,10 +4,8 @@ test_that("GridMet data generator class works :)", {
   # Arguments
   park <- "Acadia National Park"
   years <- c(2004, 2005)
-  models <- "bcc-csm1-1"
   parameters <- "pr"
-  scenarios <- "rcp45"
-  project_dir <- "."
+  project_dir <- "test_project"
   ncores <- 2
 
   # Initiate an object
@@ -15,5 +13,8 @@ test_that("GridMet data generator class works :)", {
 
   # Set/Get the Area of Interest
   gridmet$set_aoi(shp_path, park, area_name = "acadia_national_park")
+
+  # Get the subset
+  file_refs <- gridmet$get_subset(parameters = parameters, years = years, ncores = ncores) 
 
 })

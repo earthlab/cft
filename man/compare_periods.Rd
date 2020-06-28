@@ -23,17 +23,15 @@ compare_periods(
 \item{agg_fun}{The aggregating function to applied to the model variables
 (e.g., "mean"). (character)}
 
-\item{var1}{The x-axis variable.
-(e.g., "pr"). (character).}
+\item{var1}{The x-axis variable. (e.g., "pr"). (character).}
 
-\item{var2}{The y-axis variable.
-(e.g., "tasmax").  character)}
+\item{var2}{The y-axis variable. (e.g., "tasmax"). (character)}
 
 \item{months1}{The months of the year with which to include in the
-aggregation of variable 1 (e.g., 5:7 for May, June, and July. (int vector)}
+aggregation of variable 1 (e.g., 5:7 for May, June, and July). (int vector)}
 
 \item{months2}{The months of the year with which to include in the
-aggregation of variable 2 (e.g., 5:7 for May, June, and July. (int vector)}
+aggregation of variable 2 (e.g., 5:7 for May, June, and July). (int vector)}
 
 \item{target_period}{The time period within which to apply the aggreating
 value function (e.g., c(2050, 2075)). (vector)}

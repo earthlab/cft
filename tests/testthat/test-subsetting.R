@@ -1,5 +1,5 @@
 # Let's not download the same file everytime
-project_dir <- "."
+project_dir <- "test_project"
 
 test_that("Test that filter years returns correct start and end days", {
   days <- filter_years(start_year = 1977, end_year = 1981,

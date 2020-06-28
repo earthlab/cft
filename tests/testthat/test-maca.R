@@ -7,7 +7,7 @@ test_that("Maca data generator class works :)", {
   models <- "bcc-csm1-1"
   parameters <- "pr"
   scenarios <- "rcp45"
-  project_dir <- "."
+  project_dir <- "test_project"
   ncores <- 2
 
   # Initiate an object

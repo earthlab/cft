@@ -12,6 +12,7 @@ cftdata. Defaults to "maca". (character)
 \itemize{
   \item "maca" = Multivariate Adaptive Constructed Analogs
   \item "gridmet" = Gridded Surface Meteorological Dataset
+  \item "grid" = Shared grid attributes
 }}
 }
 \value{

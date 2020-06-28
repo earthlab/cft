@@ -5,7 +5,7 @@ file_refs <- cftdata(park = "Acadia National Park",
                      models = c("bcc-csm1-1"),
                      parameters = c("pr", "tasmax"),
                      scenarios = c("rcp45"),
-                     project_dir = ".", 
+                     project_dir = "test_project", 
                      ncores = 2)
 
 df <- cft_df(file_reference = file_refs, ncores = 2)

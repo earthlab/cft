@@ -19,7 +19,7 @@ test_that("Providing a shapefile but no area name raises an error", {
 })
 
 test_that("A full run of cftdata with maca completes and saves an expected file", {
-  project_dir <- "."
+  project_dir <- "test_project"
   park = "Acadia National Park"
   years = c(2004, 2005)
   models = "bcc-csm1-1"
@@ -47,7 +47,7 @@ test_that("A full run of cftdata with maca completes and saves an expected file"
 })
 
 test_that("A cftdata run on a one pixel park completes successfully", {
-  project_dir <- "."
+  project_dir <- "test_project"
   file_refs <- cftdata(park = "Wolf Trap National Park for the Performing Arts",
                        years = c(2004, 2005),
                        models = "bcc-csm1-1",

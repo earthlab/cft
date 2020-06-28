@@ -155,6 +155,7 @@ Maca <- R6::R6Class(
                                 aoi_info = self$aoi_info,
                                 area_name = self$area_name,
                                 area_dir = self$area_dir,
+                                arg_ref = self$arg_ref,
                                 cl = cl)
 
       # Create a data frame from the file references
@@ -178,8 +179,91 @@ Maca <- R6::R6Class(
       area_name <- self$area_name
       arg_ref <- self$arg_ref
       grid_ref <- self$grid_ref
-      queries <- get_queries(aoi, area_name, years, models, parameters,
-                             scenarios, arg_ref, grid_ref)
+  
+      # Split year range up
+      start_year <- years[1]
+      end_year <- years[2]
+      
+      # Get time information from our grid reference
+      ntime_hist <- grid_ref$ntime_historical
+      ntime_model <- grid_ref$ntime_model
+      
+      # Get relative index positions to full grid
+      index_pos <- get_aoi_indexes(aoi, grid_ref)
+      y1 <- index_pos[["y1"]]
+      y2 <- index_pos[["y2"]]
+      x1 <- index_pos[["x1"]]
+      x2 <- index_pos[["x2"]]
+
+      # Build a list of lists with historical/future model queries and a file name
+      queries <- list()
+      for (model in models) {
+        
+        # Available arguments for this model
+        args <- arg_ref$get_args(model)
+        avail_params <- args$parameters
+        avail_scenarios <- args$scenarios
+        
+        # Available requested arguments
+        params <- lapply(parameters, FUN = function(x) if (x %in% avail_params) x)
+        rcps <- lapply(scenarios, FUN = function(x) if (x %in% avail_scenarios) x)
+        params <- params[params %in% avail_params]
+        rcps <- rcps[rcps %in% avail_scenarios]
+        
+        # Variable reference
+        variables <- arg_ref$variables
+        
+        # Only one model run for each
+        ensemble <- args$ensemble
+        
+        # Loop through all of the available arguments and build queries
+        for (param in params) {
+          for (rcp in rcps) {
+            
+            # Get internal variable name
+            var <- variables[param]
+            
+            # Build local file name
+            file_name <- paste(c(param, area_name, model, ensemble, rcp,
+                                 "macav2metdata", as.character(start_year),
+                                 as.character(end_year), "daily.nc"),
+                               collapse = "_")
+            
+            # Build remote historical and future file names
+            historical <- paste(c(self$base_url, param, model, ensemble, "historical",
+                                  "1950_2005", "CONUS_daily.nc"), collapse = "_")
+            future <- paste(c(self$base_url, param, model, ensemble, rcp,
+                              "2006_2099", "CONUS_daily.nc"), collapse = "_")
+            
+            # Build the temporal and spatial subsets
+            historical_subset <- glue::glue(paste0("?{var}[{0}:{1}:{ntime_hist}]",
+                                                   "[{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
+                                                   "#fillmismatch"))
+            future_subset <- glue::glue(paste0("?{var}[{0}:{1}:{ntime_model}]",
+                                               "[{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
+                                               "#fillmismatch"))
+            
+            # For further reference, create a vector of data set elements
+            elements <- c("model" = model,
+                          "parameter" = param,
+                          "rcp" = rcp,
+                          "ensemble" = ensemble,
+                          "year1" = as.numeric(years[1]),
+                          "year2" = as.numeric(years[2]),
+                          "area_name" = area_name,
+                          "units" = unname(arg_ref$units[unlist(var)]),
+                          "full_varname" = unname(arg_ref$labels[unlist(param)]),
+                          "internal_varname" = unname(var))
+            
+            # Combine everything into a query package and add to query list
+            historical_url <- paste0(historical, historical_subset)
+            future_url <- paste0(future, future_subset)
+            paired_url <- c(historical_url, future_url)
+            queries[[length(queries) + 1]] <- list(paired_url, file_name, elements)
+          }
+        }
+      }
+      
       return(queries)
     }
   ),
@@ -195,9 +279,8 @@ Maca <- R6::R6Class(
       xr <- reticulate::import("xarray")
 
       # This is very first possible file in our list
-      sample_url = paste0("http://thredds.northwestknowledge.net:8080/",
-                          "thredds/dodsC/MACAV2/BNU-ESM/macav2metdata_",
-                          "vpd_BNU-ESM_r1i1p1_rcp85_2096_2099_CONUS_daily.nc",
+      sample_url = paste0(self$base_url,
+                          "_vpd_BNU-ESM_r1i1p1_rcp85_2006_2099_CONUS_daily.nc",
                           "#fillmismatch")
 
       # Try to open a remote file from base url.

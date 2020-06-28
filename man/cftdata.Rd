@@ -70,7 +70,7 @@ in subsequent R sessions.  (character)}
 A tibble containing information about climate data files.
 }
 \description{
-Retrieves subsetts of historical or projected climate datsets.
+Retrieves subsets of historical or projected climate datsets.
 Available datasets include a Multivariate Adaptive Constructed Analogs (MACA)
 dataset and the Gridded Surface Meteorological Dataset (gridMET).
 }

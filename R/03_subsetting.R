@@ -112,109 +112,15 @@ get_aoi_info <- function(aoi, project_dir, area_name, grid_ref) {
 }
 
 
-
-get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
-                        arg_ref, grid_ref) {
+retrieve_subset <- function(query, years, aoi_info, area_name, area_dir, arg_ref) {
   
-  # We are building url queries from this base
-  urlbase <- paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
-                    "agg_macav2metdata")
-
-  # Split year range up
-  start_year <- years[1]
-  end_year <- years[2]
-  
-  # Get time information from our grid reference
-  ntime_hist <- grid_ref$ntime_historical
-  ntime_model <- grid_ref$ntime_model
-  
-  # Get relative index positions to full grid
-  index_pos <- get_aoi_indexes(aoi, grid_ref)
-  y1 <- index_pos[["y1"]]
-  y2 <- index_pos[["y2"]]
-  x1 <- index_pos[["x1"]]
-  x2 <- index_pos[["x2"]]
-  
-  # Build a list of lists with historical/future model queries and a file name
-  queries <- list()
-  for (model in models) {
-    
-    # Available arguments for this model
-    args <- arg_ref$get_args(model)
-    avail_params <- args$parameters
-    avail_scenarios <- args$scenarios
-
-    # Available requested arguments
-    params <- lapply(parameters, FUN = function(x) if (x %in% avail_params) x)
-    rcps <- lapply(scenarios, FUN = function(x) if (x %in% avail_scenarios) x)
-    params <- params[params %in% avail_params]
-    rcps <- rcps[rcps %in% avail_scenarios]
-
-    # Variable reference
-    variables <- arg_ref$variables
-    
-    # Only one model run for each
-    ensemble <- args$ensemble
-    
-    # Loop through all of the available arguments and build queries
-    for (param in params) {
-      for (rcp in rcps) {
-        
-        # Get internal variable name
-        var <- variables[param]
-        
-        # Build local file name
-        file_name <- paste(c(param, area_name, model, ensemble, rcp,
-                             "macav2metdata", as.character(start_year),
-                             as.character(end_year), "daily.nc"),
-                           collapse = "_")
-        
-        # Build remote historical and future file names
-        historical <- paste(c(urlbase, param, model, ensemble, "historical",
-                              "1950_2005", "CONUS_daily.nc"), collapse = "_")
-        future <- paste(c(urlbase, param, model, ensemble, rcp,
-                          "2006_2099", "CONUS_daily.nc"), collapse = "_")
-        
-        # Build the temporal and spatial subsets
-        historical_subset <- glue::glue(paste0("?{var}[{0}:{1}:{ntime_hist}]",
-                                               "[{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
-                                               "#fillmismatch"))
-        future_subset <- glue::glue(paste0("?{var}[{0}:{1}:{ntime_model}]",
-                                           "[{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
-                                           "#fillmismatch"))
-
-        # For further reference, create a vector of data set elements
-        elements <- c("model" = model,
-                      "parameter" = param,
-                      "rcp" = rcp,
-                      "ensemble" = ensemble,
-                      "year1" = as.numeric(years[1]),
-                      "year2" = as.numeric(years[2]),
-                      "area_name" = area_name,
-                      "units" = unname(arg_ref$units[unlist(var)]),
-                      "full_varname" = unname(arg_ref$labels[unlist(param)]),
-                      "internal_varname" = unname(var))
-  
-        # Combine everything into a query package and add to query list
-        historical_url <- paste0(historical, historical_subset)
-        future_url <- paste0(future, future_subset)
-        paired_url <- c(historical_url, future_url)
-        queries[[length(queries) + 1]] <- list(paired_url, file_name, elements)
-      }
-    }
-  }
-
-  # Done.
-  return(queries)
-}
-
-
-retrieve_subset <- function(query, years, aoi_info, area_name, area_dir) {
-
   # Load python dependencies
-  reticulate::use_condaenv('cft', required = TRUE) 
+  reticulate::use_condaenv("cft", required = TRUE) 
   xr <- reticulate::import("xarray")
   np <- reticulate::import("numpy", convert = FALSE)
+  
+  # Which dataset are we working with?
+  dataset <- class(arg_ref)[[1]]
   
   # Split year range up
   start_year <- years[1]
@@ -225,32 +131,38 @@ retrieve_subset <- function(query, years, aoi_info, area_name, area_dir) {
   aoilons <- aoi_info[["aoilons"]]
   mask_matrix <- aoi_info[["mask_matrix"]]
   resolution <- aoi_info[["resolution"]]
-
+  
+  # Put path information together
   dir.create(area_dir, recursive = TRUE, showWarnings = FALSE)
   file_name <- query[[2]]
   store_name <- query[[2]]
   destination_file <- file.path(area_dir, file_name)
-
+  
   # Get data set attributes
   elements <- query[[3]]
-
+  param <- elements$parameter
+  time_dim <- arg_ref$time_dim
+  
   # Retrieve subset and save file locally
-  if (!file.exists(destination_file)) {
-
+  if ( !file.exists(destination_file) ) {
+    
     # Get the combined historical and modeled url query
-    url_pair <- query[[1]]
-
+    urls <- query[[1]]
+    
     # Save a local file
-    ds <- xr$open_mfdataset(url_pair, concat_dim = "time", combine = "nested")
-
-    # Filter dates
-    days <- filter_years(start_year, end_year)
-    ds <- ds$sel(time = c(days[[1]]: days[[length(days)]]))
-
+    ds <- xr$open_mfdataset(urls, concat_dim = time_dim, combine = "nested")
+    
+    # Filter MACA dates, reformat GridMET dates
+    dataset <- tolower(strsplit(class(arg_ref), "_")[[1]][1])
+    dates <- filter_years(start_year, end_year)
+    if (dataset == "maca") {
+      ds <- ds$sel(time = c(dates[[1]]: dates[[length(dates)]]))
+    }
+    
     # Create coordinate vectors
     lats <- np$asarray(c(as.matrix(aoilats)), dtype = np$float32)
     lons <- np$asarray(c(as.matrix(aoilons)), dtype = np$float32)
-    times <- np$asarray(days, np$int32)
+    times <- np$asarray(dates, np$int32)
     
     # For a single point
     if (length(lats) == 1) lats = c(lats)
@@ -261,103 +173,42 @@ retrieve_subset <- function(query, years, aoi_info, area_name, area_dir) {
                            lat = lats,
                            time = times)
     ds <- ds$sortby('lat', ascending=FALSE)
-
+    
     # Mask by boundary
     dsmask <- xr$DataArray(mask_matrix)
     dsmask <- dsmask$fillna(0)
     ds <- ds$where(dsmask$data == 1)
 
-    # Update Attributes
-    summary <- paste0(
-      "This archive contains daily downscaled meteorological and hydrological ",
-      "projections for the Conterminous United States at 1/24-deg resolution ",
-      "utilizing the Multivariate Adaptive Constructed Analogs (MACA, ",
-      "Abatzoglou, 2012) statistical downscaling method with the METDATA ",
-      "(Abatzoglou,2013) training dataset. The downscaled meteorological ",
-      "variables are maximum/minimum temperature(tasmax/tasmin), ",
-      "maximum/minimum relative humidity(rhsmax/rhsmin) precipitation ",
-      "amount(pr), downward shortwave solar radiation(rsds), eastward ",
-      "wind(uas), northward wind(vas), and specific humidity(huss). The ",
-      "downscaling is based on the 365-day model outputs from different ",
-      "global climate models (GCMs) from Phase 5 of the Coupled Model ",
-      "Inter-comparison Project (CMIP3) utlizing the historical (1950-2005) ",
-      "and future RCP4.5/8.5(2006-2099) scenarios. Leap days have been added ",
-      "to the dataset from the average values between Feb 28 and Mar 1 in ",
-      "order to aid modellers. Daily vapor pressure deficit is calculate from ",
-      "downscaled daily minimum and maximum temperatures for saturated vapor ",
-      "pressure and daily dew point temperature for actual vapor pressure. ",
-      "The dew point temperature is estimated by converting downscaled daily ",
-      "mean specific humidity to partial pressure of moisture in the ",
-      "atmosphere and estimating pressure from elevation using the barometric ",
-      "formula.")
-    attrs1 <- ds$attrs
-
-    # Vapor pressure is missing title information
-    if ( is.null(attrs1$title) ) {
-      attrs1$title <- paste("Downscaled daily meteorological data of",
-                            elements["parameter"], "from", elements["model"],
-                            "using the run", elements["ensemble"])
-    }
-    attrs2 <- list(
-      "title" = attrs1$title,
-      "author" = "John Abatzoglou-University of Idaho, jabatzoglou@uidaho.edu",
-      "comment" = paste0("Subsetted to ", area_name, "by the North Central ",
-                         "Climate Adaption Science Center"),
-      "summary" = summary,
-      "ensemble" = unname(elements["ensemble"]),
-      "model" = unname(elements["model"]),
-      "rcp" = unname(elements["rcp"]),
-      "coordinate_system" = attrs1$coordinate_system,
-      "geospatial_lat_min" = min(aoilats),
-      "geospatial_lat_max" = max(aoilats),
-      "geospatial_lon_min" = min(aoilons),
-      "geospatial_lon_max" = max(aoilons),
-      "geospatial_lat_units" = attrs1$geospatial_lat_units,
-      "geospatial_lon_units" = attrs1$geospatial_lon_units,
-      "geospatial_lat_resolution" = resolution,
-      "geospatial_lon_resolution" = resolution,
-      "geospatial_vertical_min" = "0",
-      "geospatial_vertical_min" = "0",
-      "geospatial_vertical_resolution" = "0",
-      "geospatial_vertical_positive" = "0",
-      "time_coverage_start" = glue::glue("{start_year}-01-01T00:0"),
-      "time_coverage_end" = glue::glue("{end_year}-12-31T00:0"),
-      "time_coverage_duration" = glue::glue("P{end_year - start_year + 1}Y"),
-      "time_coverage_resolution" = "P1D",
-      "time_units" = "days since 1950-01-01"
-    )
-    ds$attrs <- attrs2
-
-    # Fix the variable attributes (why is grid_mapping a variable attribute?)
-    internal_varname <- elements[["internal_varname"]]
-    var_attrs <- ds[internal_varname]$attrs
-    if ("grid_mapping" %in% names(var_attrs)) {
-      var_attrs["grid_mapping"] <- NULL
-    }
-
-    # Assign attributes - reticulate doesn't handle this well
-    x <- tryCatch({
-      ds[internal_varname]$attrs <- var_attrs
-    }, error=function(e){})
-  
-    x <- tryCatch({
-      ds$time$attrs <- list("long_name" = "time", "units" = "days since 1950-01-01", "calendar" = "gregorian")
-    }, error=function(e){})
-
-    x <- tryCatch({
-      ds$lon$attrs <- list("long_name" = "longitude" , "units" = "degrees_east", "standard_name" = "longitude")
-    }, error=function(e){})
-
-    x <- tryCatch({
-      ds$lat$attrs = list("long_name" = "latitude" , "units" = "degrees_north", "standard_name" = "latitude")
-    }, error=function(e){})
-
+    #     # Fix the variable attributes (why is grid_mapping a variable attribute?)
+    #     internal_varname <- elements[["internal_varname"]]
+    #     var_attrs <- ds[internal_varname]$attrs
+    #     if ("grid_mapping" %in% names(var_attrs)) {
+    #       var_attrs["grid_mapping"] <- NULL
+    #     }
+    # 
+    #     # Assign attributes - reticulate doesn't handle this well
+    #     x <- tryCatch({
+    #       ds[internal_varname]$attrs <- var_attrs
+    #     }, error=function(e){})
+    #   
+    #     x <- tryCatch({
+    #       ds$time$attrs <- list("long_name" = "time", "units" = arg_ref$units[["time"]], "calendar" = "gregorian")
+    #     }, error=function(e){})
+    # 
+    #     x <- tryCatch({
+    #       ds$lon$attrs <- list("long_name" = "longitude" , "units" = "degrees_east", "standard_name" = "longitude")
+    #     }, error=function(e){})
+    # 
+    #     x <- tryCatch({
+    #       ds$lat$attrs = list("long_name" = "latitude" , "units" = "degrees_north", "standard_name" = "latitude")
+    #     }, error=function(e){})
+    
     # Save to local file
     ds$to_netcdf(destination_file)
   }
-
+  
   # Keep track of file information
-  file_dir <- normalizePath(area_dir)
+  file_dir <- normalizePath(local_dir)
   file_name <- basename(destination_file)
   file_path <- file.path(file_dir, file_name)
   reference <- c(list("local_file" = file_name, "local_path" = file_path), 

@@ -108,7 +108,7 @@ cftdata <- function(shp_path,
   }
 
   # Retrieve and initialize a dataset generator object
-  DATASETS = list("maca" = Maca)
+  DATASETS = list("maca" = Maca, "gridmet" = GridMet)
   ds <- DATASETS[[dataset]]$new(project_dir, verbose = verbose)
 
   # Set the area of interest information

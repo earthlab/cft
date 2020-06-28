@@ -7,7 +7,7 @@ CATALOG_URL = paste0("http://thredds.northwestknowledge.net:8080/thredds/",
 
 #' @title gridMET Subset generator
 #'
-#' @description An R6 class data subset generator for the MACA dataset.
+#' @description An R6 class data subset generator for the gridMET dataset.
 GridMet <- R6::R6Class(
   
   classname = "GridMet",
@@ -115,15 +115,27 @@ GridMet <- R6::R6Class(
       self$aoi <- aoi
       self$aoi_info <- aoi_info
     },
-    
+
     #' @description Retrieve subset of GridMet data with currently set parameters.
+    #' @param models A list of global circulation models to download. Only available
+    #'  for GCMs. If left empty all available models will be downloaded. A list of
+    #'  currently available models is available under cft::get_reference("maca")$models.
+    #'  (vector)
     #' @param parameters A list of climate parameters to download. If left empty
     #'  all available parameters will be downloaded. A list of available of models is
     #'  available under cft::get_reference(<dataset>)$parameters. (vector)
+    #' @param scenarios A list of representative concentration pathways (rcps) to
+    #'  download. If left empty all available rcps will be downloaded. A list of
+    #'  available of rcps is available under cft::get_reference(<dataset>)$scenarios.
+    #'  (vector)
     #' @param ncores The number of cpus to use, which defaults to 1. (numeric)
     #' @param years The first and last years of the desired period. (vector)
-    get_subset = function(parameters, scenarios, years, ncores = 1) {
-      
+    get_subset = function(models, parameters, scenarios, years, ncores = 1) {
+
+      # We need the same arguments here both dont need these. What to do?
+      models = NA
+      scenarios = NA
+  
       # Getting the queries list (private to avoid mismatches)
       queries <- private$get_queries(years, parameters)
       
@@ -147,6 +159,7 @@ GridMet <- R6::R6Class(
                                 aoi_info = self$aoi_info,
                                 area_name = self$area_name,
                                 area_dir = self$area_dir,
+                                arg_ref = self$arg_ref,
                                 cl = cl)
       
       # Create a data frame from the file references
@@ -163,16 +176,101 @@ GridMet <- R6::R6Class(
   ),
   
   private = list(
-    
-    # For building the queries  # <------------------------------------ Will change
-    get_queries = function(years, models, parameters, scenarios) {
-      aoi <- self$aoi
-      area_name <- self$area_name
-      arg_ref <- self$arg_ref
-      grid_ref <- self$grid_ref
-      queries <- get_queries(aoi, area_name, years, models, parameters,
-                             scenarios, arg_ref, grid_ref)
+
+    # For building the queries
+    get_queries = function(years, parameters) {
+
+      # Split year range up
+      start_year <- years[1]
+      end_year <- years[2]
+      
+      # Get relative index positions to full grid
+      index_pos <- get_aoi_indexes(self$aoi, self$grid_ref)
+      y1 <- index_pos[["y1"]]
+      y2 <- index_pos[["y2"]]
+      x1 <- index_pos[["x1"]]
+      x2 <- index_pos[["x2"]]
+      
+      # Build a list of lists with historical/future model queries and a file name
+      queries <- list()
+      
+      # Loop through all of the available arguments and build queries
+      for (param in parameters) {
+        
+        # Get internal variable name
+        var <- self$arg_ref$variables[param]
+        
+        # Build local file name
+        file_name <- paste(c(param, self$area_name, "gridmet", as.character(start_year),
+                             as.character(end_year), "daily.nc"), collapse = "_")
+        
+        # These come in individual yearly files
+        yearly_urls <- c()
+        for (y in start_year: end_year) {
+          
+          # Get the number of days for these years
+          ntime <- private$year_days(y, param) - 1
+          
+          # Build the subsetting query
+          subset <- glue::glue(paste0("?day[0:1:{ntime}],lat[{y1}:{1}:{y2}],lon[{x1}:{1}:{x2}],",
+                                      "{var}[{0}:{1}:{ntime}][{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
+                                      "#fillmismatch"))
+          remote_file <- paste0(param, "_", y, ".nc")
+          remote_path <- file.path(self$base_url, param, remote_file)
+          url = paste0(remote_path, subset)
+          yearly_urls[[length(yearly_urls) + 1]] <- url
+        }
+
+        # For further reference, create a vector of data set elements
+        elements <- c("model" = NA,
+                      "parameter" = param,
+                      "rcp" = NA,
+                      "ensemble" = NA,
+                      "year1" = as.numeric(years[1]),
+                      "year2" = as.numeric(years[2]),
+                      "area_name" = self$area_name,
+                      "units" = unname(self$arg_ref$units[unlist(var)]),
+                      "full_varname" = unname(self$arg_ref$labels[unlist(param)]),
+                      "internal_varname" = unname(var))
+        
+        # Combine everything into a query package and add to query list
+        queries[[length(queries) + 1]] <- list(yearly_urls, file_name, elements)
+      }
       return(queries)
+    },
+
+    year_days = function(year, parameter) {
+      
+      # Two scenarios, this year or previous years
+      today <- Sys.Date()
+      year <- as.character(year)
+      
+      if (year == format(today, "%Y")) {
+        # There is a several day lag for new daily data
+        ndays <- private$year_days_current(year, parameter)
+        
+      } else {
+        # Only one possible number for past years
+        last_day <- as.Date(paste(year, "12", "31", sep = "-"))
+        first_day <- as.Date(paste(year, "01", "01", sep = "-"))
+        days <- seq(first_day, last_day, by = "1 day")
+        ndays <- length(days)
+      }
+      
+      return(ndays)
+    },
+    
+    year_days_current = function(year, parameter) {
+      # Load cft conda environment
+      reticulate::use_condaenv("cft", required = TRUE)
+      xr <- reticulate::import("xarray")
+      
+      # How many days are available in current year for this parameter?
+      query <- glue::glue(paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
+                                 "MET/{parameter}/{parameter}_{year}.nc?#fillmismatch"))
+      ds <- xr$open_dataset(query)
+      ndays <- length(ds$day$data)
+      return(ndays)
     }
   ),
   
@@ -185,16 +283,16 @@ GridMet <- R6::R6Class(
       # Load python dependency
       reticulate::use_condaenv('cft', required = TRUE)
       xr <- reticulate::import("xarray")
-      
+
       # This is very first possible file in our list
-      sample_url = paste0("http://thredds.northwestknowledge.net:8080/",
-                          "thredds/dodsC/MET/pr/pr_2020.nc#fillmismatch")
+      sample_url = file.path(self$base_url, "pr/pr_2020.nc#fillmismatch")
       
       # Try to open a remote file from base url.
       tryCatch({
         xr$open_dataset(sample_url)
         return(TRUE)
-      }, error=function() {
+      }, error=function(e) {
+        print(e)
         return(FALSE)
       })
     },
