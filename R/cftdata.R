@@ -60,7 +60,6 @@
 #' }
 #'
 #' @importFrom methods new
-
 #' @export
 cftdata <- function(shp_path,
                     area_name,

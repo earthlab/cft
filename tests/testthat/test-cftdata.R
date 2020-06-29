@@ -46,6 +46,31 @@ test_that("A full run of cftdata with maca completes and saves an expected file"
   expect_true(file.exists(expected_path))
 })
 
+
+test_that("A full run of cftdata with gridmet completes and saves an expected file", {
+  project_dir <- "test_project"
+  park = "Acadia National Park"
+  years = c(2004, 2005)
+  parameters = "pr"
+  project_dir = project_dir
+  ncores = 2
+  dataset = "gridmet"
+  verbose = TRUE
+  
+  file_refs <- cftdata(park = park,
+                       years = years,
+                       dataset=dataset,
+                       parameters = parameters,
+                       project_dir = project_dir, 
+                       ncores = ncores,
+                       verbose = TRUE)
+
+  expected_file <- paste0("pr_acadia_national_park_gridmet_2004_2005_daily.nc")
+  expected_path <- file.path(project_dir, "acadia_national_park", expected_file)
+  
+  expect_true(file.exists(expected_path))
+})
+
 test_that("A cftdata run on a one pixel park completes successfully", {
   project_dir <- "test_project"
   file_refs <- cftdata(park = "Wolf Trap National Park for the Performing Arts",

@@ -8,7 +8,8 @@ Grid_Reference <- methods::setRefClass(
     lats = "numeric",
     lons = "numeric",
     ntime_historical = "numeric",
-    ntime_model = "numeric"
+    ntime_model = "numeric",
+    time_dim = "character"
   ),
   
   methods = list(
@@ -36,7 +37,7 @@ Grid_Reference <- methods::setRefClass(
 
 
 Maca_Reference <- methods::setRefClass(
-  "Argument_Reference",
+  "Maca_Reference",
   
   fields = list(
     models = "character",
@@ -44,7 +45,8 @@ Maca_Reference <- methods::setRefClass(
     scenarios = "character",
     variables = "list",
     labels = "list",
-    units = "list"),
+    units = "list",
+    time_dim = "character"),
   
   methods = list(
     initialize = function(
@@ -105,7 +107,9 @@ Maca_Reference <- methods::setRefClass(
                    "eastward_wind" = "m s-1",
                    "northward_wind" = "m s-1",
                    "specific_humidity" = "kg kg-1",
-                   "vpd" = "kPa")
+                   "vpd" = "kPa",
+                   "time" = "days since 1950-01-01"),
+      time_dim = "time"
       ) {
       models <<- models
       parameters <<- parameters
@@ -113,7 +117,7 @@ Maca_Reference <- methods::setRefClass(
       variables <<- variables
       labels <<- labels
       units <<- units
-      time_dim <<- 
+      time_dim <<- time_dim
     },
     
     get_args = function(model) {

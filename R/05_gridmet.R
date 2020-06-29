@@ -161,7 +161,7 @@ GridMet <- R6::R6Class(
                                 area_dir = self$area_dir,
                                 arg_ref = self$arg_ref,
                                 cl = cl)
-      
+
       # Create a data frame from the file references
       file_references <- data.frame(do.call(rbind, refs), stringsAsFactors = FALSE)
       file_references <- tibble::as_tibble(lapply(file_references, unlist))
@@ -185,9 +185,9 @@ GridMet <- R6::R6Class(
       end_year <- years[2]
       
       # Get relative index positions to full grid
-      index_pos <- get_aoi_indexes(self$aoi, self$grid_ref)
-      y1 <- index_pos[["y1"]]
-      y2 <- index_pos[["y2"]]
+      index_pos <- get_aoi_indexes(self$aoi, self$grid_ref, latflip=TRUE)
+      y1 <- index_pos[["y1"]] - 1 
+      y2 <- index_pos[["y2"]] - 1
       x1 <- index_pos[["x1"]]
       x2 <- index_pos[["x2"]]
       
@@ -212,8 +212,8 @@ GridMet <- R6::R6Class(
           ntime <- private$year_days(y, param) - 1
           
           # Build the subsetting query
-          subset <- glue::glue(paste0("?day[0:1:{ntime}],lat[{y1}:{1}:{y2}],lon[{x1}:{1}:{x2}],",
-                                      "{var}[{0}:{1}:{ntime}][{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
+          subset <- glue::glue(paste0("?day[0:1:{ntime}],lat[{y2}:{1}:{y1}],lon[{x1}:{1}:{x2}],",
+                                      "crs[0:1:0],{var}[{0}:{1}:{ntime}][{y2}:{1}:{y1}][{x1}:{1}:{x2}]",
                                       "#fillmismatch"))
           remote_file <- paste0(param, "_", y, ".nc")
           remote_path <- file.path(self$base_url, param, remote_file)
@@ -229,7 +229,7 @@ GridMet <- R6::R6Class(
                       "year1" = as.numeric(years[1]),
                       "year2" = as.numeric(years[2]),
                       "area_name" = self$area_name,
-                      "units" = unname(self$arg_ref$units[unlist(var)]),
+                      "units" = unname(self$arg_ref$units[unlist(param)]),
                       "full_varname" = unname(self$arg_ref$labels[unlist(param)]),
                       "internal_varname" = unname(var))
         

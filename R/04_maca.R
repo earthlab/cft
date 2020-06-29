@@ -132,6 +132,12 @@ Maca <- R6::R6Class(
     #' @param years The first and last years of the desired period. (vector)
     get_subset = function(models, parameters, scenarios, years, ncores = 1) {
 
+      # Separate these out
+      aoi_info = self$aoi_info
+      area_name = self$area_name
+      area_dir = self$area_dir
+      arg_ref = self$arg_ref
+      
       # Getting the queries list (private to avoid mismatches)
       queries <- private$get_queries(years, models, parameters, scenarios)
 
@@ -152,10 +158,10 @@ Maca <- R6::R6Class(
       refs <- pbapply::pblapply(queries,
                                 FUN = retrieve_subset,
                                 years = years,
-                                aoi_info = self$aoi_info,
-                                area_name = self$area_name,
-                                area_dir = self$area_dir,
-                                arg_ref = self$arg_ref,
+                                aoi_info = aoi_info,
+                                area_name = area_name,
+                                area_dir = area_dir,
+                                arg_ref = arg_ref,
                                 cl = cl)
 
       # Create a data frame from the file references
@@ -222,7 +228,7 @@ Maca <- R6::R6Class(
             
             # Get internal variable name
             var <- variables[param]
-            
+
             # Build local file name
             file_name <- paste(c(param, area_name, model, ensemble, rcp,
                                  "macav2metdata", as.character(start_year),
@@ -234,15 +240,20 @@ Maca <- R6::R6Class(
                                   "1950_2005", "CONUS_daily.nc"), collapse = "_")
             future <- paste(c(self$base_url, param, model, ensemble, rcp,
                               "2006_2099", "CONUS_daily.nc"), collapse = "_")
-            
+
             # Build the temporal and spatial subsets
-            historical_subset <- glue::glue(paste0("?{var}[{0}:{1}:{ntime_hist}]",
+            historical_subset <- glue::glue(paste0("?time[0:1:{ntime_hist}],lon[{x1}:{1}:{x2}],",
+                                                   "lat[{y1}:{1}:{y2}],crs[0:1:0],",
+                                                   "{var}[{0}:{1}:{ntime_hist}]",
                                                    "[{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
                                                    "#fillmismatch"))
-            future_subset <- glue::glue(paste0("?{var}[{0}:{1}:{ntime_model}]",
+
+            future_subset <- glue::glue(paste0("?time[0:1:{ntime_model}],lon[{x1}:{1}:{x2}],",
+                                               "lat[{y1}:{1}:{y2}],crs[0:1:0],",
+                                               "{var}[{0}:{1}:{ntime_model}]",
                                                "[{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
                                                "#fillmismatch"))
-            
+
             # For further reference, create a vector of data set elements
             elements <- c("model" = model,
                           "parameter" = param,

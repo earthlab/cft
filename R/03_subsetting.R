@@ -19,7 +19,7 @@ filter_years <- function(start_year = 1950, end_year = 2099,
     stop(paste0("end_year is unavailable. Please choose a year between ",
                 available_start, " and ", available_end, "."))
   }
-  
+
   # Return the difference in days between the first available and chosen dates
   day1 <- as.integer(date1 - available1)
   day2 <- as.integer(date2 - available1)
@@ -29,19 +29,26 @@ filter_years <- function(start_year = 1950, end_year = 2099,
 }
 
 
-get_aoi_indexes <- function(aoi, grid_ref) {
+get_aoi_indexes <- function(aoi, grid_ref, latflip=FALSE) {
   
   # Extract the bounding box of the area of interest
   lonmin <- aoi@bbox[1, 1]
   lonmax <- aoi@bbox[1, 2]
   latmin <- aoi@bbox[2, 1]
   latmax <- aoi@bbox[2, 2]
-  
+
+  # Sometimes this needs to be flipped
+  lons = grid_ref$lons
+  lats = grid_ref$lats
+  if (latflip) {
+    lats = rev(lats)
+  }
+
   # Calculate differences between bounding box and target grid coordinates
-  lonmindiffs <- abs(grid_ref$lons - lonmin)
-  lonmaxdiffs <- abs(grid_ref$lons - lonmax)
-  latmindiffs <- abs(grid_ref$lats - latmin)
-  latmaxdiffs <- abs(grid_ref$lats - latmax)
+  lonmindiffs <- abs(lons - lonmin)
+  lonmaxdiffs <- abs(lons - lonmax)
+  latmindiffs <- abs(lats - latmin)
+  latmaxdiffs <- abs(lats - latmax)
   
   # Find the index positions of the closest grid coordinates to the aoi extent
   x1 <- match(lonmindiffs[lonmindiffs == min(lonmindiffs)], lonmindiffs)
@@ -142,7 +149,8 @@ retrieve_subset <- function(query, years, aoi_info, area_name, area_dir, arg_ref
   elements <- query[[3]]
   param <- elements$parameter
   time_dim <- arg_ref$time_dim
-  
+  year1 = as.integer(substr(arg_ref$units["time"], 12, 15))
+
   # Retrieve subset and save file locally
   if ( !file.exists(destination_file) ) {
     
@@ -150,65 +158,29 @@ retrieve_subset <- function(query, years, aoi_info, area_name, area_dir, arg_ref
     urls <- query[[1]]
     
     # Save a local file
-    ds <- xr$open_mfdataset(urls, concat_dim = time_dim, combine = "nested")
+    ds <- xr$open_mfdataset(urls, concat_dim = time_dim, combine = "nested",
+                            decode_times = FALSE)
     
-    # Filter MACA dates, reformat GridMET dates
-    dataset <- tolower(strsplit(class(arg_ref), "_")[[1]][1])
-    dates <- filter_years(start_year, end_year)
-    if (dataset == "maca") {
-      ds <- ds$sel(time = c(dates[[1]]: dates[[length(dates)]]))
+    # Filter dates
+    dates <- filter_years(start_year, end_year, available_start = year1)
+    if ( tolower(class(arg_ref))[[1]] == "maca_reference" ) {
+      ds <- ds$sel(time = dates)
     }
-    
-    # Create coordinate vectors
-    lats <- np$asarray(c(as.matrix(aoilats)), dtype = np$float32)
-    lons <- np$asarray(c(as.matrix(aoilons)), dtype = np$float32)
-    times <- np$asarray(dates, np$int32)
-    
-    # For a single point
-    if (length(lats) == 1) lats = c(lats)
-    if (length(lons) == 1) lons = c(lons)
-    
-    # Assign coordinates
-    ds <- ds$assign_coords(lon = lons,
-                           lat = lats,
-                           time = times)
+
+    # Unflip this if flipped
     ds <- ds$sortby('lat', ascending=FALSE)
-    
+
     # Mask by boundary
     dsmask <- xr$DataArray(mask_matrix)
     dsmask <- dsmask$fillna(0)
     ds <- ds$where(dsmask$data == 1)
 
-    #     # Fix the variable attributes (why is grid_mapping a variable attribute?)
-    #     internal_varname <- elements[["internal_varname"]]
-    #     var_attrs <- ds[internal_varname]$attrs
-    #     if ("grid_mapping" %in% names(var_attrs)) {
-    #       var_attrs["grid_mapping"] <- NULL
-    #     }
-    # 
-    #     # Assign attributes - reticulate doesn't handle this well
-    #     x <- tryCatch({
-    #       ds[internal_varname]$attrs <- var_attrs
-    #     }, error=function(e){})
-    #   
-    #     x <- tryCatch({
-    #       ds$time$attrs <- list("long_name" = "time", "units" = arg_ref$units[["time"]], "calendar" = "gregorian")
-    #     }, error=function(e){})
-    # 
-    #     x <- tryCatch({
-    #       ds$lon$attrs <- list("long_name" = "longitude" , "units" = "degrees_east", "standard_name" = "longitude")
-    #     }, error=function(e){})
-    # 
-    #     x <- tryCatch({
-    #       ds$lat$attrs = list("long_name" = "latitude" , "units" = "degrees_north", "standard_name" = "latitude")
-    #     }, error=function(e){})
-    
     # Save to local file
     ds$to_netcdf(destination_file)
   }
-  
+
   # Keep track of file information
-  file_dir <- normalizePath(local_dir)
+  file_dir <- normalizePath(area_dir)
   file_name <- basename(destination_file)
   file_path <- file.path(file_dir, file_name)
   reference <- c(list("local_file" = file_name, "local_path" = file_path), 

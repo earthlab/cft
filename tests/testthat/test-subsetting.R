@@ -36,46 +36,6 @@ test_that("Test that 'get_aoi_indexes' returns correct spatial indices", {
 })
 
 
-test_that("Test that 'get_queries' returns expected paths", {
-
-  # Sample arguments
-  area_name <- "Acadia National Park"
-  aoi <- get_park_boundaries(area_name, project_dir = project_dir)
-  area_name <- gsub(" ", "_", tolower(area_name))
-  years <- c(2000, 2001)
-  models <- "bcc-csm1-1"
-  parameters <- "pr"
-  scenarios <-"rcp45"
-  arg_ref <- get_reference("maca")
-  grid_ref <- get_reference("grid")
-
-  # Get a query object
-  queries <- get_queries(aoi, area_name, years, models, parameters,
-                         scenarios, arg_ref, grid_ref)
-
-  # Unlist this object
-  queries <- unlist(queries)
-
-  # Expected returns (without subsetting in case of border changes)
-  url1 <- paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
-                 "agg_macav2metdata_pr_bcc-csm1-1_r1i1p1_historical_1950_2005",
-                 "_CONUS_daily.nc?precipitation")
-  url2 <- paste0("http://thredds.northwestknowledge.net:8080/thredds/dodsC/",
-                 "agg_macav2metdata_pr_bcc-csm1-1_r1i1p1_rcp45_2006_2099",
-                 "_CONUS_daily.nc?precipitation")
-  ncfile <- paste0("pr_acadia_national_park_bcc-csm1-1_r1i1p1_rcp45_",
-                   "macav2metdata_2000_2001_daily.nc")
-
-  # The first object should contain the expected historical url
-  expect_true(grepl(url1, queries[1], fixed = TRUE))
-
-  # The second object should contain the expected modeled url
-  expect_true(grepl(url2, queries[2], fixed = TRUE))
-
-  # The third object should contain a .nc file
-  expect_true(queries[3] == ncfile)
-})
-
 test_that("Test get_aoi_info", {
   area_name <- "Acadia National Park"
   area_name <- gsub(" ", "_", tolower(area_name))
@@ -101,15 +61,16 @@ test_that("Test retrieve_subset", {
   filename <- paste0("pr_acadia_national_park_bcc-csm1-1_r1i1p1_rcp45_",
                     "macav2metdata_2000_2001_daily.nc")
   area_name <- "acadia_national_park"
-  elements <- c(model = "bcc-csm1-1", rcp = "rcp45", ensemble = "r1i1p1",
-                "year1" = 2000, "year2" = 2001, internal_varname = "precipitation")
+  elements <- list(model = "bcc-csm1-1", parameter = "pr", rcp = "rcp45", ensemble = "r1i1p1",
+                   "year1" = 2000, "year2" = 2001, internal_varname = "precipitation")
   query <- list(c(url1, url2), filename, elements)
-  years <- c(2000, 2001)
+  years <- c(2004, 2005)
   grid_ref <- get_reference("grid")
+  arg_ref <- get_reference("maca")
+  area_dir = file.path(project_dir, "acadia_national_park")
   aoi <- get_park_boundaries("Acadia National Park", project_dir = project_dir)
   aoi_info <- get_aoi_info(aoi, project_dir, area_name, grid_ref)
-  subset <- retrieve_subset(query, years, aoi_info, area_name, 
-                            area_dir = project_dir)
+  subset <- retrieve_subset(query, years, aoi_info, area_name, area_dir, arg_ref)
   expect_true(file.exists(subset$local_path))
   expect_true(grepl("\\.nc$", subset$local_file))
 })

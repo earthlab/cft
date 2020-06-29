@@ -23,7 +23,7 @@
 #' 
 #' @export
 cft_df <- function(file_reference, ncores = 1) {
-  
+
   # Create long form data frame
   message("Computing spatial averages...")
   cl <- parallel::makeCluster(ncores)
