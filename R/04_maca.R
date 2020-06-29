@@ -18,7 +18,7 @@ Maca <- R6::R6Class(
     #' @field base_url Base URL for data queries.
     base_url = BASE_URL,
 
-    #' @field catalog_url URL to catalog of all available full.
+    #' @field catalog_url URL to catalog of links for all available datasets.
     catalog_url = CATALOG_URL,
 
     #' @field arg_ref Argument options and parameter attributes.
@@ -51,8 +51,7 @@ Maca <- R6::R6Class(
     },
 
     #' @description Print Maca attributes
-    #' @param ... Arguments
-    print = function(...) {
+    print = function() {
 
       # Print high level paths
       cat(class(self)[[1]], "Data Generator Class \n")

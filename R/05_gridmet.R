@@ -18,7 +18,7 @@ GridMet <- R6::R6Class(
     #' @field base_url Base URL for data queries.
     base_url = BASE_URL,
     
-    #' @field catalog_url URL to catalog of all available full.
+    #' @field catalog_url URL to catalog of links for all available datasets.
     catalog_url = CATALOG_URL,
     
     #' @field arg_ref Argument options and parameter attributes.
@@ -51,8 +51,7 @@ GridMet <- R6::R6Class(
     },
     
     #' @description Print GridMet attributes
-    #' @param ... Arguments
-    print = function(...) {
+    print = function() {
       
       # Print high level paths
       cat(class(self)[[1]], "Data Generator Class \n")
@@ -191,7 +190,7 @@ GridMet <- R6::R6Class(
       x1 <- index_pos[["x1"]]
       x2 <- index_pos[["x2"]]
       
-      # Build a list of lists with historical/future model queries and a file name
+      # Build a list of lists with model queries and a file name
       queries <- list()
       
       # Loop through all of the available arguments and build queries

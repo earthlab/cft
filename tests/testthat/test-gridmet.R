@@ -14,7 +14,4 @@ test_that("GridMet data generator class works :)", {
   # Set/Get the Area of Interest
   gridmet$set_aoi(shp_path, park, area_name = "acadia_national_park")
 
-  # Get the subset
-  file_refs <- gridmet$get_subset(parameters = parameters, years = years, ncores = ncores) 
-
 })
