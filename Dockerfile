@@ -2,20 +2,26 @@ FROM rocker/geospatial
 
 MAINTAINER Max Joseph maxwell.b.joseph@colorado.edu
 
-RUN wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh \
-  && bash miniconda.sh -b -p $HOME/miniconda \
-  && . ~/miniconda/etc/profile.d/conda.sh \
-  && hash -r \
-  && conda config --set always_yes yes --set changeps1 no \
-  && conda update -q conda \
-  && conda info -a \
-  && rm miniconda.sh
-
 RUN install2.r ggrepel
 
-RUN R -e "devtools::install_github('earthlab/cft')"
+COPY . cft
+
+WORKDIR cft
+
+RUN R -e "devtools::install('.')"
+
+# Install miniconda and python stuff for the user
+USER rstudio
+
+RUN R -e "reticulate::install_miniconda()"
 
 RUN R -e "cft::install_py_deps(method='conda', python_version = 3)"
 
-RUN R -e "reticulate::use_condaenv('cft');xarray <- reticulate::import('xarray')"
+RUN R -e "reticulate::use_condaenv('cft', required=TRUE);xarray <- reticulate::import('xarray')"
 
+RUN whoami
+
+# switch back to root so that the rocker container still works
+USER root
+
+RUN whoami
