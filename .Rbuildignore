@@ -19,3 +19,4 @@ CONTRIBUTING.md
 ^\.github$
 Makefile
 Dockerfile
+.dockerignore
