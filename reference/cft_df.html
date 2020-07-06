@@ -165,7 +165,7 @@ grid cells within or touching the area of interest provided to cftdata.</p>
                     years = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>2020</span>, <span class='fl'>2021</span>), 
                     models = <span class='st'>"CCSM4"</span>, 
                     scenarios = <span class='st'>"rcp85"</span>)
-<span class='kw'>df</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/cft/man/cft_df.html'>cft_df</a></span>(<span class='kw'>file_ref</span>, cores = <span class='kw'>parallel</span>::<span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span>())
+<span class='kw'>df</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/cft/man/cft_df.html'>cft_df</a></span>(<span class='kw'>file_ref</span>, ncores = <span class='kw'>parallel</span>::<span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span>())
 }
 </div></pre>
   </div>
