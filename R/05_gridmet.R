@@ -27,21 +27,21 @@ GridMet <- R6::R6Class(
     #' @field grid_ref Grid attributes.
     grid_ref = get_reference("grid"),
     
-    #' @field project_dir The local directory in which to save files.
-    project_dir = NULL,
+    #' @field local_dir The local directory in which to save files.
+    local_dir = NULL,
     
     #' @field verbose Print verbose output.
     verbose = NULL,
     
     #' @description Initialize GridMet Object
-    #' @param project_dir The local directory in which to save files. (character)
+    #' @param local_dir The local directory in which to save files. (character)
     #' @param verbose Print verbose output. (logical)
-    initialize = function(project_dir = ".", verbose = FALSE) {
+    initialize = function(local_dir = ".", verbose = FALSE) {
       
       # Create and store project directory path
-      dir.create(project_dir, showWarnings = FALSE, recursive = TRUE)
-      project_dir = normalizePath(project_dir)
-      self$project_dir = project_dir
+      dir.create(local_dir, showWarnings = FALSE, recursive = TRUE)
+      local_dir = normalizePath(local_dir)
+      self$local_dir = local_dir
       self$verbose = verbose
       
       # Check that the server is open
@@ -57,7 +57,7 @@ GridMet <- R6::R6Class(
       cat(class(self)[[1]], "Data Generator Class \n")
       cat("  OpenDAP URL: ", self$base_url, "\n", sep = "")
       cat("  Data Catalog URL: ", self$catalog_url, "\n", sep = "")
-      cat("  Project Directory: ", self$project_dir, "\n", sep = "")
+      cat("  Project Directory: ", self$local_dir, "\n", sep = "")
       
       # Print sub directories
       if ( "area_dir" %in% ls(self) ) {
@@ -86,20 +86,20 @@ GridMet <- R6::R6Class(
       self$area_name = area_name
       
       # Reset the directory to a subdirectory for the area of interest
-      area_dir <- file.path(self$project_dir, area_name)
+      area_dir <- file.path(self$local_dir, area_name)
       dir.create(area_dir, showWarnings = FALSE, recursive = TRUE)
       area_dir = normalizePath(area_dir)
       self$area_dir = area_dir
       
       # Get the area of intereset shapefile object
       print("Retrieving area of interest boundaries...")
-      aoi <- get_aoi(park, shp_path, area_name, self$project_dir)
+      aoi <- get_aoi(park, shp_path, area_name, self$local_dir)
       
       # Match coordinate systems
       aoi <- sp::spTransform(aoi, self$grid_ref$crs)
       
       # Check if this raster has been saved yet
-      raster_dir = file.path(self$project_dir, "rasters")
+      raster_dir = file.path(self$local_dir, "rasters")
       raster_path = file.path(raster_dir, paste0(area_name, ".tif"))
       if ( !file.exists(raster_path) ) {
         if ( self$verbose ) {
@@ -108,7 +108,7 @@ GridMet <- R6::R6Class(
       }
       
       # Get geographic information about the aoi
-      aoi_info <- get_aoi_info(aoi, self$project_dir, area_name, self$grid_ref)
+      aoi_info <- get_aoi_info(aoi, self$local_dir, area_name, self$grid_ref)
       
       # Assign as attributes
       self$aoi <- aoi
@@ -301,7 +301,7 @@ GridMet <- R6::R6Class(
     existing_aois = function() {
 
       # The raster directory is set here
-      raster_dir <- file.path(self$project_dir, "rasters")
+      raster_dir <- file.path(self$local_dir, "rasters")
       if ( dir.exists(raster_dir) ) {
         existing_aois = Sys.glob(file.path(raster_dir, "*.tif"))
       } else {
@@ -313,8 +313,8 @@ GridMet <- R6::R6Class(
     #' @field project_contents
     #'  Check existing climate files for the currently set aoi.
     project_contents = function() {
-      existing_dirs = list.dirs(self$project_dir)
-      existing_files = list.files(self$project_dir, recursive = TRUE)
+      existing_dirs = list.dirs(self$local_dir)
+      existing_files = list.files(self$local_dir, recursive = TRUE)
       return(c(existing_dirs, existing_files))
     }
   )

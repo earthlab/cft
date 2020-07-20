@@ -42,7 +42,7 @@
 #'  available of rcps is available under cft::get_reference(<dataset>)$scenarios.
 #'  (vector)
 #' @param years The first and last years of the desired period. (vector)
-#' @param project_dir The local directory in which to save files. By default,
+#' @param local_dir The local directory in which to save files. By default,
 #'  files are saved in a temporary directory (as per CRAN guidelines), and are
 #'  lost after your R session ends. Specify a path to a local directory with
 #'  this argument to retain files and avoid duplicate downloads
@@ -69,7 +69,7 @@ cftdata <- function(shp_path,
                     parameters = get_reference("maca")$parameters,
                     scenarios = get_reference("maca")$scenarios,
                     years = c(1950, 2099),
-                    project_dir = tempdir(),
+                    local_dir = tempdir(),
                     verbose = TRUE,
                     ncores = 1) {
 
@@ -108,7 +108,7 @@ cftdata <- function(shp_path,
 
   # Retrieve and initialize a dataset generator object
   DATASETS = list("maca" = Maca, "gridmet" = GridMet)
-  ds <- DATASETS[[dataset]]$new(project_dir, verbose = verbose)
+  ds <- DATASETS[[dataset]]$new(local_dir, verbose = verbose)
 
   # Set the area of interest information
   ds$set_aoi(shp_path, area_name, park)

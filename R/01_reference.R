@@ -1,3 +1,7 @@
+CRS <- "+proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +no_defs"
+
+
+
 Grid_Reference <- methods::setRefClass(
   "Grid_Reference",
   
@@ -13,8 +17,7 @@ Grid_Reference <- methods::setRefClass(
   ),
   
   methods = list(
-    initialize = function(crs = paste0("+proj=longlat +a=6378137 ",
-                                       "+f=0.00335281066474748 +pm=0 +no_defs"),
+    initialize = function(crs = CRS,
                           extent = list("latmin" = 25.0631,
                                         "latmax" = 49.3960,
                                         "lonmin" = -124.7722,
@@ -137,6 +140,7 @@ Maca_Reference <- methods::setRefClass(
     }
   )
 )
+
 
 GridMet_Reference <- methods::setRefClass(
   "GridMET_Reference",

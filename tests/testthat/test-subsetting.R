@@ -1,5 +1,5 @@
 # Let's not download the same file everytime
-project_dir <- "test_project"
+local_dir <- "test_project"
 
 test_that("Test that filter years returns correct start and end days", {
   days <- filter_years(start_year = 1977, end_year = 1981,
@@ -25,7 +25,7 @@ test_that("Test that incorrect inputs in 'filter_years' returns errors", {
 
 test_that("Test that 'get_aoi_indexes' returns correct spatial indices", {
   area_name <- "Acadia National Park"
-  aoi <- get_park_boundaries(area_name, project_dir = project_dir)
+  aoi <- get_park_boundaries(area_name, local_dir = local_dir)
   grid_ref <- get_reference("grid")
   indices <- get_aoi_indexes(aoi, grid_ref)
 
@@ -40,8 +40,8 @@ test_that("Test get_aoi_info", {
   area_name <- "Acadia National Park"
   area_name <- gsub(" ", "_", tolower(area_name))
   grid_ref <- get_reference("grid")
-  aoi <- get_park_boundaries("Acadia National Park", project_dir = project_dir)
-  aoi_info <- get_aoi_info(aoi, project_dir, area_name, grid_ref)
+  aoi <- get_park_boundaries("Acadia National Park", local_dir = local_dir)
+  aoi_info <- get_aoi_info(aoi, local_dir, area_name, grid_ref)
   testthat::expect_named(aoi_info, 
                          c("aoilats", "aoilons", "mask_matrix", "resolution"))
 })
@@ -67,9 +67,9 @@ test_that("Test retrieve_subset", {
   years <- c(2004, 2005)
   grid_ref <- get_reference("grid")
   arg_ref <- get_reference("maca")
-  area_dir = file.path(project_dir, "acadia_national_park")
-  aoi <- get_park_boundaries("Acadia National Park", project_dir = project_dir)
-  aoi_info <- get_aoi_info(aoi, project_dir, area_name, grid_ref)
+  area_dir = file.path(local_dir, "acadia_national_park")
+  aoi <- get_park_boundaries("Acadia National Park", local_dir = local_dir)
+  aoi_info <- get_aoi_info(aoi, local_dir, area_name, grid_ref)
   subset <- retrieve_subset(query, years, aoi_info, area_name, area_dir, arg_ref)
   expect_true(file.exists(subset$local_path))
   expect_true(grepl("\\.nc$", subset$local_file))

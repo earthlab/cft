@@ -25,7 +25,7 @@ knitr::opts_chunk$set(
 <!-- badges: end -->
 
 The goal of cft is to provide easy climate data access 
-([MACA v2](http://www.climatologylab.org/maca.html)) to support 
+([MACA v2](http://www.climatologylab.org/maca.html), & [GridMET](http://www.climatologylab.org/gridmet.html)) to support 
 climate scenario planning.
 This package allows you to: 
 
@@ -35,7 +35,7 @@ first class support for US National Parks
 3. Contrast reference and target time periods to understand differences in 
 climate over time, and
 4. Easily work with climate data, without having to worry about the details of 
-how it is stored or formatted
+how it is stored or formatted.
 
 ## Installation
 
@@ -82,24 +82,31 @@ climate models, you can use the `cftdata()` function:
 ```{r}
 library(ggplot2)
 library(cft)
-library(reticulate)
 ```
 
-Then, download some data using the `cftdata()` function. 
+Then, download MACA data using the `cftdata()` function. 
 
 ```{r, include = FALSE}
 # this 'secret' code chunk sets a local directory so that the data aren't 
 # downloaded every time we build the README.md file, but it would be impolite
 # to write to the user's home directory for this example without permission.
 d <- cftdata(park = "Acadia National Park", 
-             parameters = "pr", local_dir = "~",
-             years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
+             parameters = "pr",
+             local_dir = "~",
+             dataset = "maca",
+             years = c(2020, 2021),
+             models = "CCSM4",
+             scenarios = "rcp85")
 ```
 
 
 ```{r, eval = FALSE}
-d <- cftdata(park = "Acadia National Park", parameters = "pr", 
-             years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
+d <- cftdata(park = "Acadia National Park",
+             dataset = "maca",
+             parameters = "pr",
+             years = c(2020, 2021),
+             models = "CCSM4",
+             scenarios = "rcp85")
 ```
 
 This gives you a data frame with paths to local climate data files: 
@@ -153,4 +160,3 @@ after reading our contribution [guidelines](CONTRIBUTING.md), and the
 [Contributor Code of Conduct](CODE_OF_CONDUCT.md). 
 * License: GPL-3
 * See `citation("cft")` in R to cite this package in publications. 
-

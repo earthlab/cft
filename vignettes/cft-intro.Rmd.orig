@@ -102,7 +102,6 @@ library(tidyr)
 library(lubridate)
 library(ggrepel)
 library(dplyr)
-library(reticulate)
 ```
 
 

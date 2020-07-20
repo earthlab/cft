@@ -19,13 +19,12 @@ test_that("Providing a shapefile but no area name raises an error", {
 })
 
 test_that("A full run of cftdata with maca completes and saves an expected file", {
-  project_dir <- "test_project"
+  local_dir <- "test_project"
   park = "Acadia National Park"
   years = c(2004, 2005)
   models = "bcc-csm1-1"
   parameters = "pr"
   scenarios = "rcp45"
-  project_dir = project_dir
   ncores = 2
   dataset = "maca"
   verbose = TRUE
@@ -35,24 +34,23 @@ test_that("A full run of cftdata with maca completes and saves an expected file"
                        models = models,
                        parameters = parameters,
                        scenarios = scenarios,
-                       project_dir = project_dir, 
+                       local_dir = local_dir, 
                        ncores = ncores,
                        verbose = TRUE)
 
   expected_file <- paste0("pr_acadia_national_park_bcc-csm1-1_r1i1p1_rcp45_",
                           "macav2metdata_2004_2005_daily.nc")
-  expected_path <- file.path(project_dir, "acadia_national_park", expected_file)
+  expected_path <- file.path(local_dir, "acadia_national_park", expected_file)
 
   expect_true(file.exists(expected_path))
 })
 
 
 test_that("A full run of cftdata with gridmet completes and saves an expected file", {
-  project_dir <- "test_project"
+  local_dir <- "test_project"
   park = "Acadia National Park"
   years = c(2004, 2005)
   parameters = "pr"
-  project_dir = project_dir
   ncores = 2
   dataset = "gridmet"
   verbose = TRUE
@@ -61,28 +59,28 @@ test_that("A full run of cftdata with gridmet completes and saves an expected fi
                        years = years,
                        dataset=dataset,
                        parameters = parameters,
-                       project_dir = project_dir, 
+                       local_dir = local_dir, 
                        ncores = ncores,
                        verbose = TRUE)
 
   expected_file <- paste0("pr_acadia_national_park_gridmet_2004_2005_daily.nc")
-  expected_path <- file.path(project_dir, "acadia_national_park", expected_file)
+  expected_path <- file.path(local_dir, "acadia_national_park", expected_file)
   
   expect_true(file.exists(expected_path))
 })
 
 test_that("A cftdata run on a one pixel park completes successfully", {
-  project_dir <- "test_project"
+  local_dir <- "test_project"
   file_refs <- cftdata(park = "Wolf Trap National Park for the Performing Arts",
                        years = c(2004, 2005),
                        models = "bcc-csm1-1",
                        parameters = "pr",
                        scenarios = "rcp45",
-                       project_dir = project_dir, 
+                       local_dir = local_dir, 
                        ncores = 2)
   expected_file <- paste0("pr_wolf_trap_national_park_for_the_performing_arts_",
                           "bcc-csm1-1_r1i1p1_rcp45_macav2metdata_2004_2005_daily.nc")
-  expected_path <- file.path(project_dir, "wolf_trap_national_park_for_the_performing_arts",
+  expected_path <- file.path(local_dir, "wolf_trap_national_park_for_the_performing_arts",
                              expected_file)
   
   expect_true(file.exists(expected_path))

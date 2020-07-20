@@ -1,24 +1,24 @@
-get_aoi <- function(park, shp_path, area_name, project_dir) {
+get_aoi <- function(park, shp_path, area_name, local_dir) {
 
   # Choose which to area of interest to return.
   if ( !is.na(park) ) {
-    aoi <- get_park_boundaries(park, project_dir)
+    aoi <- get_park_boundaries(park, local_dir)
   } else {
-    aoi <- get_shapefile(shp_path, area_name, project_dir) 
+    aoi <- get_shapefile(shp_path, area_name, local_dir) 
   }
   return(aoi)
 }
 
-get_shapefile <- function(shp_path, area_name = NA, project_dir = tempdir()) {
+get_shapefile <- function(shp_path, area_name = NA, local_dir = tempdir()) {
 
   if (is.na(area_name)) area_name <- tools::file_path_sans_ext(basename(shp_path))
-  project_dir = normalizePath(project_dir)
+  local_dir = normalizePath(local_dir)
 
   # Check if this is a url or local path
   if ( grepl("www.|http:|https:", shp_path) ) {
   
     # Create a local path within chosen local directory for this shapefile
-    shp_dir <- file.path(project_dir, "shapefiles")
+    shp_dir <- file.path(local_dir, "shapefiles")
     shp_folder <- file.path(shp_dir, area_name)
     if ( !httr::http_error(shp_path) ) {
       expected_file <- list.files(shp_folder, full.names = TRUE, 
@@ -81,8 +81,8 @@ suggest_parkname <- function(parkname, available_names) {
 }
 
 
-get_park_boundaries <- function(parkname, project_dir = tempdir()) {
-  local_path <- file.path(project_dir, "shapefiles", "nps_boundary",
+get_park_boundaries <- function(parkname, local_dir = tempdir()) {
+  local_path <- file.path(local_dir, "shapefiles", "nps_boundary",
                           "nps_boundary.shp")
 
   # Check if the National Park Shapefile is stored locally
@@ -95,7 +95,7 @@ get_park_boundaries <- function(parkname, project_dir = tempdir()) {
   # Get the National Park Boundary
   parks <- get_shapefile(shp_path = shp_path,
                          area_name = "nps_boundary",
-                         project_dir = project_dir)
+                         local_dir = local_dir)
 
   
   # Check that the supplied name is available

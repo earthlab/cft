@@ -11,13 +11,13 @@ An R6 class data subset generator for the MACA dataset.
 \describe{
 \item{\code{base_url}}{Base URL for data queries.}
 
-\item{\code{catalog_url}}{URL to catalog of all available full.}
+\item{\code{catalog_url}}{URL to catalog of links for all available datasets.}
 
 \item{\code{arg_ref}}{Argument options and parameter attributes.}
 
 \item{\code{grid_ref}}{Grid attributes.}
 
-\item{\code{project_dir}}{The local directory in which to save files.}
+\item{\code{local_dir}}{The local directory in which to save files.}
 
 \item{\code{verbose}}{Print verbose output.}
 }
@@ -50,13 +50,13 @@ An R6 class data subset generator for the MACA dataset.
 \subsection{Method \code{new()}}{
 Initialize Maca Object
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Maca$new(project_dir = ".", verbose = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Maca$new(local_dir = ".", verbose = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{project_dir}}{The local directory in which to save files. (character)}
+\item{\code{local_dir}}{The local directory in which to save files. (character)}
 
 \item{\code{verbose}}{Print verbose output. (logical)}
 }
@@ -69,16 +69,9 @@ Initialize Maca Object
 \subsection{Method \code{print()}}{
 Print Maca attributes
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Maca$print(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Maca$print()}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-set_aoi"></a>}}

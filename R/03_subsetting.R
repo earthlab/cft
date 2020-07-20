@@ -64,7 +64,7 @@ get_aoi_indexes <- function(aoi, grid_ref, latflip=FALSE) {
 }
 
 
-get_aoi_info <- function(aoi, project_dir, area_name, grid_ref) {
+get_aoi_info <- function(aoi, local_dir, area_name, grid_ref) {
   
   # Get relative index positions to full grid
   index_pos <- get_aoi_indexes(aoi, grid_ref)
@@ -83,7 +83,7 @@ get_aoi_info <- function(aoi, project_dir, area_name, grid_ref) {
   aoilons <- lonmin + (0:nx) * res
   
   # Now create a mask as a matrix
-  mask_path <- file.path(project_dir, "rasters", paste0(area_name, ".tif"))
+  mask_path <- file.path(local_dir, "rasters", paste0(area_name, ".tif"))
   dir.create(dirname(mask_path), showWarnings = FALSE)
   if ( !file.exists(mask_path) ) {
     # Rasterize
