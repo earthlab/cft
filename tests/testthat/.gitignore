@@ -1,3 +1,4 @@
 acadia_national_park
 *.nc
 shapefiles/tl_*
+shapefiles
