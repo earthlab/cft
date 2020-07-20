@@ -49,11 +49,6 @@ install_py_deps <- function(method = "conda",
     ...
   )
   
-  reticulate::conda_remove(
-    envname = envname, 
-    packages = c("mkl", "mkl-service")
-  )
-  
   cat("\nInstallation complete.\n\n")
   
   if (restart_session && rstudioapi::hasFun("restartSession"))
