@@ -32,7 +32,7 @@ install_py_deps <- function(method = "conda",
   method <- match.arg(method)
   
   reticulate::conda_install(
-    packages = c("dask", "netcdf4", "nomkl", "numpy", "toolz", "xarray"), 
+    packages = "nomkl", 
     envname = envname, 
     conda = conda, 
     pip = FALSE, 
@@ -40,6 +40,19 @@ install_py_deps <- function(method = "conda",
     ...
   )
   
+  reticulate::conda_install(
+    packages = c("dask", "netcdf4", "numpy", "toolz", "xarray"), 
+    envname = envname, 
+    conda = conda, 
+    pip = FALSE, 
+    forge = TRUE,
+    ...
+  )
+  
+  reticulate::conda_remove(
+    envname = envname, 
+    packages = c("mkl", "mkl-service")
+  )
   
   cat("\nInstallation complete.\n\n")
   
