@@ -17,6 +17,7 @@ jobs:
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+      KMP_DUPLICATE_LIB_OK: true
     
     steps:
       - uses: goanpeca/setup-miniconda@v1
