@@ -36,7 +36,6 @@ install_py_deps <- function(method = "conda",
     envname = envname, 
     conda = conda, 
     pip = FALSE, 
-    forge = TRUE,
     ...
   )
   
@@ -45,7 +44,6 @@ install_py_deps <- function(method = "conda",
     envname = envname, 
     conda = conda, 
     pip = FALSE, 
-    forge = TRUE,
     ...
   )
   
