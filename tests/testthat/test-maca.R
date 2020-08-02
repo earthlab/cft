@@ -1,5 +1,5 @@
 
-test_that("Maca data generator class works :)", {
+test_that("Maca data generator class works", {
   
   # Arguments
   park <- "Acadia National Park"
@@ -7,7 +7,7 @@ test_that("Maca data generator class works :)", {
   models <- "bcc-csm1-1"
   parameters <- "pr"
   scenarios <- "rcp45"
-  local_dir <- "test_project"
+  local_dir <- "."
   ncores <- 2
 
   # Initiate an object

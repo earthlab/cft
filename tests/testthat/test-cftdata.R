@@ -19,7 +19,7 @@ test_that("Providing a shapefile but no area name raises an error", {
 })
 
 test_that("A full run of cftdata with maca completes and saves an expected file", {
-  local_dir <- "test_project"
+  local_dir <- "."
   park = "Acadia National Park"
   years = c(2004, 2005)
   models = "bcc-csm1-1"
@@ -47,7 +47,7 @@ test_that("A full run of cftdata with maca completes and saves an expected file"
 
 
 test_that("A full run of cftdata with gridmet completes and saves an expected file", {
-  local_dir <- "test_project"
+  local_dir <- "."
   park = "Acadia National Park"
   years = c(2004, 2005)
   parameters = "pr"
@@ -70,7 +70,7 @@ test_that("A full run of cftdata with gridmet completes and saves an expected fi
 })
 
 test_that("A cftdata run on a one pixel park completes successfully", {
-  local_dir <- "test_project"
+  local_dir <- "."
   file_refs <- cftdata(park = "Wolf Trap National Park for the Performing Arts",
                        years = c(2004, 2005),
                        models = "bcc-csm1-1",
@@ -82,6 +82,5 @@ test_that("A cftdata run on a one pixel park completes successfully", {
                           "bcc-csm1-1_r1i1p1_rcp45_macav2metdata_2004_2005_daily.nc")
   expected_path <- file.path(local_dir, "wolf_trap_national_park_for_the_performing_arts",
                              expected_file)
-  
   expect_true(file.exists(expected_path))
 })

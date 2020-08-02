@@ -5,7 +5,7 @@ test_that("GridMet data generator class works :)", {
   park <- "Acadia National Park"
   years <- c(2004, 2005)
   parameters <- "pr"
-  local_dir <- "test_project"
+  local_dir <- "."
   ncores <- 2
 
   # Initiate an object
