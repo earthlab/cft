@@ -120,8 +120,9 @@ get_aoi_info <- function(aoi, local_dir, area_name, grid_ref) {
 
 
 retrieve_subset <- function(query, years, aoi_info, area_name, area_dir, arg_ref) {
-  
+
   # Load python dependencies
+  Sys.setenv(KMP_DUPLICATE_LIB_OK = "true")  # avoid xarray openmp errors
   reticulate::use_condaenv("cft", required = TRUE) 
   xr <- reticulate::import("xarray")
   np <- reticulate::import("numpy", convert = FALSE)

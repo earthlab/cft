@@ -31,16 +31,13 @@ install_py_deps <- function(method = "conda",
                             ...) {
   method <- match.arg(method)
   
-  reticulate::py_install(
+  reticulate::conda_install(
     packages = c("dask", "netcdf4", "toolz", "xarray"), 
     envname = envname, 
-    method = method, 
     conda = conda, 
     pip = FALSE, 
-    forge = TRUE,
     ...
   )
-  
   
   cat("\nInstallation complete.\n\n")
   
