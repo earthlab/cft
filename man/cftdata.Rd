@@ -4,19 +4,11 @@
 \alias{cftdata}
 \title{Climate Futures Toolbox Data}
 \usage{
-cftdata(
-  shp_path,
-  area_name,
-  park,
-  dataset = "maca",
+cftdata(shp_path, area_name, park, dataset = "maca",
   models = get_reference("maca")$models,
   parameters = get_reference("maca")$parameters,
-  scenarios = get_reference("maca")$scenarios,
-  years = c(1950, 2099),
-  local_dir = tempdir(),
-  verbose = TRUE,
-  ncores = 1
-)
+  scenarios = get_reference("maca")$scenarios, years = c(1950, 2099),
+  local_dir = tempdir(), verbose = TRUE, ncores = 1)
 }
 \arguments{
 \item{shp_path}{A path to a shapefile with which to clip the resulting data
