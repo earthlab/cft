@@ -94,19 +94,13 @@
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p>Install the development version of cft from <a href="https://github.com/">GitHub</a> with:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="co"># install.packages("remotes")</span>
-<span class="kw">remotes</span>::<span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span>(<span class="st">"earthlab/cft"</span>)
-</pre></div>
+<div class="sourceCode" id="cb1"><pre class="r"><span class="co"># install.packages("remotes")</span>
+<span class="kw pkg">remotes</span><span class="kw ns">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span>(<span class="st">"earthlab/cft"</span>)</pre></div>
 <p>This package also has some python dependencies. We recommend using conda (preferably <a href="https://docs.conda.io/en/latest/miniconda.html">miniconda</a>) to simplify the installation process. You can install miniconda with the <a href="https://rstudio.github.io/reticulate/">reticulate</a> R package:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit">
-<span class="co"># # install.packages("reticulate")</span>
-<span class="kw">reticulate</span>::<span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/install_miniconda.html">install_miniconda</a></span>()
-</pre></div>
+<div class="sourceCode" id="cb2"><pre class="r"><span class="co"># # install.packages("reticulate")</span>
+<span class="kw pkg">reticulate</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/reticulate/man/install_miniconda.html">install_miniconda</a></span>()</pre></div>
 <p>After installing miniconda, python dependencies can be installed as follows:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit">
-<span class="kw">cft</span>::<span class="fu"><a href="reference/install_py_deps.html">install_py_deps</a></span>()
-</pre></div>
+<div class="sourceCode" id="cb3"><pre class="r"><span class="kw pkg">cft</span><span class="kw ns">::</span><span class="fu"><a href="reference/install_py_deps.html">install_py_deps</a></span>()</pre></div>
 <div id="using-docker-instead-of-a-local-installation" class="section level3">
 <h3 class="hasAnchor">
 <a href="#using-docker-instead-of-a-local-installation" class="anchor"></a>Using Docker instead of a local installation</h3>
@@ -120,18 +114,13 @@
 <h2 class="hasAnchor">
 <a href="#quickstart-guide" class="anchor"></a>Quickstart guide</h2>
 <p>To get daily precipitation data for Acadia National Park for a subset of climate models, you can use the <code><a href="reference/cftdata.html">cftdata()</a></code> function:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="http://ggplot2.tidyverse.org">ggplot2</a></span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/earthlab/cst">cft</a></span>)
-</pre></div>
+<div class="sourceCode" id="cb5"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">ggplot2</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">cft</span>)</pre></div>
 <p>Then, download some data using the <code><a href="reference/cftdata.html">cftdata()</a></code> function.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit">
-<span class="kw">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cftdata.html">cftdata</a></span>(park = <span class="st">"Acadia National Park"</span>, parameters = <span class="st">"pr"</span>, 
-             years = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">2020</span>, <span class="fl">2021</span>), models = <span class="st">"CCSM4"</span>, scenarios = <span class="st">"rcp85"</span>)
-</pre></div>
+<div class="sourceCode" id="cb6"><pre class="r"><span class="no">d</span> <span class="kw">&lt;-</span> <span class="fu"><a href="reference/cftdata.html">cftdata</a></span>(<span class="kw">park</span> <span class="kw">=</span> <span class="st">"Acadia National Park"</span>, <span class="kw">parameters</span> <span class="kw">=</span> <span class="st">"pr"</span>,
+             <span class="kw">years</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">2020</span>, <span class="fl">2021</span>), <span class="kw">models</span> <span class="kw">=</span> <span class="st">"CCSM4"</span>, <span class="kw">scenarios</span> <span class="kw">=</span> <span class="st">"rcp85"</span>)</pre></div>
 <p>This gives you a data frame with paths to local climate data files:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="kw">d</span>)
+<div class="sourceCode" id="cb7"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">d</span>)
 <span class="co">#&gt; tibble [1 × 13] (S3: tbl_df/tbl/data.frame)</span>
 <span class="co">#&gt;  $ local_file      : Named chr "pr_acadia_national_park_CCSM4_r6i1p1_rcp85_macav2metdata_2020_2021_daily.nc"</span>
 <span class="co">#&gt;   ..- attr(*, "names")= chr "local_file"</span>
@@ -158,14 +147,12 @@
 <span class="co">#&gt;  $ internal_varname: Named chr "precipitation"</span>
 <span class="co">#&gt;   ..- attr(*, "names")= chr "internal_varname"</span>
 <span class="co">#&gt;  $ parameter_long  : Named chr "precipitation"</span>
-<span class="co">#&gt;   ..- attr(*, "names")= chr "parameter.pr"</span>
-</pre></div>
+<span class="co">#&gt;   ..- attr(*, "names")= chr "parameter.pr"</span></pre></div>
 <p>And, you can also summarize the daily data by computing a spatial average over the region of interest:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit">
-<span class="kw">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cft_df.html">cft_df</a></span>(<span class="kw">d</span>, ncores = <span class="fl">2</span>)
+<div class="sourceCode" id="cb8"><pre class="r"><span class="no">df</span> <span class="kw">&lt;-</span> <span class="fu"><a href="reference/cft_df.html">cft_df</a></span>(<span class="no">d</span>, <span class="kw">ncores</span> <span class="kw">=</span> <span class="fl">2</span>)
 <span class="co">#&gt; Computing spatial averages...</span>
 <span class="co">#&gt; Generating climate data.frame...</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="kw">df</span>)
+<span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span>(<span class="no">df</span>)
 <span class="co">#&gt; tibble [731 × 6] (S3: tbl_df/tbl/data.frame)</span>
 <span class="co">#&gt;  $ rcp      : Named chr [1:731] "rcp85" "rcp85" "rcp85" "rcp85" ...</span>
 <span class="co">#&gt;   ..- attr(*, "names")= chr [1:731] "rcp" "rcp" "rcp" "rcp" ...</span>
@@ -177,18 +164,15 @@
 <span class="co">#&gt;  $ area_name: Named chr [1:731] "acadia_national_park" "acadia_national_park" "acadia_national_park" "acadia_national_park" ...</span>
 <span class="co">#&gt;   ..- attr(*, "names")= chr [1:731] "area_name" "area_name" "area_name" "area_name" ...</span>
 <span class="co">#&gt;  $ pr       : Named num [1:731] 0 4.7804 0.0497 16.9338 18.5549 ...</span>
-<span class="co">#&gt;   ..- attr(*, "names")= chr [1:731] "" "" "" "" ...</span>
-</pre></div>
+<span class="co">#&gt;   ..- attr(*, "names")= chr [1:731] "" "" "" "" ...</span></pre></div>
 <p>Because this is a data.frame, you can use all of the normal data visualization and processing functionality in R, e.g.,</p>
-<div class="sourceCode" id="cb9"><pre class="downlit">
-<span class="kw">df</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="kw">date</span>, <span class="kw">pr</span>)) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span>() <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span>(alpha = <span class="fl">.1</span>) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span>(<span class="st">"Date"</span>) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span>(<span class="st">"Precipitation (mm)"</span>) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="st">"Acadia National Park, CCSM4, RCP 8.5"</span>)
-</pre></div>
+<div class="sourceCode" id="cb9"><pre class="r"><span class="no">df</span> <span class="kw">%&gt;%</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="no">date</span>, <span class="no">pr</span>)) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span>() +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span>(<span class="kw">alpha</span> <span class="kw">=</span> <span class="fl">.1</span>) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span>(<span class="st">"Date"</span>) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span>(<span class="st">"Precipitation (mm)"</span>) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="st">"Acadia National Park, CCSM4, RCP 8.5"</span>)</pre></div>
 <p><img src="reference/figures/README-ggplot-precip-1.png" width="100%"></p>
 <div id="dive-deeper" class="section level3">
 <h3 class="hasAnchor">
@@ -267,7 +251,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>

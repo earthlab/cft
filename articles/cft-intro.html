@@ -127,50 +127,41 @@
 <li><p>Install <a href="https://cran.r-project.org/web/packages/rgdal/rgdal.pdf">rgdal</a> and <a href="https://cran.r-project.org/web/packages/ncdf4/ncdf4.pdf">ncdf4</a>, which are common R packages used for dealing with gridded data sets. Both of these packages depend on system level libraries who installations depend on the user’s operating system.</p></li>
 <li><p>Install <code>cft</code> using the package <code>remotes</code> as follows:</p></li>
 </ol>
-<div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="co"># install.packages("remotes")</span>
-<span class="kw">remotes</span>::<span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span>(<span class="st">"earthlab/cft"</span>)
-</pre></div>
+<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="co"># install.packages("remotes")</span>
+<span class="kw pkg">remotes</span><span class="kw ns">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span>(<span class="st">"earthlab/cft"</span>)</pre></body></html></div>
 <ol start="3" style="list-style-type: decimal">
 <li>Install Python dependencies. To provide a consistent and relatively quick way to retrieve these datasets from their source, a few Python dependencies are also required. In <code>cft</code> these are accessed automatically through the <code>reticulate</code> R package, and you will not need to know any Python, but you will need to have a working installation. We recommend using Conda because it is the simplest way to ensure a functioning installation and it manages dependencies well. First make sure you have conda installed (<a href="https://docs.conda.io/en/latest/miniconda.html">see instructions here</a>), then you can install the python dependencies with:</li>
 </ol>
-<div class="sourceCode" id="cb2"><pre class="downlit">
-<span class="kw">cft</span>::<span class="fu"><a href="../reference/install_py_deps.html">install_py_deps</a></span>()
-</pre></div>
+<div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="kw pkg">cft</span><span class="kw ns">::</span><span class="fu"><a href="../reference/install_py_deps.html">install_py_deps</a></span>()</pre></body></html></div>
 <div id="acquiring-and-subsetting-data-within-national-park-service-boundaries" class="section level3">
 <h3 class="hasAnchor">
 <a href="#acquiring-and-subsetting-data-within-national-park-service-boundaries" class="anchor"></a>Acquiring and subsetting data within National Park Service boundaries</h3>
 <p>This package was originally written with the National Park Service in mind, so it has the option to use the name of any park (or monument, preserve, etc.) within the NPS. Use the <code><a href="../reference/cftdata.html">cftdata()</a></code> function to specify a range of years, a set of models, a set of parameters, and a set of representative concentration pathways to return. Leaving these arguments empty will results in a download of all available data for that location.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/earthlab/cst">cft</a></span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://tibble.tidyverse.org">tibble</a></span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="http://ggplot2.tidyverse.org">ggplot2</a></span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://tidyr.tidyverse.org">tidyr</a></span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="http://lubridate.tidyverse.org">lubridate</a></span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="http://github.com/slowkow/ggrepel">ggrepel</a></span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://dplyr.tidyverse.org">dplyr</a></span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/rstudio/reticulate">reticulate</a></span>)
-</pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit">
-<span class="co"># Choose a project directory to store data</span>
+<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">cft</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">tibble</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">ggplot2</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">tidyr</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">lubridate</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">ggrepel</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">dplyr</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">reticulate</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="co"># Choose a project directory to store data</span>
 <span class="co"># (Leaving this argument empty will download data to a temporary directory)</span>
 
-<span class="kw">proj_dir</span> <span class="op">&lt;-</span> <span class="st">"~"</span> 
+<span class="no">proj_dir</span> <span class="kw">&lt;-</span> <span class="st">"~"</span>
 
 <span class="co"># download data</span>
-<span class="kw">file_refs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cftdata.html">cftdata</a></span>(park = <span class="st">"Wind Cave National Park"</span>,
-                     years = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">1980</span>, <span class="fl">2040</span>),
-                     local_dir = <span class="kw">proj_dir</span>,
-                     parameters = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"tasmin"</span>, <span class="st">"tasmax"</span>, <span class="st">"uas"</span>, <span class="st">"vas"</span>, <span class="st">"pr"</span>),
-                     ncores = <span class="kw">parallel</span>::<span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
+<span class="no">file_refs</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/cftdata.html">cftdata</a></span>(<span class="kw">park</span> <span class="kw">=</span> <span class="st">"Wind Cave National Park"</span>,
+                     <span class="kw">years</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">1980</span>, <span class="fl">2040</span>),
+                     <span class="kw">local_dir</span> <span class="kw">=</span> <span class="no">proj_dir</span>,
+                     <span class="kw">parameters</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"tasmin"</span>, <span class="st">"tasmax"</span>, <span class="st">"uas"</span>, <span class="st">"vas"</span>, <span class="st">"pr"</span>),
+                     <span class="kw">ncores</span> <span class="kw">=</span> <span class="kw pkg">parallel</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
 <span class="co">#&gt; [1] "Retrieving area of interest boundaries..."</span>
 <span class="co">#&gt; [1] "Building area of interest grid..."</span>
 <span class="co">#&gt; [1] "Retrieving climate data for wind_cave_national_park"</span>
-<span class="co">#&gt; [1] "Saving local files to /home/mjoseph/wind_cave_national_park"</span>
-</pre></div>
+<span class="co">#&gt; [1] "Saving local files to /home/mjoseph/wind_cave_national_park"</span></pre></body></html></div>
 <p>The output of <code>cftdata</code> is a data.frame, where each row corresponds to one file:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit">
-<span class="fu"><a href="https://tibble.tidyverse.org/reference/glimpse.html">glimpse</a></span>(<span class="kw">file_refs</span>)
+<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="fu"><a href="https://tibble.tidyverse.org/reference/glimpse.html">glimpse</a></span>(<span class="no">file_refs</span>)
 <span class="co">#&gt; Rows: 200</span>
 <span class="co">#&gt; Columns: 13</span>
 <span class="co">#&gt; $ local_file       &lt;chr&gt; "tasmin_wind_cave_national_park_bcc-csm1-1_r1i1p1_rcp45_macav2metdata_1980_2040_daily.nc", "t…</span>
@@ -185,17 +176,13 @@
 <span class="co">#&gt; $ units            &lt;chr&gt; "K", "K", "K", "K", "m s-1", "m s-1", "m s-1", "m s-1", "mm", "mm", "K", "K", "K", "K", "m s-…</span>
 <span class="co">#&gt; $ full_varname     &lt;chr&gt; "Minimum Temperature", "Minimum Temperature", "Maximum Temperature", "Maximum Temperature", "…</span>
 <span class="co">#&gt; $ internal_varname &lt;chr&gt; "air_temperature", "air_temperature", "air_temperature", "air_temperature", "eastward_wind", …</span>
-<span class="co">#&gt; $ parameter_long   &lt;chr&gt; "air_temperature", "air_temperature", "air_temperature", "air_temperature", "eastward_wind", …</span>
-</pre></div>
+<span class="co">#&gt; $ parameter_long   &lt;chr&gt; "air_temperature", "air_temperature", "air_temperature", "air_temperature", "eastward_wind", …</span></pre></body></html></div>
 <p>We can generate a data.frame of daily climate values averaged over the study region using the <code><a href="../reference/cft_df.html">cft_df()</a></code> function:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit">
-<span class="kw">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cft_df.html">cft_df</a></span>(<span class="kw">file_refs</span>, ncores = <span class="kw">parallel</span>::<span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
+<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="no">df</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/cft_df.html">cft_df</a></span>(<span class="no">file_refs</span>, <span class="kw">ncores</span> <span class="kw">=</span> <span class="kw pkg">parallel</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span>())
 <span class="co">#&gt; Computing spatial averages...</span>
-<span class="co">#&gt; Generating climate data.frame...</span>
-</pre></div>
+<span class="co">#&gt; Generating climate data.frame...</span></pre></body></html></div>
 <p>Now, we have a tibble where each row represents a day by model by scenario combination, where the climate parameters of interest are represented as columns. Note that, in the output of <code><a href="../reference/cft_df.html">cft_df()</a></code>, average values represent all 2km by 2km grid cells that touch the Park boundary:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit">
-<span class="fu"><a href="https://tibble.tidyverse.org/reference/glimpse.html">glimpse</a></span>(<span class="kw">df</span>)
+<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="fu"><a href="https://tibble.tidyverse.org/reference/glimpse.html">glimpse</a></span>(<span class="no">df</span>)
 <span class="co">#&gt; Rows: 891,240</span>
 <span class="co">#&gt; Columns: 10</span>
 <span class="co">#&gt; $ rcp       &lt;chr&gt; "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "…</span>
@@ -207,36 +194,29 @@
 <span class="co">#&gt; $ tasmax    &lt;dbl&gt; 280.0941, 280.0941, 258.7186, 258.7186, 279.6128, 279.6128, 273.8713, 273.8713, 282.7361, 282.7361, …</span>
 <span class="co">#&gt; $ uas       &lt;dbl&gt; 3.04908961, 3.04908961, -1.65185707, -1.65185707, 2.69764333, 2.69764333, 2.99376419, 2.99376419, 3.…</span>
 <span class="co">#&gt; $ vas       &lt;dbl&gt; 1.4561018, 1.4561018, -1.7092865, -1.7092865, -2.1272987, -2.1272987, -0.6530413, -0.6530413, 2.7725…</span>
-<span class="co">#&gt; $ pr        &lt;dbl&gt; 0.0000000, 0.0000000, 1.3649577, 1.3649577, 3.9742251, 3.9742251, 0.0000000, 0.0000000, 0.0000000, 0…</span>
-</pre></div>
+<span class="co">#&gt; $ pr        &lt;dbl&gt; 0.0000000, 0.0000000, 1.3649577, 1.3649577, 3.9742251, 3.9742251, 0.0000000, 0.0000000, 0.0000000, 0…</span></pre></body></html></div>
 <p>We can work with this data frame to do some basic visualizations, like time series for a particular parameter. For example, we can use the <code><a href="https://dplyr.tidyverse.org/reference/filter.html">filter()</a></code> function from dplyr to focus on specific date ranges and specific emissions scenarios.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit">
-<span class="kw">df</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(<span class="kw">date</span> <span class="op">&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.Date</a></span>(), <span class="kw">date</span> <span class="op">&lt;</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.Date</a></span>() <span class="op">+</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">5</span>, <span class="co"># next 5 years</span>
-         <span class="kw">rcp</span> <span class="op">==</span> <span class="st">"rcp85"</span>) <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="kw">date</span>, <span class="kw">tasmax</span>, group = <span class="kw">model</span>)) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span>(alpha = <span class="fl">.2</span>) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span>(<span class="st">"Time"</span>) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span>(<span class="st">"Max. air temperature (K)"</span>)
-</pre></div>
+<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="no">df</span> <span class="kw">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(<span class="no">date</span> <span class="kw">&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.Date</a></span>(), <span class="no">date</span> <span class="kw">&lt;</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.Date</a></span>() + <span class="fl">365</span> * <span class="fl">5</span>, <span class="co"># next 5 years</span>
+         <span class="no">rcp</span> <span class="kw">==</span> <span class="st">"rcp85"</span>) <span class="kw">%&gt;%</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="no">date</span>, <span class="no">tasmax</span>, <span class="kw">group</span> <span class="kw">=</span> <span class="no">model</span>)) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span>(<span class="kw">alpha</span> <span class="kw">=</span> <span class="fl">.2</span>) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span>(<span class="st">"Time"</span>) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span>(<span class="st">"Max. air temperature (K)"</span>)</pre></body></html></div>
 <p><img src="vpd-timeseries-1.png" title="plot of chunk vpd-timeseries" alt="plot of chunk vpd-timeseries" width="100%"></p>
 </div>
 <div id="computing-new-daily-climate-variables" class="section level3">
 <h3 class="hasAnchor">
 <a href="#computing-new-daily-climate-variables" class="anchor"></a>Computing new daily climate variables</h3>
 <p>Now that we have all of the climate parameters for our study region, we can compute functions of those variables. For example, it is common to compute the midpoint of the maximum and minimum daily temperature, which we can do using the <code>mutate</code> function:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit">
-<span class="kw">df</span> <span class="op">&lt;-</span> <span class="kw">df</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(tasmid = (<span class="kw">tasmax</span> <span class="op">+</span> <span class="kw">tasmin</span>) <span class="op">/</span> <span class="fl">2</span>)
-</pre></div>
+<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">df</span> <span class="kw">&lt;-</span> <span class="no">df</span> <span class="kw">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="kw">tasmid</span> <span class="kw">=</span> (<span class="no">tasmax</span> + <span class="no">tasmin</span>) / <span class="fl">2</span>)</pre></body></html></div>
 <p>Now we have a new column called <code>tasmid</code> that is the midpoint of the maximum and minumum daily temperature!</p>
 <p>Wind speed provides another example of a derived parameter that can be computed for each day. By default, we have two wind-related parameters: the eastward wind component (called <code>uas</code>) and the northward wind component (called <code>vas</code>), both in units of meters per second (you can get this information from <code><a href="../reference/argument_reference.html">cft::argument_reference</a></code>). Wind speed can be computed from <code>vas</code> and <code>uas</code> using the Pythagorean theorem:</p>
 <p><span class="math inline">\(\text{Wind speed} = \sqrt{v_{as}^2 + u_{as}^2}.\)</span></p>
 <p>In code:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit">
-<span class="kw">df</span> <span class="op">&lt;-</span> <span class="kw">df</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(wind_speed = <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span>(<span class="kw">vas</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="kw">uas</span><span class="op">^</span><span class="fl">2</span>))
-</pre></div>
+<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">df</span> <span class="kw">&lt;-</span> <span class="no">df</span> <span class="kw">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="kw">wind_speed</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span>(<span class="no">vas</span>^<span class="fl">2</span> + <span class="no">uas</span>^<span class="fl">2</span>))</pre></body></html></div>
 </div>
 <div id="computing-new-climate-variable-summaries" class="section level3">
 <h3 class="hasAnchor">
@@ -249,20 +229,15 @@
 <li>Growing season length (# days with air temperature &gt; 0 C)</li>
 </ul>
 <p>All of these quantities summarize daily data, and require some aggregation time interval which in many cases will be one year. As an example, we will compute the growing season length for Wind Cave National Park across all models and emissions scenarios. To do this, we first need to define a new column for year, which we will use as a grouping variable:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit">
-<span class="kw">df</span> <span class="op">&lt;-</span> <span class="kw">df</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(year = <span class="fu"><a href="http://lubridate.tidyverse.org/reference/year.html">year</a></span>(<span class="kw">date</span>))
-</pre></div>
+<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="no">df</span> <span class="kw">&lt;-</span> <span class="no">df</span> <span class="kw">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="kw">year</span> <span class="kw">=</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/year.html">year</a></span>(<span class="no">date</span>))</pre></body></html></div>
 <p>Now, we want to compute growing season length for each year, model, emissions scenario combination.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit">
-<span class="kw">growing_seasons</span> <span class="op">&lt;-</span> <span class="kw">df</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span>(<span class="kw">rcp</span>, <span class="kw">model</span>, <span class="kw">year</span>, <span class="kw">ensemble</span>) <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span>(season_length = <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span>(<span class="kw">tasmid</span> <span class="op">&gt;</span> <span class="fl">273.15</span>)) <span class="op">%&gt;%</span>
-  <span class="kw">ungroup</span>
-</pre></div>
+<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="no">growing_seasons</span> <span class="kw">&lt;-</span> <span class="no">df</span> <span class="kw">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span>(<span class="no">rcp</span>, <span class="no">model</span>, <span class="no">year</span>, <span class="no">ensemble</span>) <span class="kw">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span>(<span class="kw">season_length</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span>(<span class="no">tasmid</span> <span class="kw">&gt;</span> <span class="fl">273.15</span>)) <span class="kw">%&gt;%</span>
+  <span class="no">ungroup</span></pre></body></html></div>
 <p>Notice that we used our derived temperature midpoint column <code>tasmid</code>, and computed the total (<code><a href="https://rdrr.io/r/base/sum.html">sum()</a></code>) number of days for each group where the temperature midpoint was greater than 0 C (or, 273.15 Kelvin, which are the units of the temperature data).</p>
-<div class="sourceCode" id="cb13"><pre class="downlit">
-<span class="kw">growing_seasons</span>
+<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="no">growing_seasons</span>
 <span class="co">#&gt; # A tibble: 2,440 x 5</span>
 <span class="co">#&gt;    rcp   model       year ensemble season_length</span>
 <span class="co">#&gt;    &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;            &lt;int&gt;</span>
@@ -276,19 +251,16 @@
 <span class="co">#&gt;  8 rcp45 bcc-csm1-1  1987 r1i1p1             281</span>
 <span class="co">#&gt;  9 rcp45 bcc-csm1-1  1988 r1i1p1             279</span>
 <span class="co">#&gt; 10 rcp45 bcc-csm1-1  1989 r1i1p1             272</span>
-<span class="co">#&gt; # … with 2,430 more rows</span>
-</pre></div>
+<span class="co">#&gt; # … with 2,430 more rows</span></pre></body></html></div>
 <p>Let’s visualize the growing season over time for each model and emission scenario:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit">
-<span class="kw">growing_seasons</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="kw">year</span>, <span class="kw">season_length</span>, color = <span class="kw">rcp</span>, group = <span class="kw">model</span>)) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span>(alpha = <span class="fl">.3</span>) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span>(<span class="op">~</span><span class="kw">rcp</span>, ncol = <span class="fl">1</span>) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span>(<span class="st">"Year"</span>) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span>(<span class="st">"Growing season length (days)"</span>) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_color_manual</a></span>(values = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"dodgerblue"</span>, <span class="st">"red"</span>)) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span>(legend.position = <span class="st">"none"</span>)
-</pre></div>
+<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="no">growing_seasons</span> <span class="kw">%&gt;%</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="no">year</span>, <span class="no">season_length</span>, <span class="kw">color</span> <span class="kw">=</span> <span class="no">rcp</span>, <span class="kw">group</span> <span class="kw">=</span> <span class="no">model</span>)) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span>(<span class="kw">alpha</span> <span class="kw">=</span> <span class="fl">.3</span>) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span>(~<span class="no">rcp</span>, <span class="kw">ncol</span> <span class="kw">=</span> <span class="fl">1</span>) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span>(<span class="st">"Year"</span>) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span>(<span class="st">"Growing season length (days)"</span>) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_color_manual</a></span>(<span class="kw">values</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"dodgerblue"</span>, <span class="st">"red"</span>)) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span>(<span class="kw">legend.position</span> <span class="kw">=</span> <span class="st">"none"</span>)</pre></body></html></div>
 <p><img src="plot-grow-season-1.png" title="plot of chunk plot-grow-season" alt="plot of chunk plot-grow-season" width="100%"></p>
 </div>
 </div>
@@ -296,20 +268,17 @@
 <h2 class="hasAnchor">
 <a href="#comparing-climate-in-two-time-periods" class="anchor"></a>Comparing climate in two time periods</h2>
 <p>Use the tibble object that is returned from <code><a href="../reference/cft_df.html">cft_df()</a></code> as an input to <code><a href="../reference/compare_periods.html">compare_periods()</a></code> to compare climate between a reference and target period. You may specify the function with which to aggregate your chosen variable as well as the yearly time period months of the year to include in this calculation.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit">
-<span class="kw">comps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_periods.html">compare_periods</a></span>(<span class="kw">df</span>,
-                         var1 = <span class="st">"pr"</span>,
-                         var2 = <span class="st">"tasmax"</span>,
-                         agg_fun = <span class="st">"mean"</span>,
-                         target_period = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">2020</span>, <span class="fl">2040</span>),
-                         reference_period = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">1980</span>, <span class="fl">2000</span>),
-                         months1 = <span class="fl">5</span><span class="op">:</span><span class="fl">8</span>,
-                         months2 = <span class="fl">5</span><span class="op">:</span><span class="fl">8</span>,
-                         scenarios = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"rcp45"</span>, <span class="st">"rcp85"</span>))
-</pre></div>
+<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="no">comps</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/compare_periods.html">compare_periods</a></span>(<span class="no">df</span>,
+                         <span class="kw">var1</span> <span class="kw">=</span> <span class="st">"pr"</span>,
+                         <span class="kw">var2</span> <span class="kw">=</span> <span class="st">"tasmax"</span>,
+                         <span class="kw">agg_fun</span> <span class="kw">=</span> <span class="st">"mean"</span>,
+                         <span class="kw">target_period</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">2020</span>, <span class="fl">2040</span>),
+                         <span class="kw">reference_period</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">1980</span>, <span class="fl">2000</span>),
+                         <span class="kw">months1</span> <span class="kw">=</span> <span class="fl">5</span>:<span class="fl">8</span>,
+                         <span class="kw">months2</span> <span class="kw">=</span> <span class="fl">5</span>:<span class="fl">8</span>,
+                         <span class="kw">scenarios</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"rcp45"</span>, <span class="st">"rcp85"</span>))</pre></body></html></div>
 <p>This provides a data frame that can be used to compare the values in the target and reference period.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit">
-<span class="fu"><a href="https://tibble.tidyverse.org/reference/glimpse.html">glimpse</a></span>(<span class="kw">comps</span>)
+<div class="sourceCode" id="cb16"><html><body><pre class="r"><span class="fu"><a href="https://tibble.tidyverse.org/reference/glimpse.html">glimpse</a></span>(<span class="no">comps</span>)
 <span class="co">#&gt; Rows: 80</span>
 <span class="co">#&gt; Columns: 9</span>
 <span class="co">#&gt; Groups: rcp [2]</span>
@@ -321,29 +290,26 @@
 <span class="co">#&gt; $ target_period    &lt;chr&gt; "2020 - 2040", "2020 - 2040", "2020 - 2040", "2020 - 2040", "2020 - 2040", "2020 - 2040", "20…</span>
 <span class="co">#&gt; $ reference_value  &lt;dbl&gt; 2.225150, 2.275481, 2.372672, 2.378531, 2.258672, 2.426525, 2.190182, 2.644970, 2.418935, 2.0…</span>
 <span class="co">#&gt; $ target_value     &lt;dbl&gt; 2.289066, 2.083733, 2.528437, 2.321464, 2.356694, 2.132029, 1.905680, 2.779801, 2.501539, 2.6…</span>
-<span class="co">#&gt; $ difference       &lt;dbl&gt; 0.06391522, -0.19174773, 0.15576515, -0.05706760, 0.09802130, -0.29449593, -0.28450203, 0.134…</span>
-</pre></div>
+<span class="co">#&gt; $ difference       &lt;dbl&gt; 0.06391522, -0.19174773, 0.15576515, -0.05706760, 0.09802130, -0.29449593, -0.28450203, 0.134…</span></pre></body></html></div>
 <p>One useful plot shows the difference in the two variables between reference and target periods:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit">
-<span class="kw">title</span> <span class="op">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span>(<span class="st">"Change from the historical vs. reference period:"</span>, 
-                <span class="kw">comps</span><span class="op">$</span><span class="kw">reference_period</span>, <span class="kw">comps</span><span class="op">$</span><span class="kw">target_period</span>, sep= <span class="st">"  vs  "</span> )[<span class="fl">1</span>]
+<div class="sourceCode" id="cb17"><html><body><pre class="r"><span class="no">title</span> <span class="kw">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span>(<span class="st">"Change from the historical vs. reference period:"</span>,
+                <span class="no">comps</span>$<span class="no">reference_period</span>, <span class="no">comps</span>$<span class="no">target_period</span>, <span class="kw">sep</span><span class="kw">=</span> <span class="st">"  vs  "</span> )[<span class="fl">1</span>]
 
-<span class="kw">comps</span> <span class="op">%&gt;%</span>
-  <span class="kw">dplyr</span>::<span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span>(<span class="kw">parameter</span>, <span class="kw">rcp</span>, <span class="kw">model</span>, <span class="kw">reference_period</span>, <span class="kw">target_period</span>, <span class="kw">difference</span>) <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span>(names_from = <span class="kw">parameter</span>, values_from = <span class="kw">difference</span>) <span class="op">%&gt;%</span>
-  <span class="kw">ungroup</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(rcp = <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span>(<span class="kw">rcp</span> <span class="op">==</span> <span class="st">"rcp45"</span>, <span class="st">"RCP 4.5"</span>, <span class="st">"RCP 8.5"</span>)) <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="kw">pr</span>, <span class="kw">tasmax</span>, color = <span class="kw">rcp</span>)) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="kw">title</span>) <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span>() <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span>(yintercept = <span class="fl">0</span>, alpha = <span class="fl">.2</span>) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span>(xintercept = <span class="fl">0</span>, alpha = <span class="fl">.2</span>) <span class="op">+</span>
-  <span class="fu"><a href="https://rdrr.io/pkg/ggrepel/man/geom_text_repel.html">geom_text_repel</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(label = <span class="kw">model</span>), segment.size = <span class="fl">.3</span>, size = <span class="fl">3</span>) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span>(<span class="st">"Difference in mean daily precipitation (mm)"</span>) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span>(<span class="st">"Difference in mean daily max. temperature (C)"</span>) <span class="op">+</span> 
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_color_manual</a></span>(values = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"dodgerblue"</span>, <span class="st">"red"</span>), 
-                     <span class="st">"Greenhouse gas\ntrajectory"</span>) 
-</pre></div>
+<span class="no">comps</span> <span class="kw">%&gt;%</span>
+  <span class="kw pkg">dplyr</span><span class="kw ns">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span>(<span class="no">parameter</span>, <span class="no">rcp</span>, <span class="no">model</span>, <span class="no">reference_period</span>, <span class="no">target_period</span>, <span class="no">difference</span>) <span class="kw">%&gt;%</span>
+  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span>(<span class="kw">names_from</span> <span class="kw">=</span> <span class="no">parameter</span>, <span class="kw">values_from</span> <span class="kw">=</span> <span class="no">difference</span>) <span class="kw">%&gt;%</span>
+  <span class="no">ungroup</span> <span class="kw">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="kw">rcp</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span>(<span class="no">rcp</span> <span class="kw">==</span> <span class="st">"rcp45"</span>, <span class="st">"RCP 4.5"</span>, <span class="st">"RCP 8.5"</span>)) <span class="kw">%&gt;%</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="no">pr</span>, <span class="no">tasmax</span>, <span class="kw">color</span> <span class="kw">=</span> <span class="no">rcp</span>)) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="no">title</span>) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span>() +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span>(<span class="kw">yintercept</span> <span class="kw">=</span> <span class="fl">0</span>, <span class="kw">alpha</span> <span class="kw">=</span> <span class="fl">.2</span>) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span>(<span class="kw">xintercept</span> <span class="kw">=</span> <span class="fl">0</span>, <span class="kw">alpha</span> <span class="kw">=</span> <span class="fl">.2</span>) +
+  <span class="fu"><a href="https://rdrr.io/pkg/ggrepel/man/geom_text_repel.html">geom_text_repel</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="kw">label</span> <span class="kw">=</span> <span class="no">model</span>), <span class="kw">segment.size</span> <span class="kw">=</span> <span class="fl">.3</span>, <span class="kw">size</span> <span class="kw">=</span> <span class="fl">3</span>) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span>(<span class="st">"Difference in mean daily precipitation (mm)"</span>) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span>(<span class="st">"Difference in mean daily max. temperature (C)"</span>) +
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_color_manual</a></span>(<span class="kw">values</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"dodgerblue"</span>, <span class="st">"red"</span>),
+                     <span class="st">"Greenhouse gas\ntrajectory"</span>)</pre></body></html></div>
 <p><img src="plot-comps-1.png" title="plot of chunk plot-comps" alt="plot of chunk plot-comps" width="100%"></p>
 <p>So, nearly all model runs indicate warming, but the amount of warming varies by model and emissions scenario. Precipitation increases and decreases are predicted by different models.</p>
 </div>
@@ -351,47 +317,36 @@
 <h2 class="hasAnchor">
 <a href="#finding-out-which-models-and-parameters-are-available" class="anchor"></a>Finding out which models and parameters are available</h2>
 <p>The cft package includes a reference object that can tell you what models, scenarios, and climate variables are available. You can use the reference object within to see the available argument options for the <code><a href="../reference/cftdata.html">cftdata()</a></code> function: <code>models</code>, <code>parameters</code>, and <code>scenarios</code> (as representative concentration pathways). The <code>labels</code> field will spell out the specific meaning of each parameter, the <code>variables</code> field shows the internal variable name of parameters in the data sets themselves, and the <code>units</code> field shows the measurement unit of each variable.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit">
-<span class="kw">references</span> <span class="op">&lt;-</span> <span class="kw">cft</span>::<span class="kw"><a href="../reference/argument_reference.html">argument_reference</a></span>
-</pre></div>
+<div class="sourceCode" id="cb18"><html><body><pre class="r"><span class="no">references</span> <span class="kw">&lt;-</span> <span class="kw pkg">cft</span><span class="kw ns">::</span><span class="no"><a href="../reference/argument_reference.html">argument_reference</a></span></pre></body></html></div>
 <p>Here are the GCMs (the models):</p>
-<div class="sourceCode" id="cb19"><pre class="downlit">
-<span class="kw">references</span><span class="op">$</span><span class="kw">models</span>
+<div class="sourceCode" id="cb19"><html><body><pre class="r"><span class="no">references</span>$<span class="no">models</span>
 <span class="co">#&gt;  [1] "bcc-csm1-1"     "bcc-csm1-1-m"   "BNU-ESM"        "CanESM2"        "CCSM4"          "CNRM-CM5"      </span>
 <span class="co">#&gt;  [7] "CSIRO-Mk3-6-0"  "GFDL-ESM2M"     "GFDL-ESM2G"     "HadGEM2-ES365"  "HadGEM2-CC365"  "inmcm4"        </span>
 <span class="co">#&gt; [13] "IPSL-CM5A-LR"   "IPSL-CM5A-MR"   "IPSL-CM5B-LR"   "MIROC5"         "MIROC-ESM"      "MIROC-ESM-CHEM"</span>
-<span class="co">#&gt; [19] "MRI-CGCM3"      "NorESM1-M"</span>
-</pre></div>
+<span class="co">#&gt; [19] "MRI-CGCM3"      "NorESM1-M"</span></pre></body></html></div>
 <p>Here are the emissions scenarios:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit">
-<span class="kw">references</span><span class="op">$</span><span class="kw">scenarios</span>
-<span class="co">#&gt; [1] "rcp45" "rcp85"</span>
-</pre></div>
+<div class="sourceCode" id="cb20"><html><body><pre class="r"><span class="no">references</span>$<span class="no">scenarios</span>
+<span class="co">#&gt; [1] "rcp45" "rcp85"</span></pre></body></html></div>
 <p>And here are the climate parameters:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit">
-<span class="kw">references</span><span class="op">$</span><span class="kw">parameters</span>
-<span class="co">#&gt;  [1] "tasmin" "tasmax" "rhsmin" "rhsmax" "pr"     "rsds"   "uas"    "vas"    "huss"   "vpd"</span>
-</pre></div>
+<div class="sourceCode" id="cb21"><html><body><pre class="r"><span class="no">references</span>$<span class="no">parameters</span>
+<span class="co">#&gt;  [1] "tasmin" "tasmax" "rhsmin" "rhsmax" "pr"     "rsds"   "uas"    "vas"    "huss"   "vpd"</span></pre></body></html></div>
 <p>Labels for each acronym are also available, for example:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit">
-<span class="kw">references</span><span class="op">$</span><span class="kw">labels</span>[<span class="st">"vpd"</span>]
+<div class="sourceCode" id="cb22"><html><body><pre class="r"><span class="no">references</span>$<span class="no">labels</span>[<span class="st">"vpd"</span>]
 <span class="co">#&gt; $vpd</span>
 <span class="co">#&gt; [1] "Vapor Pressure Deficit"</span>
-<span class="kw">references</span><span class="op">$</span><span class="kw">labels</span>[<span class="st">"CCSM4"</span>]
+<span class="no">references</span>$<span class="no">labels</span>[<span class="st">"CCSM4"</span>]
 <span class="co">#&gt; $CCSM4</span>
 <span class="co">#&gt; [1] "Community Climate System Model 4"</span>
 
 <span class="co"># For hyphenated acronyms, use them either as objects or with backticks</span>
-<span class="kw">model</span> <span class="op">&lt;-</span> <span class="st">"IPSL-CM5A-MR"</span>
-<span class="kw">references</span><span class="op">$</span><span class="kw">labels</span>[<span class="kw">model</span>]
+<span class="no">model</span> <span class="kw">&lt;-</span> <span class="st">"IPSL-CM5A-MR"</span>
+<span class="no">references</span>$<span class="no">labels</span>[<span class="no">model</span>]
 <span class="co">#&gt; $`IPSL-CM5A-MR`</span>
 <span class="co">#&gt; [1] "Institut Pierre Simon Laplace (IPSL) - Climate Model 5A - Medium Resolution"</span>
-<span class="kw">references</span><span class="op">$</span><span class="kw">labels</span><span class="op">$</span><span class="kw">`IPSL-CM5A-MR`</span>  
-<span class="co">#&gt; [1] "Institut Pierre Simon Laplace (IPSL) - Climate Model 5A - Medium Resolution"</span>
-</pre></div>
+<span class="no">references</span>$<span class="no">labels</span>$<span class="no">`IPSL-CM5A-MR`</span>
+<span class="co">#&gt; [1] "Institut Pierre Simon Laplace (IPSL) - Climate Model 5A - Medium Resolution"</span></pre></body></html></div>
 <p>Not every model has the same set of parameters available, and the <code>get_args</code> method lists model-specific information.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit">
-<span class="kw">references</span><span class="op">$</span><span class="fu">get_args</span>(<span class="st">"CCSM4"</span>)
+<div class="sourceCode" id="cb23"><html><body><pre class="r"><span class="no">references</span>$<span class="fu">get_args</span>(<span class="st">"CCSM4"</span>)
 <span class="co">#&gt; $parameters</span>
 <span class="co">#&gt; [1] "tasmin" "tasmax" "pr"     "rsds"   "uas"    "vas"    "huss"  </span>
 <span class="co">#&gt; </span>
@@ -399,8 +354,7 @@
 <span class="co">#&gt; [1] "rcp45" "rcp85"</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; $ensemble</span>
-<span class="co">#&gt; [1] "r6i1p1"</span>
-</pre></div>
+<span class="co">#&gt; [1] "r6i1p1"</span></pre></body></html></div>
 </div>
 <div id="why-write-the-cft-package" class="section level2">
 <h2 class="hasAnchor">
@@ -425,7 +379,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>

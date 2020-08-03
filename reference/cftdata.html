@@ -133,17 +133,17 @@ Parks or shapefiles in the Contiguous United States. This data is downscaled
 using the Multivariate Adaptive Constructed Analogs (MACA) technique.</p>
     </div>
 
-    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/cft/man/cftdata.html'>cftdata</a></span>(
-  <span class='kw'>shp_path</span>,
-  <span class='kw'>area_name</span>,
-  <span class='kw'>park</span>,
-  models = <span class='kw'>argument_reference</span><span class='op'>$</span><span class='kw'>models</span>,
-  parameters = <span class='kw'>argument_reference</span><span class='op'>$</span><span class='kw'>parameters</span>,
-  scenarios = <span class='kw'>argument_reference</span><span class='op'>$</span><span class='kw'>scenarios</span>,
-  years = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1950</span>, <span class='fl'>2099</span>),
-  local_dir = <span class='fu'><a href='https://rdrr.io/r/base/tempfile.html'>tempdir</a></span>(),
-  verbose = <span class='fl'>TRUE</span>,
-  ncores = <span class='fl'>1</span>
+    <pre class="usage"><span class='fu'>cftdata</span>(
+  <span class='no'>shp_path</span>,
+  <span class='no'>area_name</span>,
+  <span class='no'>park</span>,
+  <span class='kw'>models</span> <span class='kw'>=</span> <span class='no'>argument_reference</span>$<span class='no'>models</span>,
+  <span class='kw'>parameters</span> <span class='kw'>=</span> <span class='no'>argument_reference</span>$<span class='no'>parameters</span>,
+  <span class='kw'>scenarios</span> <span class='kw'>=</span> <span class='no'>argument_reference</span>$<span class='no'>scenarios</span>,
+  <span class='kw'>years</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1950</span>, <span class='fl'>2099</span>),
+  <span class='kw'>local_dir</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/tempfile.html'>tempdir</a></span>(),
+  <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>ncores</span> <span class='kw'>=</span> <span class='fl'>1</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -225,12 +225,11 @@ The original data sets may be found at
 <a href='http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_catalog.html'>http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_catalog.html</a></p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='kw'>d</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/cft/man/cftdata.html'>cftdata</a></span>(park = <span class='st'>"Acadia National Park"</span>, parameters = <span class='st'>"pr"</span>, 
-             years = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>2020</span>, <span class='fl'>2021</span>), models = <span class='st'>"CCSM4"</span>, scenarios = <span class='st'>"rcp85"</span>, 
-             ncores = <span class='kw'>parallel</span>::<span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span>())
-}
-</div></pre>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
+<span class='no'>d</span> <span class='kw'>&lt;-</span> <span class='fu'>cftdata</span>(<span class='kw'>park</span> <span class='kw'>=</span> <span class='st'>"Acadia National Park"</span>, <span class='kw'>parameters</span> <span class='kw'>=</span> <span class='st'>"pr"</span>,
+             <span class='kw'>years</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>2020</span>, <span class='fl'>2021</span>), <span class='kw'>models</span> <span class='kw'>=</span> <span class='st'>"CCSM4"</span>, <span class='kw'>scenarios</span> <span class='kw'>=</span> <span class='st'>"rcp85"</span>,
+             <span class='kw'>ncores</span> <span class='kw'>=</span> <span class='kw pkg'>parallel</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span>())
+}</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -246,7 +245,7 @@ The original data sets may be found at
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
 
       </footer>
