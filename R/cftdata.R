@@ -13,17 +13,11 @@
 #' The original data sets may be found at
 #' \url{http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_catalog.html}
 #'
-#' @param shp_path A path to a shapefile with which to clip the resulting data
-#'  sets. This path may be to a local .shp file or a url to a zipped remote
-#'  file. If this option is used, leave the `park` argument empty or set
-#'  to NA. (character)
-#' @param area_name If a shapefile path is used, provide a name to use as a
-#'  reference to the location. This will be used in file names, attributes, and
-#'  directories. (character)' 
-#' @param park The name of a national park (e.g., "Yellowstone National
-#'  Park", "Yellowstone Park", "Yellowstone", "yellowstone", etc.). The user may
-#'  use this option in place of a shapefile path. In this case, leave the
-#'  shp_path argument empty or set to NA. (character)
+#' @param aoi A Spatial object representing an area of interest. Could be a 
+#' SpatialPolygonsDataFrame, SpatialLinesDataFrame, or SpatialPointsDataFrame. 
+#' (Spatial)
+#' @param area_name A name to use in file names, attributes, and
+#'  directories. (character)
 #' @param models A list of global circulation models to download. If left empty
 #' all available models will be downloaded. A list of available of models is
 #' available under cft::argument_reference$models. (vector)
@@ -55,9 +49,8 @@
 #' @importFrom methods new
 #' 
 #' @export
-cftdata <- function(shp_path, 
-                    area_name, 
-                    park, 
+cftdata <- function(aoi, 
+                    area_name,
                     models = argument_reference$models,
                     parameters = argument_reference$parameters, 
                     scenarios = argument_reference$scenarios, 
@@ -66,41 +59,6 @@ cftdata <- function(shp_path,
                     verbose = TRUE, 
                     ncores = 1) {
   
-  # Make sure user is providing some kind of location information
-  if (missing(shp_path) & missing(park)) {
-    msg <- paste("No location data/AOI data were provided.",
-                 "Please provide either a shapefile path or the name of",
-                 "a national park (e.g., 'Yosemite National Park').")
-    stop(msg)
-  }
-
-  # Make sure user is not providing too much location information
-  if (!missing(shp_path) & !missing(park)) {
-    msg <- paste("Both a shapefile and a national park were provided.",
-                 "Please provide either a shapefile path or the name of",
-                 "a national park ('Name National Park'), but not both.")
-    stop(msg)
-  }
-
-  # If a shapefile path is provided, make sure it comes with an area name
-  if (!missing(shp_path) & missing(area_name)) {
-    msg <- paste("Please provide the name you would like to use to reference",
-                 "the location of the shapefile provided. This will be used",
-                 "for both file names and directories.")
-    stop(msg)
-  }
-
-  if (!missing(park) & missing(area_name)) {
-    area_name <- park
-  }
-
-  # Get national park or area of interest
-  if (verbose) print("Retrieving area of interest boundaries...")
-  if (missing(park)) {
-    park <- NA
-  }
-  aoi <- get_aoi(park, shp_path, area_name, local_dir)
-
   # Create the target folder
   area_name <- gsub(" ", "_", tolower(area_name))
   location_dir <- file.path(local_dir, area_name)
@@ -126,8 +84,7 @@ cftdata <- function(shp_path,
   pbapply::pboptions(use_lb = TRUE)
   cl <- parallel::makeCluster(ncores)
   on.exit(parallel::stopCluster(cl))
-  parallel::clusterExport(cl, c("retrieve_subset", "filter_years"),
-                          envir = environment())
+  parallel::clusterExport(cl, "retrieve_subset", envir = environment())
 
   # If all that works, signal that the process is starting
   if (verbose) {

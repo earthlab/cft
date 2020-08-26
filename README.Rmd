@@ -1,5 +1,7 @@
 ---
 output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -46,21 +48,6 @@ Install the development version of cft from [GitHub](https://github.com/) with:
 remotes::install_github("earthlab/cft")
 ```
 
-This package also has some python dependencies. 
-We recommend using conda (preferably [miniconda](https://docs.conda.io/en/latest/miniconda.html)) to simplify the installation process. 
-You can install miniconda with the [reticulate](https://rstudio.github.io/reticulate/) R package: 
-
-``` r
-# # install.packages("reticulate")
-reticulate::install_miniconda()
-```
-
-After installing miniconda, python dependencies can be installed as follows: 
-
-``` r
-cft::install_py_deps()
-```
-
 ### Using Docker instead of a local installation
 
 If you are having trouble installing this package locally, or do not want
@@ -91,46 +78,44 @@ library(ggplot2)
 library(cft)
 ```
 
-Then, download some data using the `cftdata()` function. 
+First define an area of interest. This should be a `Spatial*` object. 
+In this case we'll load a file distributed with this package, but you 
+could read a local shapefile etc. 
 
-```{r, include = FALSE}
-# this 'secret' code chunk sets a local directory so that the data aren't 
-# downloaded every time we build the README.md file, but it would be impolite
-# to write to the user's home directory for this example without permission.
-d <- cftdata(park = "Acadia National Park", 
-             parameters = "pr", local_dir = "~",
-             years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
+```{r make-aoi}
+aoi <- rgdal::readOGR(system.file("extdata", "windcave.geojson", package = "cft"))
 ```
 
+Then, download some data using the `cftdata()` function. 
 
-```{r, eval = FALSE}
-d <- cftdata(park = "Acadia National Park", parameters = "pr", 
-             years = c(2020, 2021), models = "CCSM4", scenarios = "rcp85")
+```{r download}
+d <- cftdata(aoi = aoi, area_name = "windcave", parameters = "tasmax", 
+             years = c(2003, 2007), models = "CCSM4", scenarios = "rcp85")
 ```
 
 This gives you a data frame with paths to local climate data files: 
 
 ```{r print-d}
-str(d)
+d
 ```
 
 And, you can also summarize the daily data by computing a spatial average over the region of interest: 
 
 ```{r summarize-data}
 df <- cft_df(d, ncores = 2)
-str(df)
+df
 ```
 
 Because this is a data.frame, you can use all of the normal data visualization and processing functionality in R, e.g.,
 
 ```{r ggplot-precip, fig.width = 5, fig.height = 2.5}
 df %>%
-  ggplot(aes(date, pr)) + 
+  ggplot(aes(date, tasmax)) + 
   geom_point() + 
   geom_line(alpha = .1) + 
   xlab("Date") + 
-  ylab("Precipitation (mm)") + 
-  ggtitle("Acadia National Park, CCSM4, RCP 8.5")
+  ylab("Max. air temp. (K)") + 
+  ggtitle("Wind Cave National Park, CCSM4, RCP 8.5")
 ```
 
 ### Dive deeper
