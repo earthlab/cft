@@ -1,12 +1,23 @@
 language: r
 dist: bionic
 
+
+r_packages:
+  - rgdal
+  - rgeos
+  - sp
+  - RNetCDF
+
 addons:
   apt:
+    sources:
+      - sourceline: 'ppa:ubuntugis/ppa'
     packages:
+      - libudunit2-dev
       - libnetcdf-dev
       - libgdal-dev
       - libproj-dev
+      - netcdf-bin
 
 cache:
   packages: true
