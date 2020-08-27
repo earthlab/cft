@@ -1,10 +1,10 @@
 ---
 title: "Getting started with the Climate Futures Toolbox"
 author: "Travis Williams and Max Joseph"
-date: "2020-04-24"
+date: "2020-08-26"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{cft}
+  %\VignetteIndexEntry{Getting started with the Climate Futures Toolbox}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
@@ -22,7 +22,7 @@ We'll use Wind Cave National Park, located in South Dakota, USA as a case study.
 This vignette will show you how to: 
 
 - Access climate data for a spatial region of interest
-- Produce a data.frame containing climate data
+- Produce a `data.frame` containing climate data
 - Visualize historical and future data
 - Generate and analyze new climate variables
 
@@ -47,42 +47,6 @@ scale estimates. The cft package uses one downscaled climate model called MACA
 (Multivariate Adaptive Climate Analog) Version 2 
 ([details here](http://www.climatologylab.org/maca.html)).
 
-
-## Installation
-
-There are a few steps required for the `cft` package to work:
-
-1) Install 
-[rgdal](https://cran.r-project.org/web/packages/rgdal/rgdal.pdf) and
-[ncdf4](https://cran.r-project.org/web/packages/ncdf4/ncdf4.pdf),
-which are common R packages used for dealing with gridded data sets. Both of
-these packages depend on system level libraries who installations depend on
-the user's operating system.
-
-2) Install `cft` using the package `remotes` as follows:
-
-
-```r
-# install.packages("remotes")
-remotes::install_github("earthlab/cft")
-```
-
-3) Install Python dependencies. To provide a consistent and relatively quick way
-to retrieve these datasets from their source, a few Python dependencies are also
-required. In `cft` these are accessed automatically through the `reticulate` R
-package, and you will not need to know any Python, but you will need to have a
-working installation. We recommend using Conda because it is the simplest way to
-ensure a functioning installation and it manages dependencies well. First make
-sure you have conda installed 
-([see instructions here](https://docs.conda.io/en/latest/miniconda.html)), then
-you can install the python dependencies with: 
-
-
-
-```r
-cft::install_py_deps()
-```
-
 ### Acquiring and subsetting data within National Park Service boundaries
 
 This package was originally written with the National Park Service in mind, so
@@ -101,7 +65,6 @@ library(tidyr)
 library(lubridate)
 library(ggrepel)
 library(dplyr)
-library(reticulate)
 ```
 
 
@@ -114,16 +77,24 @@ library(reticulate)
 
 proj_dir <- "~" 
 
+# Create a Spatial* object for your area of interest
+# (e.g., you could read a local shapefile here with readOGR)
+aoi <- rgdal::readOGR(system.file("extdata", "windcave.geojson", package = "cft"))
+#> OGR data source with driver: GeoJSON 
+#> Source: "/home/max/R/x86_64-pc-linux-gnu-library/4.0/cft/extdata/windcave.geojson", layer: "windcave"
+#> with 1 features
+#> It has 19 fields
+
 # download data
-file_refs <- cftdata(park = "Wind Cave National Park",
-                     years = c(1980, 2040),
+file_refs <- cftdata(aoi = aoi, 
+                     area_name = "windcave",
+                     years = c(2020, 2040),
                      local_dir = proj_dir,
                      parameters = c("tasmin", "tasmax", "uas", "vas", "pr"),
-                     ncores = parallel::detectCores())
-#> [1] "Retrieving area of interest boundaries..."
+                     ncores = parallel::detectCores() / 2)
 #> [1] "Building area of interest grid..."
-#> [1] "Retrieving climate data for wind_cave_national_park"
-#> [1] "Saving local files to /home/mjoseph/wind_cave_national_park"
+#> [1] "Retrieving climate data for windcave"
+#> [1] "Saving local files to /home/max/windcave"
 ```
 
 The output of `cftdata` is a data.frame, where each row corresponds to one file:
@@ -133,19 +104,19 @@ The output of `cftdata` is a data.frame, where each row corresponds to one file:
 glimpse(file_refs)
 #> Rows: 200
 #> Columns: 13
-#> $ local_file       <chr> "tasmin_wind_cave_national_park_bcc-csm1-1_r1i1p1_rcp45_macav2metdata_1980_2040_daily.nc", "t…
-#> $ local_path       <chr> "/home/mjoseph/wind_cave_national_park/tasmin_wind_cave_national_park_bcc-csm1-1_r1i1p1_rcp45…
-#> $ model            <chr> "bcc-csm1-1", "bcc-csm1-1", "bcc-csm1-1", "bcc-csm1-1", "bcc-csm1-1", "bcc-csm1-1", "bcc-csm1…
-#> $ parameter        <chr> "tasmin", "tasmin", "tasmax", "tasmax", "uas", "uas", "vas", "vas", "pr", "pr", "tasmin", "ta…
-#> $ rcp              <chr> "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "rcp85", "rc…
-#> $ ensemble         <chr> "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1…
-#> $ year1            <dbl> 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 1980, 198…
-#> $ year2            <dbl> 2040, 2040, 2040, 2040, 2040, 2040, 2040, 2040, 2040, 2040, 2040, 2040, 2040, 2040, 2040, 204…
-#> $ area_name        <chr> "wind_cave_national_park", "wind_cave_national_park", "wind_cave_national_park", "wind_cave_n…
-#> $ units            <chr> "K", "K", "K", "K", "m s-1", "m s-1", "m s-1", "m s-1", "mm", "mm", "K", "K", "K", "K", "m s-…
-#> $ full_varname     <chr> "Minimum Temperature", "Minimum Temperature", "Maximum Temperature", "Maximum Temperature", "…
-#> $ internal_varname <chr> "air_temperature", "air_temperature", "air_temperature", "air_temperature", "eastward_wind", …
-#> $ parameter_long   <chr> "air_temperature", "air_temperature", "air_temperature", "air_temperature", "eastward_wind", …
+#> $ local_file       <chr> "tasmin_windcave_bcc-csm1-1_r1i1p1_rcp45_macav2metda…
+#> $ local_path       <chr> "/home/max/windcave/tasmin_windcave_bcc-csm1-1_r1i1p…
+#> $ model            <chr> "bcc-csm1-1", "bcc-csm1-1", "bcc-csm1-1", "bcc-csm1-…
+#> $ parameter        <chr> "tasmin", "tasmin", "tasmax", "tasmax", "uas", "uas"…
+#> $ rcp              <chr> "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "rcp85"…
+#> $ ensemble         <chr> "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r…
+#> $ year1            <dbl> 2020, 2020, 2020, 2020, 2020, 2020, 2020, 2020, 2020…
+#> $ year2            <dbl> 2040, 2040, 2040, 2040, 2040, 2040, 2040, 2040, 2040…
+#> $ area_name        <chr> "windcave", "windcave", "windcave", "windcave", "win…
+#> $ units            <chr> "K", "K", "K", "K", "m s-1", "m s-1", "m s-1", "m s-…
+#> $ full_varname     <chr> "Minimum Temperature", "Minimum Temperature", "Maxim…
+#> $ internal_varname <chr> "air_temperature", "air_temperature", "air_temperatu…
+#> $ parameter_long   <chr> "air_temperature", "air_temperature", "air_temperatu…
 ```
 
 We can generate a data.frame of daily climate values averaged over the study 
@@ -153,12 +124,12 @@ region using the `cft_df()` function:
 
 
 ```r
-df <- cft_df(file_refs, ncores = parallel::detectCores())
+df <- cft_df(file_refs, ncores = parallel::detectCores() / 2)
 #> Computing spatial averages...
 #> Generating climate data.frame...
 ```
 
-Now, we have a tibble where each row represents a day by model by scenario 
+This `df` is a tibble where each row represents a day by model by scenario 
 combination, where the climate parameters of interest are represented as 
 columns. Note that, in the output of `cft_df()`, average values represent all 2km by
 2km grid cells that touch the Park boundary:
@@ -166,18 +137,18 @@ columns. Note that, in the output of `cft_df()`, average values represent all 2k
 
 ```r
 glimpse(df)
-#> Rows: 891,240
+#> Rows: 306,840
 #> Columns: 10
-#> $ rcp       <chr> "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "…
-#> $ date      <date> 1980-01-01, 1980-01-01, 1980-01-01, 1980-01-01, 1980-01-01, 1980-01-01, 1980-01-01, 1980-01-01, 198…
-#> $ model     <chr> "bcc-csm1-1", "bcc-csm1-1", "bcc-csm1-1-m", "bcc-csm1-1-m", "BNU-ESM", "BNU-ESM", "CanESM2", "CanESM…
-#> $ ensemble  <chr> "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r6i1p1", "r6i1p1", …
-#> $ area_name <chr> "wind_cave_national_park", "wind_cave_national_park", "wind_cave_national_park", "wind_cave_national…
-#> $ tasmin    <dbl> 268.6556, 268.6556, 249.5089, 249.5089, 267.4565, 267.4565, 264.1158, 264.1158, 267.7256, 267.7256, …
-#> $ tasmax    <dbl> 280.0941, 280.0941, 258.7186, 258.7186, 279.6128, 279.6128, 273.8713, 273.8713, 282.7361, 282.7361, …
-#> $ uas       <dbl> 3.04908961, 3.04908961, -1.65185707, -1.65185707, 2.69764333, 2.69764333, 2.99376419, 2.99376419, 3.…
-#> $ vas       <dbl> 1.4561018, 1.4561018, -1.7092865, -1.7092865, -2.1272987, -2.1272987, -0.6530413, -0.6530413, 2.7725…
-#> $ pr        <dbl> 0.0000000, 0.0000000, 1.3649577, 1.3649577, 3.9742251, 3.9742251, 0.0000000, 0.0000000, 0.0000000, 0…
+#> $ rcp       <chr> "rcp45", "rcp85", "rcp45", "rcp85", "rcp45", "rcp85", "rcp4…
+#> $ date      <date> 2020-01-01, 2020-01-01, 2020-01-01, 2020-01-01, 2020-01-01…
+#> $ model     <chr> "bcc-csm1-1", "bcc-csm1-1", "bcc-csm1-1-m", "bcc-csm1-1-m",…
+#> $ ensemble  <chr> "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1", "r1i1p1",…
+#> $ area_name <chr> "windcave", "windcave", "windcave", "windcave", "windcave",…
+#> $ tasmin    <dbl> 258.6535, 267.4921, 262.1381, 255.9822, 265.8079, 257.2419,…
+#> $ tasmax    <dbl> 271.0576, 279.3801, 278.6900, 276.4950, 278.7834, 276.8796,…
+#> $ uas       <dbl> 2.5145298, 4.0373213, -1.4234270, 2.9496087, 1.8698513, 3.2…
+#> $ vas       <dbl> 0.41528416, 0.77429012, -1.48429512, 1.16956005, -4.5207128…
+#> $ pr        <dbl> 0.00000000, 0.00000000, 1.73096346, 0.00000000, 0.02314971,…
 ```
 
 We can work with this data frame to do some basic visualizations, like time 
@@ -259,6 +230,7 @@ growing_seasons <- df %>%
   group_by(rcp, model, year, ensemble) %>%
   summarize(season_length = sum(tasmid > 273.15)) %>%
   ungroup
+#> `summarise()` regrouping output by 'rcp', 'model', 'year' (override with `.groups` argument)
 ```
 
 Notice that we used our derived temperature midpoint column `tasmid`, and computed the total (`sum()`) number of days for each group where the temperature midpoint was greater than 0 C (or, 273.15 Kelvin, which are the units of the temperature data).
@@ -266,20 +238,20 @@ Notice that we used our derived temperature midpoint column `tasmid`, and comput
 
 ```r
 growing_seasons
-#> # A tibble: 2,440 x 5
+#> # A tibble: 840 x 5
 #>    rcp   model       year ensemble season_length
 #>    <chr> <chr>      <dbl> <chr>            <int>
-#>  1 rcp45 bcc-csm1-1  1980 r1i1p1             284
-#>  2 rcp45 bcc-csm1-1  1981 r1i1p1             299
-#>  3 rcp45 bcc-csm1-1  1982 r1i1p1             284
-#>  4 rcp45 bcc-csm1-1  1983 r1i1p1             272
-#>  5 rcp45 bcc-csm1-1  1984 r1i1p1             295
-#>  6 rcp45 bcc-csm1-1  1985 r1i1p1             283
-#>  7 rcp45 bcc-csm1-1  1986 r1i1p1             285
-#>  8 rcp45 bcc-csm1-1  1987 r1i1p1             281
-#>  9 rcp45 bcc-csm1-1  1988 r1i1p1             279
-#> 10 rcp45 bcc-csm1-1  1989 r1i1p1             272
-#> # … with 2,430 more rows
+#>  1 rcp45 bcc-csm1-1  2020 r1i1p1             318
+#>  2 rcp45 bcc-csm1-1  2021 r1i1p1             292
+#>  3 rcp45 bcc-csm1-1  2022 r1i1p1             311
+#>  4 rcp45 bcc-csm1-1  2023 r1i1p1             319
+#>  5 rcp45 bcc-csm1-1  2024 r1i1p1             312
+#>  6 rcp45 bcc-csm1-1  2025 r1i1p1             289
+#>  7 rcp45 bcc-csm1-1  2026 r1i1p1             313
+#>  8 rcp45 bcc-csm1-1  2027 r1i1p1             291
+#>  9 rcp45 bcc-csm1-1  2028 r1i1p1             306
+#> 10 rcp45 bcc-csm1-1  2029 r1i1p1             292
+#> # … with 830 more rows
 ```
 
 Let's visualize the growing season over time for each model and emission scenario:
@@ -312,8 +284,8 @@ comps <- compare_periods(df,
                          var1 = "pr",
                          var2 = "tasmax",
                          agg_fun = "mean",
-                         target_period = c(2020, 2040),
-                         reference_period = c(1980, 2000),
+                         target_period = c(2025, 2030),
+                         reference_period = c(2020, 2024),
                          months1 = 5:8,
                          months2 = 5:8,
                          scenarios = c("rcp45", "rcp85"))
@@ -328,15 +300,15 @@ glimpse(comps)
 #> Rows: 80
 #> Columns: 9
 #> Groups: rcp [2]
-#> $ model            <chr> "bcc-csm1-1", "bcc-csm1-1-m", "BNU-ESM", "CanESM2", "CCSM4", "CNRM-CM5", "CSIRO-Mk3-6-0", "GF…
-#> $ rcp              <chr> "rcp45", "rcp45", "rcp45", "rcp45", "rcp45", "rcp45", "rcp45", "rcp45", "rcp45", "rcp45", "rc…
-#> $ parameter        <chr> "pr", "pr", "pr", "pr", "pr", "pr", "pr", "pr", "pr", "pr", "pr", "pr", "pr", "pr", "pr", "pr…
-#> $ units            <chr> "mm", "mm", "mm", "mm", "mm", "mm", "mm", "mm", "mm", "mm", "mm", "mm", "mm", "mm", "mm", "mm…
-#> $ reference_period <chr> "1980 - 2000", "1980 - 2000", "1980 - 2000", "1980 - 2000", "1980 - 2000", "1980 - 2000", "19…
-#> $ target_period    <chr> "2020 - 2040", "2020 - 2040", "2020 - 2040", "2020 - 2040", "2020 - 2040", "2020 - 2040", "20…
-#> $ reference_value  <dbl> 2.225150, 2.275481, 2.372672, 2.378531, 2.258672, 2.426525, 2.190182, 2.644970, 2.418935, 2.0…
-#> $ target_value     <dbl> 2.289066, 2.083733, 2.528437, 2.321464, 2.356694, 2.132029, 1.905680, 2.779801, 2.501539, 2.6…
-#> $ difference       <dbl> 0.06391522, -0.19174773, 0.15576515, -0.05706760, 0.09802130, -0.29449593, -0.28450203, 0.134…
+#> $ model            <chr> "bcc-csm1-1", "bcc-csm1-1-m", "BNU-ESM", "CanESM2", …
+#> $ rcp              <chr> "rcp45", "rcp45", "rcp45", "rcp45", "rcp45", "rcp45"…
+#> $ parameter        <chr> "pr", "pr", "pr", "pr", "pr", "pr", "pr", "pr", "pr"…
+#> $ units            <chr> "mm", "mm", "mm", "mm", "mm", "mm", "mm", "mm", "mm"…
+#> $ reference_period <chr> "2020 - 2024", "2020 - 2024", "2020 - 2024", "2020 -…
+#> $ target_period    <chr> "2025 - 2030", "2025 - 2030", "2025 - 2030", "2025 -…
+#> $ reference_value  <dbl> 2.400247, 1.900319, 2.677509, 2.223219, 2.477713, 2.…
+#> $ target_value     <dbl> 2.365003, 2.386500, 2.439448, 2.354286, 2.618627, 1.…
+#> $ difference       <dbl> -0.03524395, 0.48618144, -0.23806104, 0.13106647, 0.…
 ```
 
 One useful plot shows the difference in the two variables between reference and
@@ -392,10 +364,11 @@ Here are the GCMs (the models):
 
 ```r
 references$models
-#>  [1] "bcc-csm1-1"     "bcc-csm1-1-m"   "BNU-ESM"        "CanESM2"        "CCSM4"          "CNRM-CM5"      
-#>  [7] "CSIRO-Mk3-6-0"  "GFDL-ESM2M"     "GFDL-ESM2G"     "HadGEM2-ES365"  "HadGEM2-CC365"  "inmcm4"        
-#> [13] "IPSL-CM5A-LR"   "IPSL-CM5A-MR"   "IPSL-CM5B-LR"   "MIROC5"         "MIROC-ESM"      "MIROC-ESM-CHEM"
-#> [19] "MRI-CGCM3"      "NorESM1-M"
+#>  [1] "bcc-csm1-1"     "bcc-csm1-1-m"   "BNU-ESM"        "CanESM2"       
+#>  [5] "CCSM4"          "CNRM-CM5"       "CSIRO-Mk3-6-0"  "GFDL-ESM2M"    
+#>  [9] "GFDL-ESM2G"     "HadGEM2-ES365"  "HadGEM2-CC365"  "inmcm4"        
+#> [13] "IPSL-CM5A-LR"   "IPSL-CM5A-MR"   "IPSL-CM5B-LR"   "MIROC5"        
+#> [17] "MIROC-ESM"      "MIROC-ESM-CHEM" "MRI-CGCM3"      "NorESM1-M"
 ```
 
 Here are the emissions scenarios: 
@@ -411,7 +384,8 @@ And here are the climate parameters:
 
 ```r
 references$parameters
-#>  [1] "tasmin" "tasmax" "rhsmin" "rhsmax" "pr"     "rsds"   "uas"    "vas"    "huss"   "vpd"
+#>  [1] "tasmin" "tasmax" "rhsmin" "rhsmax" "pr"     "rsds"   "uas"    "vas"   
+#>  [9] "huss"   "vpd"
 ```
 
 Labels for each acronym are also available, for example:

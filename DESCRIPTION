@@ -36,15 +36,14 @@ Imports:
     parallel,
     pbapply,
     raster,
-    reticulate,
+    RNetCDF,
     rgdal,
     rlang,
     sp,
-    stringdist,
     tibble,
     tidyr,
     utils,
     rstudioapi,
     magrittr
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 VignetteBuilder: knitr

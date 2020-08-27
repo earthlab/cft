@@ -1,33 +1,3 @@
-filter_years <- function(start_year = 1950, end_year = 2099,
-                         available_start = 1950, available_end = 2099) {
-  
-  # Turn these into strings, then dates
-  available1 <- as.Date(glue::glue("{available_start}-01-01"))
-  available2 <- as.Date(glue::glue("{available_end}-12-31"))
-  date1 <- as.Date(glue::glue("{start_year}-01-01"))
-  date2 <- as.Date(glue::glue("{end_year}-12-31"))
-  
-  # Check that the end year is after the start year
-  if (date2 < date1) stop("end_year is set before start_year")
-  
-  # Check that the requested years are available
-  if (date1 < available1) {
-    stop(paste0("start_year is unavailable. Please choose a year between ",
-                available_start, " and ", available_end, "."))
-  }
-  if (date2 > available2) {
-    stop(paste0("end_year is unavailable. Please choose a year between ",
-                available_start, " and ", available_end, "."))
-  }
-  
-  # Return the difference in days between the first available and chosen dates
-  day1 <- as.integer(date1 - available1)
-  day2 <- as.integer(date2 - available1)
-  
-  # Return these as a range
-  return(seq(day1, day2))
-}
-
 
 get_aoi_indexes <- function(aoi, grid_ref) {
   
@@ -117,6 +87,23 @@ get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
   x1 <- index_pos[["x1"]]
   x2 <- index_pos[["x2"]]
   
+  # Get relative time indices for query
+  # if necessary, generate historical and future queries
+  hist_dates_avail <- seq.Date(as.Date("1950-01-01"), 
+                               as.Date("2005-12-31"), 
+                               by = 1)
+  future_dates_avail <- seq.Date(as.Date("2006-01-01"), 
+                                 as.Date("2099-12-31"), 
+                                 by = 1)
+  dates_requested <- seq.Date(as.Date(paste0(start_year, "-01-01")), 
+                              as.Date(paste0(end_year, "-12-31")), 
+                              by = 1)
+  is_historical <- any(years < 2006)
+  historical_time_indices <- which(hist_dates_avail %in% dates_requested)
+
+  is_future <- any(years > 2005)
+  future_time_indices <- which(future_dates_avail %in% dates_requested)
+
   # Build a list of lists with historical/future model queries and a file name
   queries <- list()
   for (model in models) {
@@ -148,22 +135,31 @@ get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
         # Build local file name
         file_name <- paste(c(param, area_name, model, ensemble, rcp,
                              "macav2metdata", as.character(start_year),
-                             as.character(end_year), "daily.nc"),
+                             as.character(end_year), "daily.tif"),
                            collapse = "_")
         
-        # Build remote historical and future file names
-        historical <- paste(c(urlbase, param, model, ensemble, "historical",
-                              "1950_2005", "CONUS_daily.nc"), collapse = "_")
-        future <- paste(c(urlbase, param, model, ensemble, rcp,
-                          "2006_2099", "CONUS_daily.nc"), collapse = "_")
-        
         # Build the temporal and spatial subsets
-        historical_subset <- glue::glue(paste0("?{var}[{0}:{1}:{ntime_hist}]",
-                                               "[{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
-                                               "#fillmismatch"))
-        future_subset <- glue::glue(paste0("?{var}[{0}:{1}:{ntime_model}]",
-                                           "[{y1}:{1}:{y2}][{x1}:{1}:{x2}]",
-                                           "#fillmismatch"))
+        if (is_historical) {
+          historical <- paste(c(urlbase, param, model, ensemble, "historical",
+                                "1950_2005", "CONUS_daily.nc"), collapse = "_")
+          historical_subset <- glue::glue(paste0("?{var}[{min(historical_time_indices)-1}:1:{max(historical_time_indices)-1}]",
+                                                 "[{y1}:1:{y2}][{x1}:1:{x2}]",
+                                                 "#fillmismatch"))
+          historical_url <- paste0(historical, historical_subset)
+        } else {
+          historical_url <- NA
+        }
+        
+        if (is_future) {
+          future <- paste(c(urlbase, param, model, ensemble, rcp,
+                            "2006_2099", "CONUS_daily.nc"), collapse = "_")
+          future_subset <- glue::glue(paste0("?{var}[{min(future_time_indices)-1}:1:{max(future_time_indices)-1}]",
+                                             "[{y1}:1:{y2}][{x1}:1:{x2}]",
+                                             "#fillmismatch"))
+          future_url <- paste0(future, future_subset)
+        } else {
+          future_url <- NA
+        }
 
         # For further reference, create a vector of data set elements
         elements <- c("model" = model,
@@ -178,35 +174,28 @@ get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
                       "internal_varname" = unname(var))
   
         # Combine everything into a query package and add to query list
-        historical_url <- paste0(historical, historical_subset)
-        future_url <- paste0(future, future_subset)
         paired_url <- c(historical_url, future_url)
-        queries[[length(queries) + 1]] <- list(paired_url, file_name, elements)
+        queries[[length(queries) + 1]] <- list(
+          paired_url = paired_url, 
+          file_name = file_name, 
+          elements = elements,
+          dates = list(historical = hist_dates_avail[historical_time_indices],
+                       future = future_dates_avail[future_time_indices]))
       }
     }
   }
-  
-  # Done.
   return(queries)
 }
 
 
 retrieve_subset <- function(query, years, aoi_info, area_name, local_dir) {
-
-  # Load python dependencies
-  Sys.setenv(KMP_DUPLICATE_LIB_OK = "true")  # avoid xarray openmp errors
-  reticulate::use_condaenv('cft', required = TRUE) 
-  xr <- reticulate::import("xarray")
-  np <- reticulate::import("numpy", convert = FALSE)
-  
-  # Split year range up
   start_year <- years[1]
   end_year <- years[2]
   
   # Unpack aoi info
   aoilats <- aoi_info[["aoilats"]]
   aoilons <- aoi_info[["aoilons"]]
-  mask_matrix <- aoi_info[["mask_matrix"]]
+  mask_matrix <- t(aoi_info[["mask_matrix"]])
   resolution <- aoi_info[["resolution"]]
 
   dir.create(local_dir, recursive = TRUE, showWarnings = FALSE)
@@ -222,121 +211,65 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir) {
 
     # Get the combined historical and modeled url query
     url_pair <- query[[1]]
-
-    # Save a local file
-    ds <- xr$open_mfdataset(url_pair, concat_dim = "time", combine = "nested")
-
-    # Filter dates
-    days <- filter_years(start_year, end_year)
-    ds <- ds$sel(time = c(days[[1]]: days[[length(days)]]))
-
-    # Create coordinate vectors
-    lats <- np$asarray(c(as.matrix(aoilats)), dtype = np$float32)
-    lons <- np$asarray(c(as.matrix(aoilons)), dtype = np$float32)
-    times <- np$asarray(days, np$int32)
     
-    # For a single point
-    if (length(lats) == 1) lats = c(lats)
-    if (length(lons) == 1) lons = c(lons)
-    
-    # Assign coordinates
-    ds <- ds$assign_coords(lon = lons,
-                           lat = lats,
-                           time = times)
-    ds <- ds$sortby('lat', ascending=FALSE)
-
-    # Mask by boundary
-    dsmask <- xr$DataArray(mask_matrix)
-    dsmask <- dsmask$fillna(0)
-    ds <- ds$where(dsmask$data == 1)
-
-    # Update Attributes
-    summary <- paste0(
-      "This archive contains daily downscaled meteorological and hydrological ",
-      "projections for the Conterminous United States at 1/24-deg resolution ",
-      "utilizing the Multivariate Adaptive Constructed Analogs (MACA, ",
-      "Abatzoglou, 2012) statistical downscaling method with the METDATA ",
-      "(Abatzoglou,2013) training dataset. The downscaled meteorological ",
-      "variables are maximum/minimum temperature(tasmax/tasmin), ",
-      "maximum/minimum relative humidity(rhsmax/rhsmin) precipitation ",
-      "amount(pr), downward shortwave solar radiation(rsds), eastward ",
-      "wind(uas), northward wind(vas), and specific humidity(huss). The ",
-      "downscaling is based on the 365-day model outputs from different ",
-      "global climate models (GCMs) from Phase 5 of the Coupled Model ",
-      "Inter-comparison Project (CMIP3) utlizing the historical (1950-2005) ",
-      "and future RCP4.5/8.5(2006-2099) scenarios. Leap days have been added ",
-      "to the dataset from the average values between Feb 28 and Mar 1 in ",
-      "order to aid modellers. Daily vapor pressure deficit is calculate from ",
-      "downscaled daily minimum and maximum temperatures for saturated vapor ",
-      "pressure and daily dew point temperature for actual vapor pressure. ",
-      "The dew point temperature is estimated by converting downscaled daily ",
-      "mean specific humidity to partial pressure of moisture in the ",
-      "atmosphere and estimating pressure from elevation using the barometric ",
-      "formula.")
-    attrs1 <- ds$attrs
-
-    # Vapor pressure is missing title information
-    if ( is.null(attrs1$title) ) {
-      attrs1$title <- paste("Downscaled daily meteorological data of",
-                            elements["parameter"], "from", elements["model"],
-                            "using the run", elements["ensemble"])
+    # generate raster data for queries and stack it together
+    any_historical <- !is.na(url_pair[1])
+    if (any_historical) {
+      nc <- RNetCDF::open.nc(url_pair[1])
+      historical_array <- RNetCDF::read.nc(nc)[[1]]
+      RNetCDF::close.nc(nc)
+    } else {
+      historical_array <- NA
     }
-    attrs2 <- list(
-      "title" = attrs1$title,
-      "author" = "John Abatzoglou-University of Idaho, jabatzoglou@uidaho.edu",
-      "comment" = paste0("Subsetted to ", area_name, "by the North Central ",
-                         "Climate Adaption Science Center"),
-      "summary" = summary,
-      "ensemble" = unname(elements["ensemble"]),
-      "model" = unname(elements["model"]),
-      "rcp" = unname(elements["rcp"]),
-      "coordinate_system" = attrs1$coordinate_system,
-      "geospatial_lat_min" = min(aoilats),
-      "geospatial_lat_max" = max(aoilats),
-      "geospatial_lon_min" = min(aoilons),
-      "geospatial_lon_max" = max(aoilons),
-      "geospatial_lat_units" = attrs1$geospatial_lat_units,
-      "geospatial_lon_units" = attrs1$geospatial_lon_units,
-      "geospatial_lat_resolution" = resolution,
-      "geospatial_lon_resolution" = resolution,
-      "geospatial_vertical_min" = "0",
-      "geospatial_vertical_min" = "0",
-      "geospatial_vertical_resolution" = "0",
-      "geospatial_vertical_positive" = "0",
-      "time_coverage_start" = glue::glue("{start_year}-01-01T00:0"),
-      "time_coverage_end" = glue::glue("{end_year}-12-31T00:0"),
-      "time_coverage_duration" = glue::glue("P{end_year - start_year + 1}Y"),
-      "time_coverage_resolution" = "P1D",
-      "time_units" = "days since 1950-01-01"
-    )
-    ds$attrs <- attrs2
+    
+    any_future <- !is.na(url_pair[2])
+    if (any_future) {
+      nc <- RNetCDF::open.nc(url_pair[2])
+      future_array <- RNetCDF::read.nc(nc)[[1]]
+      RNetCDF::close.nc(nc)
+    } else {
+      future_array <- NA
+    }
+    
+    ndate <- length(unlist(query$dates))
+    if (any_historical & any_future) {
+      stopifnot(dim(historical_array)[1:2] == dim(future_array)[1:2])
+      stopifnot(ndate == (dim(historical_array)[3] + dim(future_array)[3]))
+      final_array <- array(c(historical_array, future_array), 
+                         dim = c(dim(future_array)[1:2], 
+                                 ndate))
+    }
+    if (any_historical & !any_future) {
+      final_array <- historical_array
+    }
+    if (!any_historical & any_future) {
+      final_array <- future_array
+    } 
 
-    # Fix the variable attributes (why is grid_mapping a variable attribute?)
-    internal_varname <- elements[["internal_varname"]]
-    var_attrs <- ds[internal_varname]$attrs
-    if ("grid_mapping" %in% names(var_attrs)) {
-      var_attrs["grid_mapping"] <- NULL
+    # the following is necessary to retain 1-pixel dimensionality
+    # otherwise these dims won't be represented
+    expected_dims <- c(length(aoilons), 
+                       length(aoilats), 
+                       ndate)
+    if (length(dim(final_array)) < 3) {
+      final_array <- array(c(final_array), dim = expected_dims)
+    }
+    stopifnot(all(dim(final_array) == expected_dims))
+    
+    for (t in 1:ndate) {
+      # one dim needs to be reversed
+      final_array[, , t] <- final_array[, dim(final_array)[2]:1, t]
+      final_array[, , t][is.na(mask_matrix)] <- NA 
     }
 
-    # Assign attributes - reticulate doesn't handle this well
-    x <- tryCatch({
-      ds[internal_varname]$attrs <- var_attrs
-    }, error=function(e){})
-  
-    x <- tryCatch({
-      ds$time$attrs <- list("long_name" = "time", "units" = "days since 1950-01-01", "calendar" = "gregorian")
-    }, error=function(e){})
-
-    x <- tryCatch({
-      ds$lon$attrs <- list("long_name" = "longitude" , "units" = "degrees_east", "standard_name" = "longitude")
-    }, error=function(e){})
-
-    x <- tryCatch({
-      ds$lat$attrs = list("long_name" = "latitude" , "units" = "degrees_north", "standard_name" = "latitude")
-    }, error=function(e){})
-
-    # Save to local file
-    ds$to_netcdf(destination_file)
+    r <- raster::t(raster::brick(final_array, 
+                                 # note x and y are transposed
+                                 xmn = min(aoilats) - resolution/2, 
+                                 xmx = max(aoilats) + resolution/2, 
+                                 ymn = min(aoilons) - resolution/2, 
+                                 ymx = max(aoilons) + resolution/2, 
+                                 crs = "+init=epsg:4326"))
+    raster::writeRaster(r, destination_file)
   }
 
   # Keep track of file information

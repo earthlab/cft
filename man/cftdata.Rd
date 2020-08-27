@@ -5,9 +5,8 @@
 \title{Climate Futures Toolbox Data}
 \usage{
 cftdata(
-  shp_path,
+  aoi,
   area_name,
-  park,
   models = argument_reference$models,
   parameters = argument_reference$parameters,
   scenarios = argument_reference$scenarios,
@@ -18,19 +17,12 @@ cftdata(
 )
 }
 \arguments{
-\item{shp_path}{A path to a shapefile with which to clip the resulting data
-sets. This path may be to a local .shp file or a url to a zipped remote
-file. If this option is used, leave the `park` argument empty or set
-to NA. (character)}
+\item{aoi}{A Spatial object representing an area of interest. Could be a 
+SpatialPolygonsDataFrame, SpatialLinesDataFrame, or SpatialPointsDataFrame. 
+(Spatial)}
 
-\item{area_name}{If a shapefile path is used, provide a name to use as a
-reference to the location. This will be used in file names, attributes, and
-directories. (character)'}
-
-\item{park}{The name of a national park (e.g., "Yellowstone National
-Park", "Yellowstone Park", "Yellowstone", "yellowstone", etc.). The user may
-use this option in place of a shapefile path. In this case, leave the
-shp_path argument empty or set to NA. (character)}
+\item{area_name}{A name to use in file names, attributes, and
+directories. (character)}
 
 \item{models}{A list of global circulation models to download. If left empty
 all available models will be downloaded. A list of available of models is

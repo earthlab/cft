@@ -19,19 +19,6 @@ jobs:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
     
     steps:
-      - uses: goanpeca/setup-miniconda@v1
-        with:
-          auto-update-conda: true
-          python-version: '3.7'
-          miniconda-version: 'latest'
-          activate-environment: foo
-      - name: Conda info
-        shell: bash -l {0}
-        run: conda info
-      - name: Conda list
-        shell: pwsh
-        run: conda list
-        
       - uses: actions/checkout@v2
       
       - uses: r-lib/actions/setup-r@master
@@ -58,6 +45,5 @@ jobs:
       
       - name: Check
         run: |
-          cft::install_py_deps(method='conda', python_version = 3)
           rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
         shell: Rscript {0}
