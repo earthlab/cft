@@ -71,13 +71,24 @@ test_that("Invalid reference year ranges raise errors.", {
     regexp = "The requested reference period is at least partially")
 })
 
-test_that("Providing a single year for target/reference period works.", {
+test_that("Providing a single year for target period works.", {
   comparison <- compare_periods(df,
                                 var1 = "pr",
                                 var2 = "tasmax",
                                 agg_fun = "mean",
                                 target_period = 2007,
                                 reference_period = 2005:2006,
+                                scenarios = "rcp85")
+  expect_s3_class(comparison, "data.frame")
+})
+
+test_that("Providing a single year for reference period works.", {
+  comparison <- compare_periods(df,
+                                var1 = "pr",
+                                var2 = "tasmax",
+                                agg_fun = "mean",
+                                reference_period = 2007,
+                                target_period = 2005:2006,
                                 scenarios = "rcp85")
   expect_s3_class(comparison, "data.frame")
 })
