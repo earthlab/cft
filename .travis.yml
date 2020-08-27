@@ -6,10 +6,6 @@ addons:
     packages:
       - libnetcdf-dev
       - libgdal-dev
-#       - libproj-dev
-#       - libgeos-dev
-#       - libgdal-dev
-#       - netcdf-bin
 
 cache:
   packages: true
