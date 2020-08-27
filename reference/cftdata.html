@@ -134,9 +134,8 @@ using the Multivariate Adaptive Constructed Analogs (MACA) technique.</p>
     </div>
 
     <pre class="usage"><span class='fu'>cftdata</span>(
-  <span class='no'>shp_path</span>,
+  <span class='no'>aoi</span>,
   <span class='no'>area_name</span>,
-  <span class='no'>park</span>,
   <span class='kw'>models</span> <span class='kw'>=</span> <span class='no'>argument_reference</span>$<span class='no'>models</span>,
   <span class='kw'>parameters</span> <span class='kw'>=</span> <span class='no'>argument_reference</span>$<span class='no'>parameters</span>,
   <span class='kw'>scenarios</span> <span class='kw'>=</span> <span class='no'>argument_reference</span>$<span class='no'>scenarios</span>,
@@ -150,24 +149,15 @@ using the Multivariate Adaptive Constructed Analogs (MACA) technique.</p>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>shp_path</th>
-      <td><p>A path to a shapefile with which to clip the resulting data
-sets. This path may be to a local .shp file or a url to a zipped remote
-file. If this option is used, leave the `park` argument empty or set
-to NA. (character)</p></td>
+      <th>aoi</th>
+      <td><p>A Spatial object representing an area of interest. Could be a 
+SpatialPolygonsDataFrame, SpatialLinesDataFrame, or SpatialPointsDataFrame. 
+(Spatial)</p></td>
     </tr>
     <tr>
       <th>area_name</th>
-      <td><p>If a shapefile path is used, provide a name to use as a
-reference to the location. This will be used in file names, attributes, and
-directories. (character)'</p></td>
-    </tr>
-    <tr>
-      <th>park</th>
-      <td><p>The name of a national park (e.g., "Yellowstone National
-Park", "Yellowstone Park", "Yellowstone", "yellowstone", etc.). The user may
-use this option in place of a shapefile path. In this case, leave the
-shp_path argument empty or set to NA. (character)</p></td>
+      <td><p>A name to use in file names, attributes, and
+directories. (character)</p></td>
     </tr>
     <tr>
       <th>models</th>
