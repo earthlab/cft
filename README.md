@@ -24,8 +24,7 @@ The goal of cft is to provide easy climate data access
 climate scenario planning.
 This package allows you to: 
 
-1. Quickly acquire climate data subsets for a spatial region of interest, with
-first class support for US National Parks
+1. Quickly acquire climate data subsets for a spatial region of interest
 2. Summarize climate data at daily timesteps, and compute derived quantities
 3. Contrast reference and target time periods to understand differences in 
 climate over time, and
@@ -41,30 +40,10 @@ Install the development version of cft from [GitHub](https://github.com/) with:
 remotes::install_github("earthlab/cft")
 ```
 
-### Using Docker instead of a local installation
-
-If you are having trouble installing this package locally, or do not want
-to install the package locally, we also provide a 
-[Docker](https://www.docker.com/) image that has the 
-package and its dependencies pre-installed, along with
-RStudio server which can run in a web browser. 
-
-To use the Docker image, you'll need to have Docker installed (see 
-[Docker installation instructions here](https://docs.docker.com/install/)), then 
-run the following command from a terminal, replacing <yourpassword> with 
-a password of your choosing.
-
-```bash
-docker run -e PASSWORD=<yourpassword> -d -p 8787:8787 earthlab/cft
-```
-
-Then, in a web browser, navigate to localhost:8787. 
-Log in with username: `rstudio`, and the password you provided. 
-
 ## Quickstart guide
 
-To get daily precipitation data for Acadia National Park for a subset of 
-climate models, you can use the `cftdata()` function:
+To get daily maximum air temperature data for an area of interest, you can use 
+the `cftdata()` function:
 
 
 ```r
@@ -93,7 +72,7 @@ d <- cftdata(aoi = aoi, area_name = "windcave", parameters = "tasmax",
              years = c(2003, 2007), models = "CCSM4", scenarios = "rcp85")
 #> [1] "Building area of interest grid..."
 #> [1] "Retrieving climate data for windcave"
-#> [1] "Saving local files to /tmp/RtmpLoERqe/windcave"
+#> [1] "Saving local files to /tmp/RtmpfGqX6E/windcave"
 ```
 
 This gives you a data frame with paths to local climate data files: 
@@ -146,7 +125,7 @@ df %>%
   ggtitle("Wind Cave National Park, CCSM4, RCP 8.5")
 ```
 
-<img src="man/figures/README-ggplot-precip-1.png" title="plot of chunk ggplot-precip" alt="plot of chunk ggplot-precip" width="100%" />
+<img src="man/figures/README-readme-1.png" title="plot of chunk readme" alt="plot of chunk readme" width="100%" />
 
 ### Dive deeper
 
@@ -166,6 +145,27 @@ To build the documentation, execute the following command from the terminal:
 ```bash
 make
 ```
+
+
+### Using Docker instead of a local installation
+
+If you are having trouble installing this package locally, or do not want
+to install the package locally, we also provide a 
+[Docker](https://www.docker.com/) image that has the 
+package and its dependencies pre-installed, along with
+RStudio server which can run in a web browser. 
+
+To use the Docker image, you'll need to have Docker installed (see 
+[Docker installation instructions here](https://docs.docker.com/install/)), then 
+run the following command from a terminal, replacing <yourpassword> with 
+a password of your choosing.
+
+```bash
+docker run -e PASSWORD=<yourpassword> -d -p 8787:8787 earthlab/cft
+```
+
+Then, in a web browser, navigate to localhost:8787. 
+Log in with username: `rstudio`, and the password you provided. 
 
 ## Meta
 
