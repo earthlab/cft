@@ -1,24 +1,26 @@
 language: r
-sudo: false
+dist: bionic
+
+
+r_packages:
+  - rgdal
+  - rgeos
+  - sp
+  - RNetCDF
+
+addons:
+  apt:
+    sources:
+      - sourceline: 'ppa:ubuntugis/ppa'
+    packages:
+      - libudunits2-dev
+      - libnetcdf-dev
+      - libgdal-dev
+      - libproj-dev
+      - netcdf-bin
 
 cache:
   packages: true
-
-before_install:
-  # install libudunits2
-  - sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable
-  - sudo apt-get -q update
-  - sudo apt-get -y install libudunits2-dev
-  
-addons:
-  apt:
-    packages:
-      - libproj-dev
-      - libgeos-dev
-      - libgdal-dev
-      - libudunits2-dev
-      - netcdf-bin
-      - libnetcdf-dev
 
 after_success:
   - Rscript -e 'covr::codecov()'
