@@ -1,16 +1,14 @@
 language: r
 dist: bionic
 
-# addons:
-#   apt:
-#     sources:
-#       - ppa:ubuntugis/ubuntugis-unstable
-#     packages:
+addons:
+  apt:
+    packages:
+      - libnetcdf-dev
 #       - libproj-dev
 #       - libgeos-dev
 #       - libgdal-dev
 #       - netcdf-bin
-#       - libnetcdf-dev
 
 cache:
   packages: true
