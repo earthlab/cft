@@ -6,6 +6,7 @@ addons:
     packages:
       - libnetcdf-dev
       - libgdal-dev
+      - libproj-dev
 
 cache:
   packages: true
