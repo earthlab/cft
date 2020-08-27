@@ -13,7 +13,7 @@ addons:
     sources:
       - sourceline: 'ppa:ubuntugis/ppa'
     packages:
-      - libudunit2-dev
+      - libudunits2-dev
       - libnetcdf-dev
       - libgdal-dev
       - libproj-dev
