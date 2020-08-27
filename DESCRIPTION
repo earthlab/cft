@@ -44,6 +44,7 @@ Imports:
     tidyr,
     utils,
     rstudioapi,
-    magrittr
+    magrittr,
+    rgeos
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr

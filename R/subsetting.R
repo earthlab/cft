@@ -28,9 +28,18 @@ get_aoi_indexes <- function(aoi, grid_ref) {
 
 
 get_aoi_info <- function(aoi, grid_ref) {
-  
   # Get relative index positions to full grid
-  index_pos <- get_aoi_indexes(aoi, grid_ref)
+  # slight buffering of extent allows us to handle points
+  if (class(aoi) == "SpatialPointsDataFrame") {
+    orig_crs <- raster::projection(aoi)
+    # buffering is only possible in projected coordinate systems
+    proj_aoi <- sp::spTransform(aoi, sp::CRS("+init=epsg:5070"))
+    extended_aoi <- rgeos::gBuffer(proj_aoi, width=.1)
+    extended_aoi <- sp::spTransform(extended_aoi, orig_crs)
+  } else {
+    extended_aoi = aoi
+  }
+  index_pos <- get_aoi_indexes(extended_aoi, grid_ref)
   y1 <- index_pos[["y1"]]
   y2 <- index_pos[["y2"]]
   x1 <- index_pos[["x1"]]
@@ -40,17 +49,15 @@ get_aoi_info <- function(aoi, grid_ref) {
   res <- grid_ref$resolution
   ny <- (y2 - y1)
   nx <- (x2 - x1)
-  latmin <- aoi@bbox[2, 1]
-  lonmin <- aoi@bbox[1, 1]
+  latmin <- extended_aoi@bbox[2, 1]
+  lonmin <- extended_aoi@bbox[1, 1]
   aoilats <- latmin + (0:ny) * res
   aoilons <- lonmin + (0:nx) * res
 
   # Now create a mask as a matrix
   r <- raster::raster(ncols = length(aoilons), nrows = length(aoilats))
-  raster::extent(r) <- raster::extent(aoi)
-  r1 <- raster::rasterize(aoi, r)
-  r2 <- raster::rasterize(methods::as(aoi, "SpatialLines"), r)
-  r <- raster::cover(r1, r2)
+  raster::extent(r) <- raster::extent(extended_aoi)
+  r <- raster::rasterize(aoi, r, field = 1)
   mask_grid <- r * 0 + 1
   mask_matrix <- methods::as(mask_grid, "matrix")
   
