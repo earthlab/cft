@@ -11,26 +11,39 @@ Grid_Reference <- methods::setRefClass(
     ntime_model = "numeric"
   ),
   
-  # Assumed projection from MACAv2-METDATA https://databasin.org/datasets/51013afe955d498c89f848a7bf057668/
+  # Assumed projection from MACAv2-METDATA 
+  # https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future.html
   methods = list(
     initialize = function(crs = "+proj=longlat +datum=WGS84 +init=epsg:4326",
-                          extent = list("latmin" = 25.0631
-                                        "latmax" = 49.3960
-                                        "lonmin" = -124.7722
-                                        "lonmax" = -67.0648
-                          resolution = 0.0417
-                          nlat = 585,
-                          nlon = 1386,
-                          ntime_historical = 20453,
-                          ntime_model = 34332) {
-      crs <<- crs
-      resolution <<- resolution
-      extent <<- extent
-      lats <<- extent$latmin + (1:nlat) * resolution
-      lons <<- extent$lonmin + (1:nlon) * resolution
-      ntime_historical <<- ntime_historical
-      ntime_model <<- ntime_model
-    }
+                          extent = list("latmin" = 25.0631,"latmax" = 49.3960,
+                                        "lonmin" = -124.7722,"lonmax" = -67.0648),
+                                        resolution = 0.0417, nlat = 585, nlon = 1386,
+                                        ntime_historical = 20453,ntime_model = 34332){
+                            crs <<- crs
+                            resolution <<- resolution
+                            extent <<- extent
+                            
+                            # if we assume default initialization pull lat/lon 
+                            # from thredds server
+                            if (crs == "+proj=longlat +datum=WGS84 +init=epsg:4326" &
+                                extent$latmin == 25.0631 & extent$latmax == 49.3960 &
+                                extent$lonmin == -124.7722 & extent$lonmax == -67.0648 &
+                                resolution == 0.0417){
+                              nc <- RNetCDF::open.nc(paste0("https://cida.usgs.gov/",
+                                                            "thredds/dodsC/macav2metdata_daily_future",
+                                                            "?lat[0:1:584],lon[0:1:1385]"))
+                              nc_data <- RNetCDF::read.nc(nc)
+                              lats <<- as.vector(nc_data$lat)
+                              lons <<- as.vector(nc_data$lon)
+                            }
+                            else{
+                              lats <<- extent$latmin + (1:nlat) * resolution
+                              lons <<- extent$lonmin + (1:nlon) * resolution
+                            }
+                            
+                            ntime_historical <<- ntime_historical
+                            ntime_model <<- ntime_model
+                            }
   )
 )
 
