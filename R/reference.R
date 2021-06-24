@@ -14,11 +14,11 @@ Grid_Reference <- methods::setRefClass(
   # Assumed projection from MACAv2-METDATA https://databasin.org/datasets/51013afe955d498c89f848a7bf057668/
   methods = list(
     initialize = function(crs = "+proj=longlat +datum=WGS84 +init=epsg:4326",
-                          extent = list("latmin" = 25.06667, #25.0631, new projection as of Jun,12 2020
-                                        "latmax" = 49.4, #49.3960, new projection as of Jun,12 2020
-                                        "lonmin" = -124.7667, #-124.7722, new projection as of Jun,12 2020
-                                        "lonmax" = -67.05833), #-67.0648), new projection as of Jun,12 2020
-                          resolution = 0.04166667, #0.04166575, new projection as of Jun,12 2020
+                          extent = list("latmin" = 25.0631
+                                        "latmax" = 49.3960
+                                        "lonmin" = -124.7722
+                                        "lonmax" = -67.0648
+                          resolution = 0.0417
                           nlat = 585,
                           nlon = 1386,
                           ntime_historical = 20453,
