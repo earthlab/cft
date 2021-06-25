@@ -12,7 +12,7 @@ get_aoi_indexes <- function(aoi, grid_ref) {
   # get all grid cells within grid_ref that cover the area of interest (AOI)
   
   # Match coordinate systems
-  aoi <- sp::spTransform(aoi, grid_ref$crs)
+  aoi <- sp::spTransform(aoi, sp::CRS(grid_ref$crs))
   
   # Extract the bounding box of the area of interest
   lonmin <- aoi@bbox[1, 1]
@@ -27,18 +27,24 @@ get_aoi_indexes <- function(aoi, grid_ref) {
   lonmaxdiffs <- abs(grid_ref$lons - lonmax)
   latmindiffs <- abs(grid_ref$lats - latmin)
   latmaxdiffs <- abs(grid_ref$lats - latmax)
-
-  # Find the index positions of the closest grid coordinates to the aoi extent
-  x1 <- match(min(lonmindiffs),lonmindiffs)
-  x2 <- match(min(lonmaxdiffs),lonmaxdiffs)
-  y1 <- match(min(latmindiffs),latmindiffs)
-  y2 <- match(min(latmaxdiffs),latmaxdiffs)
-
-  # Create a list with each required grid index position
-  index_pos <- list("y1" = y1, "y2" = y2, "x1" = x1, "x2" = x2)
   
-  # Return list  
-  return(index_pos)
+  if (min(lonmindiffs) > grid_ref$resolution | min(lonmaxdiffs) > grid_ref$resolution |
+      min(latmindiffs) > grid_ref$resolution | min(latmaxdiffs) > grid_ref$resolution){
+    stop(paste0("AOI falls outside of climate projections. Note that the climate data",
+                " projection is: ",grid_ref$crs))
+    } else{
+    # Find the index positions of the closest grid coordinates to the aoi extent
+    x1 <- match(min(lonmindiffs),lonmindiffs)
+    x2 <- match(min(lonmaxdiffs),lonmaxdiffs)
+    y1 <- match(min(latmindiffs),latmindiffs)
+    y2 <- match(min(latmaxdiffs),latmaxdiffs)
+
+    # Create a list with each required grid index position
+    index_pos <- list("y1" = y1, "y2" = y2, "x1" = x1, "x2" = x2)
+    
+    # Return list  
+    return(index_pos)
+  }
 }
 
 
@@ -50,13 +56,13 @@ get_aoi_info <- function(aoi, grid_ref) {
     # buffering is only possible in projected coordinate systems
     proj_aoi <- sp::spTransform(aoi, sp::CRS("+init=epsg:5070"))
     extended_aoi <- rgeos::gBuffer(proj_aoi, width=.1)
-    extended_aoi <- sp::spTransform(extended_aoi, orig_crs)
+    extended_aoi <- sp::spTransform(extended_aoi, sp::CRS(orig_crs))
   } else {
     extended_aoi = aoi
   }
   
   # Match coordinate systems
-  extended_aoi <- sp::spTransform(extended_aoi, grid_ref$crs)
+  extended_aoi <- sp::spTransform(extended_aoi, sp::CRS(grid_ref$crs))
   
   index_pos <- get_aoi_indexes(extended_aoi, grid_ref)
   y1 <- index_pos[["y1"]]
@@ -65,20 +71,20 @@ get_aoi_info <- function(aoi, grid_ref) {
   x2 <- index_pos[["x2"]]
   
   # Get list of latitudes and longitudes from grid_ref
-  aoilons <- grid_ref$lons[x1:x2]
-  aoilats <- grid_ref$lats[y1:y2]
+  lons <- grid_ref$lons[x1:x2]
+  lats <- grid_ref$lats[y1:y2]
   res <- grid_ref$resolution
 
   # Now create a mask as a matrix
-  r <- raster::raster(ncols = length(aoilons), nrows = length(aoilats))
+  r <- raster::raster(ncols = length(lons), nrows = length(lats))
   raster::extent(r) <- raster::extent(extended_aoi)
   r <- raster::rasterize(extended_aoi, r, field = 1)
   mask_grid <- r * 0 + 1
   mask_matrix <- methods::as(mask_grid, "matrix")
   
   # Package all of this into one object
-  aoi_info <- list("aoilats" = aoilats,
-                   "aoilons" = aoilons,
+  aoi_info <- list("aoilats" = lats,
+                   "aoilons" = lons,
                    "mask_matrix" = mask_matrix,
                    "resolution" = res)
   
@@ -103,7 +109,7 @@ get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
   ntime_model <- grid_ref$ntime_model
   
   # Match coordinate systems
-  aoi <- sp::spTransform(aoi, grid_ref$crs)
+  aoi <- sp::spTransform(aoi, sp::CRS(grid_ref$crs))
   
   # Get relative index positions to full grid
   # slight buffering of extent allows us to handle points

@@ -70,7 +70,7 @@ cftdata <- function(aoi,
   arg_ref <- Argument_Reference()
 
   # Match coordinate systems
-  aoi <- sp::spTransform(aoi, grid_ref$crs)
+  aoi <- sp::spTransform(aoi, sp::CRS(grid_ref$crs))
 
   # Get geographic information about the aoi
   if (verbose) print("Building area of interest grid...")
