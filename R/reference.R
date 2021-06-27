@@ -11,7 +11,10 @@ Grid_Reference <- methods::setRefClass(
     ntime_model = "numeric"
   ),
   
-  # Assumed projection from MACAv2-METDATA 
+  # Assumed projection from MACAv2-METDATA from the Folder: "Multivariate Adaptive 
+  # Constructed Analogs (MACA) CMIP5 Statistically Downscaled Data for 
+  # Coterminous USA"	found at https://cida.usgs.gov/thredds/catalog.html
+  # geographic details found here: 
   # https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future.html
   methods = list(
     initialize = function(crs = "+proj=longlat +datum=WGS84 +init=epsg:4326",
