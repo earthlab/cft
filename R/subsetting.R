@@ -31,7 +31,8 @@ get_aoi_indexes <- function(aoi, grid_ref) {
   if (min(lonmindiffs) > grid_ref$resolution | min(lonmaxdiffs) > grid_ref$resolution |
       min(latmindiffs) > grid_ref$resolution | min(latmaxdiffs) > grid_ref$resolution){
     stop(paste0("AOI falls outside of climate projections. Note that the climate data",
-                " projection is: ",grid_ref$crs))
+                " projection is: ",grid_ref$crs)," covering the domain of the Contiguous",
+         " United States (lower 48 states) excluding the Florida Keys")
     } else{
     # Find the index positions of the closest grid coordinates to the aoi extent
     x1 <- match(min(lonmindiffs),lonmindiffs)
