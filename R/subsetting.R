@@ -19,43 +19,17 @@ get_aoi_indexes <- function(aoi, grid_ref) {
   lats_vector <- cropped_lats_lons_list$lats
   lons_vector <- cropped_lats_lons_list$lons
   
-  # # Extract the bounding box of the area of interest
-  # lonmin <- aoi_reproject@bbox[1, 1]
-  # lonmax <- aoi_reproject@bbox[1, 2]
-  # latmin <- aoi_reproject@bbox[2, 1]
-  # latmax <- aoi_reproject@bbox[2, 2]
-  # 
-  # # Calculate differences between bounding box and target grid coordinates to 
-  # # set the stage for the grid_ref lat/lons closest to those reported by the 
-  # # bounding box
-  # lonmindiffs <- abs(grid_ref$lons - lonmin)
-  # lonmaxdiffs <- abs(grid_ref$lons - lonmax)
-  # latmindiffs <- abs(grid_ref$lats - latmin)
-  # latmaxdiffs <- abs(grid_ref$lats - latmax)
-  # 
-  # if (min(lonmindiffs) > grid_ref$resolution | min(lonmaxdiffs) > grid_ref$resolution |
-  #     min(latmindiffs) > grid_ref$resolution | min(latmaxdiffs) > grid_ref$resolution){
-  #   stop(paste0("AOI falls outside of climate projections. Note that the climate data",
-  #               " projection is: ",grid_ref$crs," covering the domain of the mainland",
-  #               " Contiguous United States (lower 48 states) excluding the Florida Keys"))
-  #   } else{
-  #   # Find the index positions of the closest grid coordinates to the aoi extent
-  #   x1 <- match(min(lonmindiffs),lonmindiffs)
-  #   x2 <- match(min(lonmaxdiffs),lonmaxdiffs)
-  #   y1 <- match(min(latmindiffs),latmindiffs)
-  #   y2 <- match(min(latmaxdiffs),latmaxdiffs)
+  # Find the index positions of the closest grid coordinates in grid_ref to the aoi extent
+  x1 <- match(min(lons_vector),grid_ref$lons)
+  x2 <- match(max(lons_vector),grid_ref$lons)
+  y1 <- match(min(lats_vector),grid_ref$lats)
+  y2 <- match(max(lats_vector),grid_ref$lats)
   
-    # Find the index positions of the closest grid coordinates in grid_ref to the aoi extent
-    x1 <- match(min(lons_vector),grid_ref$lons)
-    x2 <- match(max(lons_vector),grid_ref$lons)
-    y1 <- match(min(lats_vector),grid_ref$lats)
-    y2 <- match(max(lats_vector),grid_ref$lats)
-
-    # Create a list with each required grid index position
-    index_pos <- list("y1" = y1, "y2" = y2, "x1" = x1, "x2" = x2)
-    
-    # Return list  
-    return(index_pos)
+  # Create a list with each required grid index position
+  index_pos <- list("y1" = y1, "y2" = y2, "x1" = x1, "x2" = x2)
+  
+  # Return list  
+  return(index_pos)
 }
 
 get_aoi_latlon_vectors <- function(aoi,grid_ref){
@@ -72,7 +46,7 @@ get_aoi_latlon_vectors <- function(aoi,grid_ref){
   grid_ref_extent_matrix <- rbind(c(min(lons), max(lons)), c(min(lats), max(lats)))
   
   # create a latitude and longitude matrix of size grid_ref
-  lats_matrix <- matrix(rep(lats,each=length(lons)),ncol=length(lons),byrow=TRUE)
+  lats_matrix <- matrix(rep(rev(lats),each=length(lons)),ncol=length(lons),byrow=TRUE)
   lons_matrix <- matrix(rep(lons,each=length(lats)),nrow=length(lats))
   
   # Now create latitude raster and flatten to single vector
@@ -134,10 +108,6 @@ get_aoi_info <- function(aoi, grid_ref) {
   crs(r) <- sp::CRS(grid_ref$crs)
   raster::extent(r) <- raster::extent(grid_ref_extent_matrix)
   r <- raster::setValues(r,values = matrix(1, dim(r)[1], dim(r)[2]))
-  #raster::extent(r) <- raster::extent(extended_aoi)
-  #r <- raster::rasterize(extended_aoi, r, field = 1)
-  #mask_grid <- r * 0 + 1
-  #mask_grid <- mask(x = r, mask = extended_aoi)
   r2 <-crop(r,extent(extended_aoi))
   mask_grid <-mask(r2,extended_aoi)
   mask_matrix <- methods::as(mask_grid, "matrix")
