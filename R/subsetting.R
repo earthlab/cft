@@ -79,17 +79,15 @@ get_aoi_info <- function(aoi, grid_ref) {
     orig_crs <- raster::projection(aoi)
     # buffering is only possible in projected coordinate systems
     proj_aoi <- sp::spTransform(aoi, sp::CRS("+init=epsg:5070"))
-    extended_aoi <- rgeos::gBuffer(proj_aoi, width=.1) #why 0.1? what units?
-    extended_aoi <- sp::spTransform(extended_aoi, sp::CRS(orig_crs))
-  } else {
-    extended_aoi = aoi
+    aoi <- rgeos::gBuffer(proj_aoi, width=.1) #why 0.1? what units?
+    aoi <- sp::spTransform(extended_aoi, sp::CRS(orig_crs))
   }
   
   # Match coordinate systems
-  extended_aoi <- sp::spTransform(extended_aoi, sp::CRS(grid_ref$crs))
+  aoi_reproject <- sp::spTransform(aoi, sp::CRS(grid_ref$crs))
   
   # Get bounding indices within grid_ref matrix
-  index_pos <- get_aoi_indexes(extended_aoi, grid_ref)
+  index_pos <- get_aoi_indexes(aoi_reproject, grid_ref)
   y1 <- index_pos[["y1"]]
   y2 <- index_pos[["y2"]]
   x1 <- index_pos[["x1"]]
@@ -108,8 +106,8 @@ get_aoi_info <- function(aoi, grid_ref) {
   crs(r) <- sp::CRS(grid_ref$crs)
   raster::extent(r) <- raster::extent(grid_ref_extent_matrix)
   r <- raster::setValues(r,values = matrix(1, dim(r)[1], dim(r)[2]))
-  r2 <-crop(r,extent(extended_aoi))
-  mask_grid <-mask(r2,extended_aoi)
+  r2 <-crop(r,extent(aoi_reproject))
+  mask_grid <-mask(r2,aoi_reproject)
   mask_matrix <- methods::as(mask_grid, "matrix")
 
   # Package all of this into one object
@@ -147,14 +145,12 @@ get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
     orig_crs <- raster::projection(aoi)
     # buffering is only possible in projected coordinate systems
     proj_aoi <- sp::spTransform(aoi, sp::CRS("+init=epsg:5070"))
-    extended_aoi <- rgeos::gBuffer(proj_aoi, width=.1) #Why 0.1? What units?
-    extended_aoi <- sp::spTransform(extended_aoi, orig_crs)
-  } else {
-    extended_aoi = aoi
+    aoi <- rgeos::gBuffer(proj_aoi, width=.1) #Why 0.1? What units?
+    aoi <- sp::spTransform(extended_aoi, orig_crs)
   }
 
   # Get relative index positions to full grid
-  index_pos <- get_aoi_indexes(extended_aoi, grid_ref)
+  index_pos <- get_aoi_indexes(aoi, grid_ref)
   y1 <- index_pos[["y1"]]
   y2 <- index_pos[["y2"]]
   x1 <- index_pos[["x1"]]
@@ -209,7 +205,7 @@ get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
         file_name <- paste(c(param, area_name, model, ensemble, rcp,
                              "macav2metdata", as.character(start_year),
                              as.character(end_year), "daily.tif"),
-                           collapse = "_")
+                             collapse = "_")
         
         # Build the temporal and spatial subsets
         if (is_historical) {
