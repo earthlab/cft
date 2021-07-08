@@ -80,7 +80,7 @@ get_aoi_info <- function(aoi, grid_ref) {
     # buffering is only possible in projected coordinate systems
     proj_aoi <- sp::spTransform(aoi, sp::CRS("+init=epsg:5070"))
     aoi <- rgeos::gBuffer(proj_aoi, width=.1) #why 0.1? what units?
-    aoi <- sp::spTransform(extended_aoi, sp::CRS(orig_crs))
+    aoi <- sp::spTransform(aoi, sp::CRS(orig_crs))
   }
   
   # Match coordinate systems
@@ -146,7 +146,7 @@ get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
     # buffering is only possible in projected coordinate systems
     proj_aoi <- sp::spTransform(aoi, sp::CRS("+init=epsg:5070"))
     aoi <- rgeos::gBuffer(proj_aoi, width=.1) #Why 0.1? What units?
-    aoi <- sp::spTransform(extended_aoi, orig_crs)
+    aoi <- sp::spTransform(aoi, orig_crs)
   }
 
   # Get relative index positions to full grid
