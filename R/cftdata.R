@@ -70,14 +70,14 @@ cftdata <- function(aoi,
   arg_ref <- Argument_Reference()
 
   # Match coordinate systems
-  aoi <- sp::spTransform(aoi, sp::CRS(grid_ref$crs))
+  aoi_reproject <- sp::spTransform(aoi, sp::CRS(grid_ref$crs))
 
   # Get geographic information about the aoi
   if (verbose) print("Building area of interest grid...")
-  aoi_info <- get_aoi_info(aoi, grid_ref)
+  aoi_info <- get_aoi_info(aoi_reproject, grid_ref)
 
   # Build url queries, filenames, and dataset elements
-  queries <- get_queries(aoi, area_name, years, models, parameters, scenarios,
+  queries <- get_queries(aoi_reproject, area_name, years, models, parameters, scenarios,
                          arg_ref, grid_ref)
 
   # Setup parallelization
