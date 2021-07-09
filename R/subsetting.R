@@ -13,7 +13,7 @@ get_aoi_indexes <- function(aoi, grid_ref) {
   
   # Match coordinate systems
   if (raster::compareCRS(crs(aoi),crs(grid_ref$crs),verbatim=TRUE)){
-    aoi_reproject <- sp::spTransform(aoi, sp::crs(grid_ref$crs))}
+    aoi_reproject <- sp::spTransform(aoi, crs(grid_ref$crs))}
   
   #Get cropped latitude and longitude vectors
   cropped_lats_lons_list <- get_aoi_latlon_vectors(aoi_reproject,grid_ref)
@@ -38,7 +38,7 @@ get_aoi_latlon_vectors <- function(aoi,grid_ref){
   
   # Match coordinate systems
   if (raster::compareCRS(crs(aoi),crs(grid_ref$crs),verbatim=TRUE)){
-    aoi_reproject <- sp::spTransform(aoi, sp::crs(grid_ref$crs))}
+    aoi_reproject <- sp::spTransform(aoi, crs(grid_ref$crs))}
   
   # Get Latitude and Longitude vectors
   lats <- grid_ref$lats
@@ -53,7 +53,7 @@ get_aoi_latlon_vectors <- function(aoi,grid_ref){
   
   # Now create latitude raster and flatten to single vector
   r_lat <- raster::raster(ncols = length(grid_ref$lons), nrows = length(grid_ref$lats))
-  crs(r_lat) <- sp::CRS(grid_ref$crs)
+  crs(r_lat) <- crs(grid_ref$crs)
   raster::extent(r_lat) <- raster::extent(grid_ref_extent_matrix)
   r_lat <- raster::setValues(r_lat,values = lats_matrix)
   r2 <-crop(r_lat,extent(aoi_reproject))
@@ -62,7 +62,7 @@ get_aoi_latlon_vectors <- function(aoi,grid_ref){
   
   # Now create longitude raster and flatten to single vector
   r_lon <- raster::raster(ncols = length(grid_ref$lons), nrows = length(grid_ref$lats))
-  crs(r_lon) <- sp::CRS(grid_ref$crs)
+  crs(r_lon) <- crs(grid_ref$crs)
   raster::extent(r_lon) <- raster::extent(grid_ref_extent_matrix)
   r_lon <- raster::setValues(r_lon,values = lons_matrix)
   r2 <-crop(r_lon,extent(aoi_reproject))
@@ -80,14 +80,14 @@ get_aoi_info <- function(aoi, grid_ref) {
   if (class(aoi) == "SpatialPointsDataFrame") {
     orig_crs <- raster::projection(aoi)
     # buffering is only possible in projected coordinate systems
-    proj_aoi <- sp::spTransform(aoi, sp::CRS("+init=epsg:5070"))
+    proj_aoi <- sp::spTransform(aoi, crs("+init=epsg:5070"))
     aoi <- rgeos::gBuffer(proj_aoi, width=.1) #why 0.1? what units?
-    aoi <- sp::spTransform(aoi, sp::crs(orig_crs))
+    aoi <- sp::spTransform(aoi, crs(orig_crs))
   }
   
   # Match coordinate systems
   if (raster::compareCRS(crs(aoi),crs(grid_ref$crs),verbatim=TRUE)){
-    aoi_reproject <- sp::spTransform(aoi, sp::crs(grid_ref$crs))}
+    aoi_reproject <- sp::spTransform(aoi, crs(grid_ref$crs))}
   
   # Get bounding indices within grid_ref matrix
   index_pos <- get_aoi_indexes(aoi_reproject, grid_ref)
@@ -97,8 +97,8 @@ get_aoi_info <- function(aoi, grid_ref) {
   x2 <- index_pos[["x2"]]
   
   # Get list of latitudes and longitudes from grid_ref
-  lons <- grid_ref$lons#[x1:x2]
-  lats <- grid_ref$lats#[y1:y2]
+  lons <- grid_ref$lons
+  lats <- grid_ref$lats
   res <- grid_ref$resolution
   
   # create 2 x 2 matrix for bounding box
@@ -106,7 +106,7 @@ get_aoi_info <- function(aoi, grid_ref) {
 
   # Now create a mask as a matrix
   r <- raster::raster(ncols = length(lons), nrows = length(lats))
-  crs(r) <- sp::CRS(grid_ref$crs)
+  crs(r) <- crs(grid_ref$crs)
   raster::extent(r) <- raster::extent(grid_ref_extent_matrix)
   r <- raster::setValues(r,values = matrix(1, dim(r)[1], dim(r)[2]))
   r2 <-crop(r,extent(aoi_reproject))
@@ -141,14 +141,14 @@ get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
   
   # Match coordinate systems
   if (raster::compareCRS(crs(aoi),crs(grid_ref$crs),verbatim=TRUE)){
-    aoi <- sp::spTransform(aoi, sp::crs(grid_ref$crs))}
+    aoi <- sp::spTransform(aoi, crs(grid_ref$crs))}
   
   # Get relative index positions to full grid
   # slight buffering of extent allows us to handle points
   if (class(aoi) == "SpatialPointsDataFrame") {
     orig_crs <- raster::projection(aoi)
     # buffering is only possible in projected coordinate systems
-    proj_aoi <- sp::spTransform(aoi, sp::CRS("+init=epsg:5070"))
+    proj_aoi <- sp::spTransform(aoi, crs("+init=epsg:5070"))
     aoi <- rgeos::gBuffer(proj_aoi, width=.1) #Why 0.1? What units?
     aoi <- sp::spTransform(aoi, orig_crs)
   }
