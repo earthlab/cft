@@ -56,7 +56,7 @@ get_aoi_latlon_vectors <- function(aoi,grid_ref){
   raster::crs(r_lat) <- raster::crs(grid_ref$crs)
   raster::extent(r_lat) <- raster::extent(grid_ref_extent_matrix)
   r_lat <- raster::setValues(r_lat,values = lats_matrix)
-  r2 <-raster::crop(r_lat,extent(aoi_reproject))
+  r2 <-raster::crop(r_lat,raster::extent(aoi_reproject))
   r2_matrix <- methods::as(r2, "matrix")
   lats_vector <- r2_matrix[,1]
   
@@ -65,7 +65,7 @@ get_aoi_latlon_vectors <- function(aoi,grid_ref){
   raster::crs(r_lon) <- raster::crs(grid_ref$crs)
   raster::extent(r_lon) <- raster::extent(grid_ref_extent_matrix)
   r_lon <- raster::setValues(r_lon,values = lons_matrix)
-  r2 <-raster::crop(r_lon,extent(aoi_reproject))
+  r2 <-raster::crop(r_lon,raster::extent(aoi_reproject))
   r2_matrix <- methods::as(r2, "matrix")
   lons_vector <- r2_matrix[1,]
   
@@ -109,7 +109,7 @@ get_aoi_info <- function(aoi, grid_ref) {
   raster::crs(r) <- raster::crs(grid_ref$crs)
   raster::extent(r) <- raster::extent(grid_ref_extent_matrix)
   r <- raster::setValues(r,values = matrix(1, dim(r)[1], dim(r)[2]))
-  r2 <-raster::crop(r,extent(aoi_reproject))
+  r2 <-raster::crop(r,raster::extent(aoi_reproject))
   mask_grid <-raster::mask(r2,aoi_reproject)
   mask_matrix <- methods::as(mask_grid, "matrix")
 
