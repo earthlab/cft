@@ -13,7 +13,7 @@ get_aoi_indexes <- function(aoi, grid_ref) {
   
   # Match coordinate systems
   if (raster::compareCRS(crs(aoi),crs(grid_ref$crs),verbatim=TRUE)){
-    aoi_reproject <- sp::spTransform(aoi, sp::CRS(grid_ref$crs))}
+    aoi_reproject <- sp::spTransform(aoi, sp::crs(grid_ref$crs))}
   
   #Get cropped latitude and longitude vectors
   cropped_lats_lons_list <- get_aoi_latlon_vectors(aoi_reproject,grid_ref)
@@ -38,7 +38,7 @@ get_aoi_latlon_vectors <- function(aoi,grid_ref){
   
   # Match coordinate systems
   if (raster::compareCRS(crs(aoi),crs(grid_ref$crs),verbatim=TRUE)){
-    aoi_reproject <- sp::spTransform(aoi, sp::CRS(grid_ref$crs))}
+    aoi_reproject <- sp::spTransform(aoi, sp::crs(grid_ref$crs))}
   
   # Get Latitude and Longitude vectors
   lats <- grid_ref$lats
@@ -82,12 +82,12 @@ get_aoi_info <- function(aoi, grid_ref) {
     # buffering is only possible in projected coordinate systems
     proj_aoi <- sp::spTransform(aoi, sp::CRS("+init=epsg:5070"))
     aoi <- rgeos::gBuffer(proj_aoi, width=.1) #why 0.1? what units?
-    aoi <- sp::spTransform(aoi, sp::CRS(orig_crs))
+    aoi <- sp::spTransform(aoi, sp::crs(orig_crs))
   }
   
   # Match coordinate systems
   if (raster::compareCRS(crs(aoi),crs(grid_ref$crs),verbatim=TRUE)){
-    aoi_reproject <- sp::spTransform(aoi, sp::CRS(grid_ref$crs))}
+    aoi_reproject <- sp::spTransform(aoi, sp::crs(grid_ref$crs))}
   
   # Get bounding indices within grid_ref matrix
   index_pos <- get_aoi_indexes(aoi_reproject, grid_ref)
@@ -141,7 +141,7 @@ get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
   
   # Match coordinate systems
   if (raster::compareCRS(crs(aoi),crs(grid_ref$crs),verbatim=TRUE)){
-    aoi <- sp::spTransform(aoi, sp::CRS(grid_ref$crs))}
+    aoi <- sp::spTransform(aoi, sp::crs(grid_ref$crs))}
   
   # Get relative index positions to full grid
   # slight buffering of extent allows us to handle points
