@@ -13,10 +13,10 @@ get_aoi_indexes <- function(aoi, grid_ref) {
   
   # Match coordinate systems
   if (!raster::compareCRS(raster::crs(aoi),raster::crs(grid_ref$crs),verbatim=TRUE)){
-    aoi_reproject <- sp::spTransform(aoi, raster::crs(grid_ref$crs))}
+    aoi <- sp::spTransform(aoi, raster::crs(grid_ref$crs))}
   
   #Get cropped latitude and longitude vectors
-  cropped_lats_lons_list <- get_aoi_latlon_vectors(aoi_reproject,grid_ref)
+  cropped_lats_lons_list <- get_aoi_latlon_vectors(aoi,grid_ref)
   lats_vector <- cropped_lats_lons_list$lats
   lons_vector <- cropped_lats_lons_list$lons
   
@@ -38,7 +38,7 @@ get_aoi_latlon_vectors <- function(aoi,grid_ref){
   
   # Match coordinate systems
   if (!raster::compareCRS(raster::crs(aoi),raster::crs(grid_ref$crs),verbatim=TRUE)){
-    aoi_reproject <- sp::spTransform(aoi, raster::crs(grid_ref$crs))}
+    aoi <- sp::spTransform(aoi, raster::crs(grid_ref$crs))}
   
   # Get Latitude and Longitude vectors
   lats <- grid_ref$lats
@@ -56,7 +56,7 @@ get_aoi_latlon_vectors <- function(aoi,grid_ref){
   raster::crs(r_lat) <- raster::crs(grid_ref$crs)
   raster::extent(r_lat) <- raster::extent(grid_ref_extent_matrix)
   r_lat <- raster::setValues(r_lat,values = lats_matrix)
-  r2 <-raster::crop(r_lat,raster::extent(aoi_reproject))
+  r2 <-raster::crop(r_lat,raster::extent(aoi))
   r2_matrix <- methods::as(r2, "matrix")
   lats_vector <- r2_matrix[,1]
   
@@ -65,7 +65,7 @@ get_aoi_latlon_vectors <- function(aoi,grid_ref){
   raster::crs(r_lon) <- raster::crs(grid_ref$crs)
   raster::extent(r_lon) <- raster::extent(grid_ref_extent_matrix)
   r_lon <- raster::setValues(r_lon,values = lons_matrix)
-  r2 <-raster::crop(r_lon,raster::extent(aoi_reproject))
+  r2 <-raster::crop(r_lon,raster::extent(aoi))
   r2_matrix <- methods::as(r2, "matrix")
   lons_vector <- r2_matrix[1,]
   
@@ -87,10 +87,10 @@ get_aoi_info <- function(aoi, grid_ref) {
   
   # Match coordinate systems
   if (!raster::compareCRS(raster::crs(aoi),raster::crs(grid_ref$crs),verbatim=TRUE)){
-    aoi_reproject <- sp::spTransform(aoi, raster::crs(grid_ref$crs))}
+    aoi <- sp::spTransform(aoi, raster::crs(grid_ref$crs))}
   
   # Get bounding indices within grid_ref matrix
-  index_pos <- get_aoi_indexes(aoi_reproject, grid_ref)
+  index_pos <- get_aoi_indexes(aoi, grid_ref)
   y1 <- index_pos[["y1"]]
   y2 <- index_pos[["y2"]]
   x1 <- index_pos[["x1"]]
@@ -109,8 +109,8 @@ get_aoi_info <- function(aoi, grid_ref) {
   raster::crs(r) <- raster::crs(grid_ref$crs)
   raster::extent(r) <- raster::extent(grid_ref_extent_matrix)
   r <- raster::setValues(r,values = matrix(1, dim(r)[1], dim(r)[2]))
-  r2 <-raster::crop(r,raster::extent(aoi_reproject))
-  mask_grid <-raster::mask(r2,aoi_reproject)
+  r2 <-raster::crop(r,raster::extent(aoi))
+  mask_grid <-raster::mask(r2,aoi)
   mask_matrix <- methods::as(mask_grid, "matrix")
 
   # Package all of this into one object
