@@ -54,5 +54,5 @@ test_that("AOI is in CFT data range", {
   test_extent_matrix <- rbind(c(round(test@extent@xmin), round(test@extent@xmax)), 
                                 c(round(test@extent@ymin), round(test@extent@ymax)))
   
-  expect_true(pt@bbox == test_extent_matrix)
+  expect_true(length(which(pt@bbox != test_extent_matrix)) == 0)
 })
