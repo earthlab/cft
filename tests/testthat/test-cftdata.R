@@ -50,7 +50,7 @@ test_that("AOI is in CFT data range", {
                        models = "CCSM4", 
                        scenarios = "rcp85")
   
-  test <- raster(file_refs$local_path)
+  test <- raster::raster(file_refs$local_path)
   test_extent_matrix <- rbind(c(round(test@extent@xmin), round(test@extent@xmax)), 
                                 c(round(test@extent@ymin), round(test@extent@ymax)))
   
