@@ -12,7 +12,7 @@ get_aoi_indexes <- function(aoi, grid_ref) {
   # get all grid cells within grid_ref that cover the area of interest (AOI)
   
   # Match coordinate systems
-  if (raster::compareCRS(raster::crs(aoi),raster::crs(grid_ref$crs),verbatim=TRUE)){
+  if (!raster::compareCRS(raster::crs(aoi),raster::crs(grid_ref$crs),verbatim=TRUE)){
     aoi_reproject <- sp::spTransform(aoi, raster::crs(grid_ref$crs))}
   
   #Get cropped latitude and longitude vectors
@@ -37,7 +37,7 @@ get_aoi_latlon_vectors <- function(aoi,grid_ref){
   # Get latitudes and longitude vectors clipped to area of interest (aoi)
   
   # Match coordinate systems
-  if (raster::compareCRS(raster::crs(aoi),raster::crs(grid_ref$crs),verbatim=TRUE)){
+  if (!raster::compareCRS(raster::crs(aoi),raster::crs(grid_ref$crs),verbatim=TRUE)){
     aoi_reproject <- sp::spTransform(aoi, raster::crs(grid_ref$crs))}
   
   # Get Latitude and Longitude vectors
@@ -86,7 +86,7 @@ get_aoi_info <- function(aoi, grid_ref) {
   }
   
   # Match coordinate systems
-  if (raster::compareCRS(raster::crs(aoi),raster::crs(grid_ref$crs),verbatim=TRUE)){
+  if (!raster::compareCRS(raster::crs(aoi),raster::crs(grid_ref$crs),verbatim=TRUE)){
     aoi_reproject <- sp::spTransform(aoi, raster::crs(grid_ref$crs))}
   
   # Get bounding indices within grid_ref matrix
