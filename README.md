@@ -40,7 +40,7 @@ remotes::install_github("earthlab/cft")
 ```
 
 ``` r
-# for latest code release after use
+# for latest code release use
 remotes::install_github("earthlab/cft@*release",force=TRUE)
 ```
 
