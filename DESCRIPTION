@@ -12,8 +12,13 @@ Authors@R: c(
            role = c("aut", "cre"),
            email = "maxwell.b.joseph@colorado.edu",
            comment = c(ORCID = "0000-0002-7745-9990"))
+    person(given = "Natasha",
+           family = "Stavros",
+           role = c("aut"),
+           email = "natasha.stavros@colorado.edu",
+           comment = c(ORCID = "0000-0001-6657-7310"))
     )
-Maintainer: Travis Williams <travis.williams@colorado.edu>
+Maintainer: Natasha Stavros <natasha.stavros@colorado.edu>
 Description: Process data for the Climate Futures Toolkit.
 URL: https://github.com/earthlab/cst
 License: GPL-3
