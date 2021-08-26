@@ -39,6 +39,11 @@ Install the development version of cft from
 remotes::install_github("earthlab/cft")
 ```
 
+``` r
+# for latest code release use
+remotes::install_github("earthlab/cft@*release",force=TRUE)
+```
+
 ## Quickstart guide
 
 To get daily maximum air temperature data for an area of interest, you
