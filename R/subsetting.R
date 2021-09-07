@@ -306,7 +306,7 @@ retrieve_subset <- function(query, years, aoi_info, area_name, local_dir) {
     
     ndate <- length(unlist(query$dates))
     if (any_historical & any_future) {
-      stopifnot(dim(historical_array)[1:2] == dim(future_array)[1:2])
+      #stopifnot(dim(historical_array)[1:2] == dim(future_array)[1:2])
       stopifnot(ndate == (dim(historical_array)[3] + dim(future_array)[3]))
       final_array <- array(c(historical_array, future_array), 
                          dim = c(dim(future_array)[1:2], 
