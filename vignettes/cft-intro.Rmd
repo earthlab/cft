@@ -59,6 +59,7 @@ for that location.
 
 ```r
 library(cft)
+library(rgdal)
 library(tibble)
 library(ggplot2)
 library(tidyr)

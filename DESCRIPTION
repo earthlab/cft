@@ -18,7 +18,7 @@ Authors@R: c(
            email = "natasha.stavros@colorado.edu",
            comment = c(ORCID = "0000-0001-6657-7310"))
     )
-Maintainer: Natasha Stavros <natasha.stavros@colorado.edu>
+Maintainer: Ty Tuff <ty.tuff@colorado.edu>
 Description: Process data for the Climate Futures Toolkit.
 URL: https://github.com/earthlab/cst
 License: GPL-3
@@ -50,6 +50,7 @@ Imports:
     utils,
     rstudioapi,
     magrittr,
-    rgeos
+    rgeos,
+    rgdal
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr
