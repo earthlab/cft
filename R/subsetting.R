@@ -149,7 +149,9 @@ get_queries <- function(aoi, area_name, years, models, parameters, scenarios,
   if (class(aoi) == "SpatialPointsDataFrame") {
     orig_crs <- raster::projection(aoi)
     # buffering is only possible in projected coordinate systems
-    proj_aoi <- sp::spTransform(aoi, raster::crs("+init=epsg:5070"))
+    #proj_aoi <- sp::spTransform(aoi, raster::crs("+init=epsg:5070"))
+    proj_aoi <- sp::spTransform(aoi, raster::crs("+proj=longlat +datum=WGS84 +init=epsg:4326"))
+    
     aoi <- rgeos::gBuffer(proj_aoi, width=.1) #Why 0.1? What units?
     aoi <- sp::spTransform(aoi, orig_crs)
   }
