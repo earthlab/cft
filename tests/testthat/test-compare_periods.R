@@ -1,6 +1,14 @@
 context("compare_periods")
 
 aoi <- rgdal::readOGR(system.file("extdata", "wolftrap.geojson", package = "cft"))
+
+
+
+
+
+
+
+
 file_refs <- cftdata(aoi = aoi, 
                      area_name = "wolftrap",
                      parameters = c("tasmax", "pr"),

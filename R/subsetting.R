@@ -80,10 +80,10 @@ get_aoi_info <- function(aoi, grid_ref) {
   if (class(aoi) == "SpatialPointsDataFrame") {
     orig_crs <- raster::projection(aoi)
     # buffering is only possible in projected coordinate systems
-    proj_aoi <- sp::spTransform(aoi, raster::crs("+init=epsg:5070"))
-    #proj_aoi <- sp::spTransform(aoi, raster::crs("+proj=longlat +datum=WGS84 +init=epsg:4326"))
+    #proj_aoi <- sp::spTransform(aoi, raster::crs("+init=epsg:5070"))
+    proj_aoi <- sp::spTransform(aoi, raster::crs("+proj=longlat +datum=WGS84 +init=epsg:4326"))
     aoi <- rgeos::gBuffer(proj_aoi, width=.1) #why 0.1? what units?
-    aoi <- sp::spTransform(aoi, raster::crs(orig_crs))
+    #aoi <- sp::spTransform(aoi, raster::crs(orig_crs))
   }
   
   # Match coordinate systems
@@ -91,7 +91,7 @@ get_aoi_info <- function(aoi, grid_ref) {
     aoi <- sp::spTransform(aoi, raster::crs(grid_ref$crs))}
   
   # Get bounding indices within grid_ref matrix
-  index_pos <- get_aoi_indexes(aoi, grid_ref)
+   index_pos <- get_aoi_indexes(aoi, grid_ref)
   y1 <- index_pos[["y1"]]
   y2 <- index_pos[["y2"]]
   x1 <- index_pos[["x1"]]

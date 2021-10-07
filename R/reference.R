@@ -1,33 +1,36 @@
-Grid_Reference <- methods::setRefClass(
-  "Grid_Reference",
-  
-  fields = list(
-    crs = "character",
-    extent = "list",
-    resolution = "numeric",
-    lats = "numeric",
-    lons = "numeric",
-    ntime_historical = "numeric",
-    ntime_model = "numeric"
-  ),
-  
-  # Assumed projection from MACAv2-METDATA from the Folder: "Multivariate Adaptive 
-  # Constructed Analogs (MACA) CMIP5 Statistically Downscaled Data for 
-  # Coterminous USA"	found at https://cida.usgs.gov/thredds/catalog.html
-  # geographic details found here: 
-  # https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future.html
-  methods = list(
-    initialize = function(crs = "+proj=longlat +datum=WGS84 +init=epsg:4326",
-                          extent = list("latmin" = 25.0631,"latmax" = 49.3960,
+Grid_Reference <- 
+#methods::setRefClass(
+#   "Grid_Reference",
+#   
+#   fields = list(
+#     crs = "character",
+#     extent = "list",
+#     resolution = "numeric",
+#     lats = "numeric",
+#     lons = "numeric",
+#     ntime_historical = "numeric",
+#     ntime_model = "numeric"
+#   ),
+#   
+#   # Assumed projection from MACAv2-METDATA from the Folder: "Multivariate Adaptive 
+#   # Constructed Analogs (MACA) CMIP5 Statistically Downscaled Data for 
+#   # Coterminous USA"	found at https://cida.usgs.gov/thredds/catalog.html
+#   # geographic details found here: 
+#   # https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future.html
+#   methods = list(
+#     initialize = 
+function(crs = "+proj=longlat +datum=WGS84 +init=epsg:4326",
+                          extent = list("latmin" = 25.0631,"latmax" = 49.3960, # these very specific values define the coverage are for the API dataset.
                                         "lonmin" = -124.7722,"lonmax" = -67.0648),
                                         resolution = 0.0417, nlat = 585, nlon = 1386,
                                         ntime_historical = 20453,ntime_model = 34332){
-                            crs <<- crs
-                            resolution <<- resolution
-                            extent <<- extent
+                            #crs <- crs  # These three lines were using double assignment arrows (<<-) that I'm trying to remove.
+                            #resolution <- resolution
+                            #extent <- extent
                             
                             # if we assume default initialization pull lat/lon 
                             # from thredds server
+                            # Lay down a base grid representing the available data from the API
                             if (crs == "+proj=longlat +datum=WGS84 +init=epsg:4326" &
                                 extent$latmin == 25.0631 & extent$latmax == 49.3960 &
                                 extent$lonmin == -124.7722 & extent$lonmax == -67.0648 &
@@ -36,19 +39,21 @@ Grid_Reference <- methods::setRefClass(
                                                             "thredds/dodsC/macav2metdata_daily_future",
                                                             "?lat[0:1:584],lon[0:1:1385]"))
                               nc_data <- RNetCDF::read.nc(nc)
-                              lats <<- as.vector(nc_data$lat)
-                              lons <<- as.vector(nc_data$lon)
+                              lats <- as.vector(nc_data$lat)
+                              lons <- as.vector(nc_data$lon)
                             }
                             else{
-                              lats <<- extent$latmin + (1:nlat) * resolution
-                              lons <<- extent$lonmin + (1:nlon) * resolution
+                              stop('this data source does not provide data for your location')
                             }
                             
-                            ntime_historical <<- ntime_historical
-                            ntime_model <<- ntime_model
+                            #ntime_historical <- ntime_historical #these also had double assignment arrows that I'm trying to get rid of. 
+                            #ntime_model <- ntime_model
+                            
+                            print(list(crs = crs, resolution=resolution, extent=extent, nc_data=nc_data, lats=lats, lons=lons, ntime_historical=ntime_historical, ntime_model=ntime_model))
+                            return(list(crs = crs, resolution=resolution, extent=extent, nc_data=nc_data, lats=lats, lons=lons, ntime_historical=ntime_historical, ntime_model=ntime_model))
                             }
-  )
-)
+#  )
+#)
 
 
 Argument_Reference <- methods::setRefClass(
@@ -160,4 +165,5 @@ argument_reference <- Argument_Reference()$initFields()
 #' @param grid_reference Reference object containing geographical coordinate
 #' information of the full grid in which the data is provided.
 #' @export
-grid_reference <- Grid_Reference()$initFields()
+grid_reference <- Grid_Reference()
+grid_ref <- Grid_Reference()
