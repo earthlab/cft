@@ -1,18 +1,26 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
+# Welcome to the Climate Futures Toolbox
 
-```{r}
+The purpose of this package is to make it easy to download and process climate data from the ... database.
+
+```{r load libraries, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(tidync)
 library(osmdata)
 library(ggthemes)
 library(sf)
 library(epitools)
+library(stars)
 ```
 
-```{r}
+
+# Use read-only mode to find available data without initiating a full download.
+```{r available data, cache=TRUE}
 available_data <- function(web_link = "https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future",
                            verbose = TRUE){
   
@@ -155,11 +163,12 @@ return(list(
 }}
 
 inputs <- available_data()
-inputs
+
 ```
 
-
-```{r}
+# Filter the results from available_data() to specify which data to actually download.
+## Filter time
+```{r filter time, cache=TRUE}
 # Year 2034
 time_min <- 72048
 time_max <- 73048
@@ -171,7 +180,8 @@ tail(input_times)
 
 ```
 
-```{r}
+## Filter variable names
+```{r filter variables, cache=TRUE}
 input_variables <- inputs$variable_names %>% 
   filter(Variable == "Specific Humidity") %>% 
   filter(Model == c("Beijing Normal University - Earth System Model", "Hadley Global Environment Model 2 - Earth System 365 (day)")) %>%
@@ -182,8 +192,8 @@ input_variables
 ```
 
 
-
-```{r}
+# Establish area of interst (AOI) by bounding box
+```{r bounding box, cache=TRUE}
 bb <- getbb("yellowstone")
 bb_manual <- bb
 bb_manual[1,1] <- -111.15594815937659
@@ -198,14 +208,14 @@ osmdata_sf()
 my_boundary
 ```
 
-```{r}
+```{r pulled bounding box, cache=TRUE}
 boundaries <- my_boundary$osm_multipolygons
 pulled_bb <- st_bbox(boundaries)
 pulled_bb
 ```
 
 
-```{r, cache=TRUE, warning=FALSE}
+```{r plot of area of interest, cache=TRUE, warning=FALSE, fig.height=8}
 basemap <- ggplot(data = boundaries) +
   geom_sf(fill = "cornflowerblue") +
   geom_sf_text(aes(label = boundaries$name)) 
@@ -213,8 +223,8 @@ basemap <- ggplot(data = boundaries) +
 basemap
 ```
 
-
-```{r, cache=TRUE}
+# Download data by AOI, filtered times, and filtered variable list
+```{r pulled data, cache=TRUE}
 
 Pulled_data <- inputs$src %>% 
   hyper_filter(lat = lat <= c(pulled_bb[4]+0.05) & lat >= c(pulled_bb[2]-0.05)) %>% 
@@ -224,13 +234,13 @@ Pulled_data <- inputs$src %>%
     ) %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
 
-print(Pulled_data)
+head(Pulled_data)
 ```
 
 
 
 
-```{r}
+```{r check pulled data, cache=TRUE, fig.height=8}
 check_filter <- Pulled_data %>% filter(time == min(Pulled_data$time))
 
 ggplot() +
@@ -240,15 +250,18 @@ ggplot() +
 ```
 
 
-
-```{r}
-library(stars)
+# Melt downloaded points into a raster before aggretation
+```{r rasterize with stars, cache=TRUE, fig.height=7}
 rast <- st_rasterize(Pulled_data)
 plot(rast)
 
 ```
 
-```{r}
+#Aggregate downloaded data to different spatial objects
+
+
+## Aggregate to polygon (faster method)
+```{r aggregate to polygon, cache=TRUE}
 extracted <- st_extract(rast, boundaries$geometry) %>% st_as_sf()
 
 ggplot(data=extracted) +
@@ -264,20 +277,19 @@ cube <- src_slc %>% hyper_tbl_cube(select_var = c("huss_BNU-ESM_r1i1p1_rcp45"))
 cube
 ```
 
+## Clip raster with polygon (slower method)
+```{r cut out raster with polygon, cache=TRUE}
+small_pulled <- Pulled_data %>%
+  filter(time == 72049)
+intersection <- st_intersection(x = small_pulled, y = boundaries$geometry)
 
-```{r}
-
-intersection <- st_intersection(x = Pulled_data, y = boundaries)
-
-int_result <- intersection %>% 
-  group_by(osm_id) 
-
+names(intersection)[1:2] <- c("Humidity","b")
 ```
 
 
-```{r}
+```{r plot of raster mask, cache=TRUE, fig.height=8}
 ggplot() +
-  geom_sf(data = int_result, aes(color=huss_BNU.ESM_r1i1p1_rcp45)) +
+  geom_sf(data = intersection, aes(color=Humidity)) +
   scale_color_continuous(low="thistle2", high="darkred", 
                        guide="colorbar",na.value="white")+
   geom_sf(data = boundaries, fill = NA, color = "white") +
@@ -286,34 +298,23 @@ ggplot() +
 ```
 
 
-```{r, fig.width=5}
-ggplot() +
-  geom_sf(data = int_result, aes(color=huss_BNU.ESM_r1i1p1_rcp45)) +
-  geom_sf(data = boundaries, fill = NA, color = NA) +
-  scale_fill_continuous(low="thistle2", high="darkred", 
-                       guide="colorbar",na.value="white")+
-  facet_grid(cols = vars(name)) +
-  theme_tufte() 
-```
-
-
-
-```{r, fig.height=10}
+## Aggregate to River segment
+```{r pull river data, fig.height=10, cache=TRUE}
 river <- opq(bb_manual) %>%
   add_osm_feature(key = "waterway", value = "river") %>%
   osmdata_sf() 
 river
 ```
 
-```{r}
+```{r aggregate data to river lines, cache=TRUE}
 river_sub <- st_buffer(river$osm_lines, 2200)
 extracted_river <- st_extract(rast,  river_sub$geometry ) %>% st_as_sf()
-extracted_river
+head(extracted_river)
 #colnames(extracted_river)[1] <- "var1"
 
 ```
 
-```{r, fig.height=3}
+```{r plot river aggregation, fig.height=8, cache=TRUE}
 ggplot(data=extracted_river) +
   geom_sf(aes(fill = huss_BNU.ESM_r1i1p1_rcp45), size=0) +
    coord_sf(crs = 4326, xlim = c(pulled_bb[1], pulled_bb[3]), 
@@ -327,8 +328,8 @@ ggplot(data=extracted_river) +
   theme_tufte()
 ```
 
-
-```{r, fig.height=10}
+## Aggregate to road segment
+```{r pull road data, fig.height=8, cache=TRUE}
 roads <- opq(bb_manual) %>%
   add_osm_feature(key = 'highway', value = 'primary') %>%
   add_osm_feature(key = 'highway', value = 'secondary') %>%
@@ -337,7 +338,9 @@ roads_sub <- st_buffer(roads$osm_lines, 2200)
 extracted_roads <- st_extract(rast,  roads_sub$geometry ) %>% st_as_sf()
 extracted_roads
 ```
-```{r, fig.height=3}
+
+
+```{r plot road aggregation, fig.height=8, cache=TRUE}
 ggplot(data=extracted_roads) +
   geom_sf(aes(fill = huss_BNU.ESM_r1i1p1_rcp45), size=0) +
    coord_sf(crs = 4326) +
