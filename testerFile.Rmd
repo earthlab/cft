@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Climate Futures Toolbox"
 output:
   html_document:
     df_print: paged
