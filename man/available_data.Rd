@@ -2,7 +2,7 @@
 % Please edit documentation in R/available_data.R
 \name{available_data}
 \alias{available_data}
-\title{available_data}
+\title{Available data}
 \usage{
 available_data(
   web_link = "https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future",
@@ -18,5 +18,8 @@ available_data(
 
 }
 \description{
-available_data
+Available data
+}
+\examples{
+
 }

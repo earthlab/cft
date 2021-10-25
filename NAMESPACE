@@ -3,4 +3,3 @@
 export("%>%")
 export(available_data)
 importFrom(magrittr,"%>%")
-importFrom(rlang,.data)

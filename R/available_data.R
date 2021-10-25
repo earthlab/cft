@@ -1,12 +1,13 @@
-#' available_data
+#' Available data
 #'
 #' @param web_link 
 #' @param verbose 
 #'
-#' @importFrom magrittr %>%
-#' @importFrom rlang .data
 #' @return
 #' @export
+#'
+#' @examples
+#' 
 available_data <- function(web_link = "https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future",
 verbose = TRUE){
   
