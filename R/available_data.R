@@ -107,8 +107,8 @@ verbose = TRUE){
                                                            remove = FALSE)
     
     variable_names_verbose <- variable_names_verbose  %>% 
-      left_join(labels %>% select("variable_abbreviation","name"), by=c("variable_abbreviation")) %>% 
-      left_join(labels %>% select("model_abbreviation","name"), by=c("model_abbreviation")) %>% 
+      left_join(labels %>% dplyr::select("variable_abbreviation","name"), by=c("variable_abbreviation")) %>% 
+      left_join(labels %>% dplyr::select("model_abbreviation","name"), by=c("model_abbreviation")) %>% 
       left_join(scenarios, by=c("scenario_abbreviation")) 
     
     
@@ -127,7 +127,7 @@ verbose = TRUE){
       left_join(units, by=c("Variable"))
     
     
-    variable_names_verbose <- variable_names_verbose %>% select("Available variable",
+    variable_names_verbose <- variable_names_verbose %>% dplyr::select("Available variable",
                                                                 "Variable",
                                                                 "Units",
                                                                 "Model",
