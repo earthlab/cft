@@ -20,6 +20,6 @@ Please follow [this](http://adv-r.had.co.nz/Style.html) styleguide for your cont
 
 ### Questions?
 
-Get in touch: [maxwell.b.joseph@colorado.edu](mailto:maxwell.b.joseph@colorado.edu)
+Get in touch: [ty.tuff@colorado.edu](mailto:ty.tuff@colorado.edu)
 
 ### Thanks for contributing!

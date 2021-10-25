@@ -3,6 +3,10 @@ Type: Package
 Title: Climate Futures Toolbox
 Version: 0.4.0
 Authors@R: c(
+    person(given = "Ty",
+           family = "Tuff",
+           role = c("aut"),
+           email = "ty.tuff@colorado.edu"),
     person(given = "Travis",
            family = "Williams",
            role = c("aut"),
