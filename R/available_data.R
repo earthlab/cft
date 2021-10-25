@@ -1,9 +1,9 @@
 #' Available data
 #'
-#' @param web_link 
-#' @param verbose
+#' @param web_link A web link to the api data source 
+#' @param verbose Should the api outputs be combined with internal metadata
 #'
-#' @return
+#' @return Data.frame of requested data
 #' @export
 available_data <- function(web_link = "https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future",
 verbose = TRUE){

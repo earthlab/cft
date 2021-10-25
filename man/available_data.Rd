@@ -10,12 +10,12 @@ available_data(
 )
 }
 \arguments{
-\item{web_link}{}
+\item{web_link}{A web link to the api data source}
 
-\item{verbose}{}
+\item{verbose}{Should the api outputs be combined with internal metadata}
 }
 \value{
-
+Data.frame of requested data
 }
 \description{
 Available data
