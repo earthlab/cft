@@ -25,7 +25,7 @@ Authors@R: c(
     )
 Maintainer: Ty Tuff <ty.tuff@colorado.edu>
 Description: Process data for the Climate Futures Toolkit.
-URL: https://github.com/earthlab/cst
+URL: https://github.com/earthlab/cft
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

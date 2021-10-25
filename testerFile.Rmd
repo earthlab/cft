@@ -122,17 +122,17 @@ ggplot() +
 rast <- st_rasterize(Pulled_data) 
 plot(rast)
 
-Pulled_data %>% as.data.frame() %>% brick()
+#Pulled_data %>% as.data.frame() %>% brick()
 ```
 
 
 # GridMET data
-```{r}
+```{r GridMet view}
 param_meta$gridmet
 ```
 
 
-```{r, fig.height=8}
+```{r GridMet, eval=FALSE,fig.height=8}
 subed_times <- input_times %>% filter(index == 1) 
 GM <- getGridMET(st_as_sfc(st_bbox(boundaries)), "tmax", startDate = "1997-04-06", endDate = "1999-12-30")
 SM_stars <- GM$gridmet_tmax %>% brick() %>%  st_as_stars()
@@ -144,7 +144,7 @@ ggplot() +
   coord_sf(crs = 4326) 
 ```
 
-```{r}
+```{r, eval=FALSE}
 st_get_dimension_values(rast)
 #combo <- st_extract(rast, SM_stars) %>% st_as_sf()
 combo <- c(SM_stars,rast , along_crs=TRUE, along=c(1,2))
@@ -153,7 +153,7 @@ class(SM_stars)
 plot(combo$X2000.01.01)
 ```
 
-```{r}
+```{r, eval=FALSE}
 plot(combo$X2000.01.01)
 
 #extracted_GridMET <- st_extract(rast, SM_stars) %>% st_as_sf()
