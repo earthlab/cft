@@ -1,4 +1,4 @@
-#' Available data
+#' @title Available data
 #'
 #' @param web_link A web link to the api data source 
 #' @param verbose Should the api outputs be combined with internal metadata
