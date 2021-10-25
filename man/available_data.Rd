@@ -20,6 +20,3 @@ available_data(
 \description{
 Available data
 }
-\examples{
-
-}

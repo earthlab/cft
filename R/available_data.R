@@ -1,7 +1,7 @@
 #' Available data
 #'
 #' @param web_link 
-#' @param verbose 
+#' @param verbose
 #'
 #' @return
 #' @export
