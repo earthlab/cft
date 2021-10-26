@@ -30,9 +30,7 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Suggests: 
-    covr,
     ggplot2,
-    ggrepel,
     knitr,
     lubridate,
     rmarkdown,
