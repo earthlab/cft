@@ -1,7 +1,7 @@
 Package: cft
 Type: Package
 Title: Climate Futures Toolbox
-Version: 0.4.0
+Version: 0.5.0
 Authors@R: c(
     person(given = "Ty",
            family = "Tuff",
@@ -36,26 +36,16 @@ Suggests:
     knitr,
     lubridate,
     rmarkdown,
+    ggthemes,
     testthat (>= 2.1.0)
 Imports:
-    dplyr,
-    glue,
-    httr,
-    methods,
-    ncdf4,
-    parallel,
-    pbapply,
+    tidync,
+    osmdata,
+    sf,
+    stars,
+    tidyverse,
+    epitools,
     raster,
-    RNetCDF,
-    rgdal,
-    rlang,
-    sp,
-    tibble,
-    tidyr,
-    utils,
-    rstudioapi,
-    magrittr,
-    rgeos,
-    rgdal
+    climateR
 RoxygenNote: 7.1.2
 VignetteBuilder: knitr

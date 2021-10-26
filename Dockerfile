@@ -1,6 +1,6 @@
 FROM rocker/geospatial
 
-MAINTAINER Max Joseph maxwell.b.joseph@colorado.edu
+MAINTAINER Ty Tuff ty.tuff@colorado.edu
 
 RUN install2.r ggrepel pbapply
 
