@@ -1,7 +1,7 @@
 Package: cft
 Type: Package
 Title: Climate Futures Toolbox
-Version: 0.5.0
+Version: 0.5.1
 Authors@R: c(
     person(given = "Ty",
            family = "Tuff",
