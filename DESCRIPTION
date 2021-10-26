@@ -29,11 +29,8 @@ URL: https://github.com/earthlab/cft
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Suggests: 
-    knitr,
-    rmarkdown,
-    ggthemes,
-    testthat (>= 2.1.0)
+Depends:
+    R (>= 3.5.0)
 Imports:
     tidyverse,
     tidync,
@@ -41,10 +38,14 @@ Imports:
     osmdata,
     sf,
     stars,
-    tidyverse,
     epitools,
     raster,
     climateR,
     ggplot2
-RoxygenNote: 7.1.2
+Suggests: 
+    knitr,
+    rmarkdown,
+    ggthemes,
+    testthat (>= 2.1.0)
 VignetteBuilder: knitr
+RoxygenNote: 7.1.2
