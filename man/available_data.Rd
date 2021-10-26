@@ -2,16 +2,7 @@
 % Please edit documentation in R/available_data.R
 \name{available_data}
 \alias{available_data}
-\title{Available data
-
-Using the default web link, this package retrieves daily gridded data sets of General Circulation Model
-(GCM) runs clipped to areas of interest and returns a data frame of the
-file names and they're storage paths. Each of these data sets represent
-a single GCM, climate variable and Representative Concentration Pathway (RCP)
-from 1950 to 2099. The 1950 to 2005 portion of this time period represents
-historical data while the 2006 to 2099 portion represents modeled data. 
-The original data sets may be found at
-\url{http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_aggregated_macav2_catalog.html}}
+\title{Available data}
 \usage{
 available_data(
   web_link = "https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future",
@@ -27,8 +18,6 @@ available_data(
 Data.frame of requested data
 }
 \description{
-Available data
-
 Using the default web link, this package retrieves daily gridded data sets of General Circulation Model
 (GCM) runs clipped to areas of interest and returns a data frame of the
 file names and they're storage paths. Each of these data sets represent

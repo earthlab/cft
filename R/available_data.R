@@ -1,6 +1,6 @@
 #' @title Available data
 #'
-#' Using the default web link, this package retrieves daily gridded data sets of General Circulation Model
+#' @description Using the default web link, this package retrieves daily gridded data sets of General Circulation Model
 #' (GCM) runs clipped to areas of interest and returns a data frame of the
 #' file names and they're storage paths. Each of these data sets represent
 #' a single GCM, climate variable and Representative Concentration Pathway (RCP)

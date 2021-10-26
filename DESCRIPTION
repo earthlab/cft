@@ -30,20 +30,20 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Suggests: 
-    ggplot2,
     knitr,
-    lubridate,
     rmarkdown,
     ggthemes,
     testthat (>= 2.1.0)
 Imports:
     tidync,
+    lubridate,
     osmdata,
     sf,
     stars,
     tidyverse,
     epitools,
     raster,
-    climateR
+    climateR,
+    ggplot2
 RoxygenNote: 7.1.2
 VignetteBuilder: knitr
