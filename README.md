@@ -4,28 +4,133 @@ The purpose of this package is to make it easy to download and process
 climate data from the … database.
 
 ``` r
-library(tidyverse)
-library(tidync)
-library(osmdata)
-library(ggthemes)
-library(sf)
-library(epitools)
-library(stars)
-library(raster)
 library(devtools)
-#install_github("earthlab/cft")
-library(cft)
-library(R.utils)
-#sourceDirectory("R/", modifiedOnly=TRUE)
-library(basemaps)
-library(climateR)
+install_github("earthlab/cft", force = TRUE)
 ```
 
-# Use read-only mode to find available data without initiating a full download.
+    ##      checking for file ‘/private/var/folders/22/mx9_4z1n7y51fwwhhlxl4m480000gp/T/Rtmp0F0exG/remotes210e645aab09/earthlab-cft-4018fe1/DESCRIPTION’ ...  ✓  checking for file ‘/private/var/folders/22/mx9_4z1n7y51fwwhhlxl4m480000gp/T/Rtmp0F0exG/remotes210e645aab09/earthlab-cft-4018fe1/DESCRIPTION’
+    ##   ─  preparing ‘cft’:
+    ##      checking DESCRIPTION meta-information ...  ✓  checking DESCRIPTION meta-information
+    ##   ─  checking for LF line-endings in source and make files and shell scripts
+    ##   ─  checking for empty or unneeded directories
+    ##      Omitted ‘LazyData’ from DESCRIPTION
+    ##   ─  building ‘cft_0.6.1.tar.gz’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/aggregate data to river lines_670bd722f51b97c3ad6598fffd57e58e.RData’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/aggregate data to river lines_670bd722f51b97c3ad6598fffd57e58e.rdb’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/aggregate data to river lines_670bd722f51b97c3ad6598fffd57e58e.rdx’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/aggregate to polygon_5f07f97eb4d7d040b3acd114cec45532.RData’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/aggregate to polygon_5f07f97eb4d7d040b3acd114cec45532.rdb’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/aggregate to polygon_5f07f97eb4d7d040b3acd114cec45532.rdx’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/check pulled data_b43bb385f4a2591e27da11bdd7bab029.RData’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/check pulled data_b43bb385f4a2591e27da11bdd7bab029.rdb’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/check pulled data_b43bb385f4a2591e27da11bdd7bab029.rdx’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/cut out raster with polygon_b04fb82598e84eb08a21c5f4a99ff83e.RData’
+    ##   Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :     Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/cut out raster with polygon_b04fb82598e84eb08a21c5f4a99ff83e.rdb’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/cut out raster with polygon_b04fb82598e84eb08a21c5f4a99ff83e.rdx’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/filter variables_3369a74acf6e0afcd8d290a28270d3b3.RData’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/plot of area of interest_02194fb3ac90d34adcdfe8cd9dff53ef.RData’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/plot of area of interest_02194fb3ac90d34adcdfe8cd9dff53ef.rdb’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/plot of area of interest_02194fb3ac90d34adcdfe8cd9dff53ef.rdx’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/plot of raster mask_fcc3b67762709baf94384c06fbdd90d7.RData’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/plot of raster mask_fcc3b67762709baf94384c06fbdd90d7.rdb’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/plot of raster mask_fcc3b67762709baf94384c06fbdd90d7.rdx’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/plot river aggregation_c5c1b1c3a0569be6fada52ec52943aba.RData’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/plot river aggregation_c5c1b1c3a0569be6fada52ec52943aba.rdb’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/plot river aggregation_c5c1b1c3a0569be6fada52ec52943aba.rdx’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/plot road aggregation_fca9bd1650272f0e55a9424a1b6ecdc7.RData’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/plot road aggregation_fca9bd1650272f0e55a9424a1b6ecdc7.rdb’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/plot road aggregation_fca9bd1650272f0e55a9424a1b6ecdc7.rdx’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/pull river data_bdd59a2744fde1cb5cb82ad54af9bacb.RData’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/pulled bounding box_fa0353e08c013151e4f47b2c26074f65.RData’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/pulled bounding box_fa0353e08c013151e4f47b2c26074f65.rdb’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/pulled bounding box_fa0353e08c013151e4f47b2c26074f65.rdx’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/rasterize with stars_d529bd9550264647d31f8b738391e1a7.RData’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/rasterize with stars_d529bd9550264647d31f8b738391e1a7.rdb’
+    ##      Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
+    ##      storing paths of more than 100 bytes is not portable:
+    ##      ‘cft/vignettes/testerFile_cache/markdown_github/rasterize with stars_d529bd9550264647d31f8b738391e1a7.rdx’
+    ##      
+    ## 
 
 ``` r
-inputs <- available_data()
+library(cft)
+ls(pos="package:cft")
 ```
+
+    ## [1] "available_data"
+
+``` r
+?available_data
+```
+
+
+
+    # Use read-only mode to find available data without initiating a full download.
+
+    ```r
+    inputs <- cft::available_data()
 
     ## Trying to connect to the USGS.gov API
 
