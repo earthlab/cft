@@ -8,31 +8,26 @@ output:
 
 The purpose of this package is to make it easy to download and process climate data from the ... database.
 
-```{r load libraries, warning=FALSE, message=FALSE}
-library(tidyverse)
-library(tidync)
-library(osmdata)
-library(ggthemes)
-library(sf)
-library(epitools)
-library(stars)
-library(raster)
+```{r install cft, warning=FALSE, message=FALSE}
 library(devtools)
-#install_github("earthlab/cft")
+install_github("earthlab/cft", force = TRUE)
+```
+
+```{r}
 library(cft)
-library(R.utils)
-#sourceDirectory("R/", modifiedOnly=TRUE)
-library(basemaps)
-library(climateR)
+ls(pos="package:cft")
+```
+
+
+```{r}
+?available_data
+```
 ```
 
 
 # Use read-only mode to find available data without initiating a full download.
 ```{r available data, cache=TRUE}
-
-
-inputs <- available_data()
-
+inputs <- cft::available_data()
 ```
 
 # Filter the results from available_data() to specify which data to actually download.
@@ -46,7 +41,6 @@ input_times <- inputs$available_times %>% add_column(index = 0)
 input_times[which(inputs$available_times[,1] > time_min & inputs$available_times[,1] < time_max ),3] <- 1
 
 tail(input_times)
-
 ```
 
 ## Filter variable names
