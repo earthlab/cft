@@ -110,7 +110,7 @@ verbose = TRUE){
     
     
     
-    variable_names_verbose  <- variable_names %>% separate("Available variable", "_",
+    variable_names_verbose  <- variable_names %>% lubridate::separate("Available variable", "_",
                                                            into = c("variable_abbreviation", "model_abbreviation", "ensemble","scenario_abbreviation"), 
                                                            remove = FALSE)
     
