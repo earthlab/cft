@@ -31,9 +31,8 @@ Encoding: UTF-8
 LazyData: true
 Depends:
     R (>= 3.5.0),
-    tidync
-Imports:
-    dplyr,
+    tidyverse,
+    tidync,
     lubridate,
     osmdata,
     sf,
@@ -42,7 +41,7 @@ Imports:
     raster,
     climateR,
     ggplot2
-Suggests: 
+Imports:
     knitr,
     rmarkdown,
     ggthemes,
