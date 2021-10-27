@@ -34,7 +34,7 @@ Depends:
     tidync
 Imports:
     tidyverse,
-    tidync
+    tidync,
     lubridate,
     osmdata,
     sf,
