@@ -20,7 +20,7 @@ verbose = TRUE){
   
   message('Trying to connect to the USGS.gov API')
   
-  src <- tidync(web_link)
+  src <- tidync::tidync(web_link)
   
   message('Reading results')
   
