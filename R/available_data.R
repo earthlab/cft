@@ -17,6 +17,7 @@
 #' @export
 available_data <- function(web_link = "https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future",
 verbose = TRUE){
+  require(tidync, quietly = TRUE)
   
   message('Trying to connect to the USGS.gov API')
   
