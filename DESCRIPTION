@@ -33,8 +33,7 @@ Depends:
     R (>= 3.5.0),
     tidync
 Imports:
-    tidyverse,
-    tidync,
+    dplyr,
     lubridate,
     osmdata,
     sf,
