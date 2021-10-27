@@ -33,6 +33,7 @@ Depends:
     R (>= 3.5.0),
     dplyr,
     tidync,
+    tidyr,
     lubridate,
     osmdata,
     sf,
