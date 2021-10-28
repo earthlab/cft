@@ -10,7 +10,7 @@ The purpose of this package is to make it easy to download and process climate d
 
 ```{r install cft, warning=FALSE, message=FALSE}
 library(devtools)
-install_github("earthlab/cft", force = TRUE)
+install_github("earthlab/cft")
 ```
 
 ```{r}
@@ -22,7 +22,7 @@ ls(pos="package:cft")
 ```{r}
 ?available_data
 ```
-```
+
 
 
 # Use read-only mode to find available data without initiating a full download.
@@ -192,6 +192,7 @@ names(intersection)[1:2] <- c("Precipitation","b")
 
 
 ```{r plot of raster mask, cache=TRUE}
+library(ggthemes)
 ggplot() +
   geom_sf(data = intersection, aes(color=Precipitation)) +
   scale_color_continuous(low="thistle2", high="darkred", 
