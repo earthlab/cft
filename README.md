@@ -119,7 +119,7 @@ basemap <- ggplot(data = boundaries) +
 basemap
 ```
 
-![](testerFile_files/figure-gfm/plot%20of%20area%20of%20interest-1.png)<!-- -->
+![](README_files/figure-gfm/plot%20of%20area%20of%20interest-1.png)<!-- -->
 
 # Download data by AOI, filtered times, and filtered variable list
 
@@ -160,7 +160,7 @@ ggplot() +
   coord_sf(crs = 4326) 
 ```
 
-![](testerFile_files/figure-gfm/check%20pulled%20data-1.png)<!-- -->
+![](README_files/figure-gfm/check%20pulled%20data-1.png)<!-- -->
 
 # Melt downloaded points into a raster before aggretation
 
@@ -169,7 +169,7 @@ rast <- st_rasterize(Pulled_data)
 plot(rast)
 ```
 
-![](testerFile_files/figure-gfm/rasterize%20with%20stars-1.png)<!-- -->
+![](README_files/figure-gfm/rasterize%20with%20stars-1.png)<!-- -->
 
 ``` r
 #Pulled_data %>% as.data.frame() %>% brick()
@@ -246,7 +246,7 @@ ggplot(data=extracted) +
   coord_sf(crs = 4326)
 ```
 
-![](testerFile_files/figure-gfm/aggregate%20to%20polygon-1.png)<!-- -->
+![](README_files/figure-gfm/aggregate%20to%20polygon-1.png)<!-- -->
 
 ``` r
 cube <- src_slc %>% hyper_tbl_cube(select_var = c("pr_HadGEM2-ES365_r1i1p1_rcp85"))
@@ -274,7 +274,7 @@ ggplot() +
   labs(title = "YELLOWSTONE NATIONAL PARK", subtitle = "Temperture in 2050")
 ```
 
-![](testerFile_files/figure-gfm/plot%20of%20raster%20mask-1.png)<!-- -->
+![](README_files/figure-gfm/plot%20of%20raster%20mask-1.png)<!-- -->
 
 ## Aggregate to River segment
 
@@ -282,6 +282,11 @@ ggplot() +
 river <- opq(bb_manual) %>%
   add_osm_feature(key = "waterway", value = "river") %>%
   osmdata_sf() 
+```
+
+    ## Request failed [504]. Retrying in 1.8 seconds...
+
+``` r
 river
 ```
 
@@ -289,7 +294,7 @@ river
     ##                  $bbox : 44.1235404827133,-111.155948159377,45.1191164159941,-109.830546380121
     ##         $overpass_call : The call submitted to the overpass API
     ##                  $meta : metadata including timestamp and version numbers
-    ##            $osm_points : 'sf' Simple Features Collection with 34183 points
+    ##            $osm_points : 'sf' Simple Features Collection with 34185 points
     ##             $osm_lines : 'sf' Simple Features Collection with 512 linestrings
     ##          $osm_polygons : 'sf' Simple Features Collection with 0 polygons
     ##        $osm_multilines : 'sf' Simple Features Collection with 16 multilinestrings
@@ -332,7 +337,7 @@ ggplot(data=extracted_river) +
   theme_tufte()
 ```
 
-![](testerFile_files/figure-gfm/plot%20river%20aggregation-1.png)<!-- -->
+![](README_files/figure-gfm/plot%20river%20aggregation-1.png)<!-- -->
 
 ## Aggregate to road segment
 
@@ -376,4 +381,4 @@ ggplot(data=extracted_roads) +
   theme_tufte()
 ```
 
-![](testerFile_files/figure-gfm/plot%20road%20aggregation-1.png)<!-- -->
+![](README_files/figure-gfm/plot%20road%20aggregation-1.png)<!-- -->
