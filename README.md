@@ -1,12 +1,58 @@
 # Welcome to the Climate Futures Toolbox
 
-The purpose of this package is to make it easy to download and process
-climate data from the … database.
+This vignette provides a walk-through of a common use case of the cft
+package: understanding climate futures for a region of interest. We’ll
+use Wind Cave National Park, located in South Dakota, USA as a case
+study.
+
+### What you’ll learn
+
+This vignette will show you how to:
+
+-   Access climate data for a spatial region of interest
+-   Produce a `data.frame` containing climate data
+-   Visualize historical and future data
+-   Generate and analyze new climate variables
+
+### What you’ll need
+
+To get the most out of this vignette, we assume you have:
+
+-   At least 500 MB of disk space
+-   Some familiarity with ggplot2
+-   Some familiarity with dplyr (e.g., `filter()`, `group_by()`, and
+    `summarize()`)
+
+## About the data
+
+Global Circulation Models (GCMs) provide estimates of historical and
+future climate conditions. The complexity of the climate system has lead
+to a large number GCMs and it is common practice to examine outputs from
+many different models, treating each as one plausible future.
+
+Most GCMs are spatially coarse (often 1 degree), but downscaling
+provides finer scale estimates. The cft package uses one downscaled
+climate model called MACA (Multivariate Adaptive Climate Analog) Version
+2 ([details here](http://www.climatologylab.org/maca.html)).
+
+### Acquiring and subsetting data within National Park Service boundaries
+
+This package was originally written with the National Park Service in
+mind, so it has the option to use the name of any park (or monument,
+preserve, etc.) within the NPS. Use the `cftdata()` function to specify
+a range of years, a set of models, a set of parameters, and a set of
+representative concentration pathways to return. Leaving these arguments
+empty will results in a download of all available data for that
+location.
+
+# Loading the cft package from github
 
 ``` r
 library(devtools)
 install_github("earthlab/cft")
 ```
+
+## Attach cft and check the list of available functions
 
 ``` r
 library(cft)
@@ -14,6 +60,8 @@ ls(pos="package:cft")
 ```
 
     ## [1] "available_data"
+
+## Look at the documentation for those functions
 
 ``` r
 ?available_data
@@ -382,3 +430,157 @@ ggplot(data=extracted_roads) +
 ```
 
 ![](README_files/figure-gfm/plot%20road%20aggregation-1.png)<!-- -->
+
+### Computing new daily climate variables
+
+Now that we have all of the climate parameters for our study region, we
+can compute functions of those variables. For example, it is common to
+compute the midpoint of the maximum and minimum daily temperature, which
+we can do using the `mutate` function:
+
+``` r
+df <- df %>%
+  mutate(tasmid = (tasmax + tasmin) / 2)
+```
+
+Now we have a new column called `tasmid` that is the midpoint of the
+maximum and minumum daily temperature!
+
+Wind speed provides another example of a derived parameter that can be
+computed for each day. By default, we have two wind-related parameters:
+the eastward wind component (called `uas`) and the northward wind
+component (called `vas`), both in units of meters per second (you can
+get this information from `cft::argument_reference`). Wind speed can be
+computed from `vas` and `uas` using the Pythagorean theorem:
+
+$\\text{Wind speed} = \\sqrt{v\_{as}^2 + u\_{as}^2}.$
+
+In code:
+
+``` r
+df <- df %>%
+  mutate(wind_speed = sqrt(vas^2 + uas^2))
+```
+
+### Computing new climate variable summaries
+
+Sometimes, there are new climate variables that summarize daily data.
+For example, you may want to compute:
+
+-   Last Day of Frost (i.e., last day in spring when min. air temp. \<
+    0 C)
+-   First Day of Frost (i.e., first day in fall when min. air temp. \<
+    0 C)
+-   Number of days above or below some threshold (e.g., days with max.
+    air temperature over 40 C, or days with > 1mm of precipitation)
+-   Growing season length (# days with air temperature > 0 C)
+
+All of these quantities summarize daily data, and require some
+aggregation time interval which in many cases will be one year. As an
+example, we will compute the growing season length for Wind Cave
+National Park across all models and emissions scenarios. To do this, we
+first need to define a new column for year, which we will use as a
+grouping variable:
+
+``` r
+df <- df %>%
+  mutate(year = year(date))
+```
+
+Now, we want to compute growing season length for each year, model,
+emissions scenario combination.
+
+``` r
+growing_seasons <- df %>%
+  group_by(rcp, model, year, ensemble) %>%
+  summarize(season_length = sum(tasmid > 273.15)) %>%
+  ungroup
+```
+
+Notice that we used our derived temperature midpoint column `tasmid`,
+and computed the total (`sum()`) number of days for each group where the
+temperature midpoint was greater than 0 C (or, 273.15 Kelvin, which are
+the units of the temperature data).
+
+``` r
+growing_seasons
+```
+
+Let’s visualize the growing season over time for each model and emission
+scenario:
+
+``` r
+growing_seasons %>%
+  ggplot(aes(year, season_length, color = rcp, group = model)) + 
+  geom_line(alpha = .3) + 
+  facet_wrap(~rcp, ncol = 1) + 
+  xlab("Year") + 
+  ylab("Growing season length (days)") + 
+  scale_color_manual(values = c("dodgerblue", "red")) + 
+  theme(legend.position = "none")
+```
+
+## Comparing climate in two time periods
+
+Use the tibble object that is returned from `cft_df()` as an input to
+`compare_periods()` to compare climate between a reference and target
+period. You may specify the function with which to aggregate your chosen
+variable as well as the yearly time period months of the year to include
+in this calculation.
+
+``` r
+comps <- compare_periods(df,
+                         var1 = "pr",
+                         var2 = "tasmax",
+                         agg_fun = "mean",
+                         target_period = c(2025, 2030),
+                         reference_period = c(2020, 2024),
+                         months1 = 5:8,
+                         months2 = 5:8,
+                         scenarios = c("rcp45", "rcp85"))
+```
+
+This provides a data frame that can be used to compare the values in the
+target and reference period.
+
+``` r
+glimpse(comps)
+```
+
+One useful plot shows the difference in the two variables between
+reference and target periods:
+
+``` r
+title <-  paste("Change from the historical vs. reference period:", 
+                comps$reference_period, comps$target_period, sep= "  vs  " )[1]
+
+comps %>%
+  dplyr::select(parameter, rcp, model, reference_period, target_period, difference) %>%
+  pivot_wider(names_from = parameter, values_from = difference) %>%
+  ungroup %>%
+  mutate(rcp = ifelse(rcp == "rcp45", "RCP 4.5", "RCP 8.5")) %>%
+  ggplot(aes(pr, tasmax, color = rcp)) + 
+  ggtitle(title) +
+  geom_point() + 
+  geom_hline(yintercept = 0, alpha = .2) + 
+  geom_vline(xintercept = 0, alpha = .2) +
+  geom_text_repel(aes(label = model), segment.size = .3, size = 3) + 
+  xlab("Difference in mean daily precipitation (mm)") + 
+  ylab("Difference in mean daily max. temperature (C)") + 
+  scale_color_manual(values = c("dodgerblue", "red"), 
+                     "Greenhouse gas\ntrajectory") 
+```
+
+So, nearly all model runs indicate warming, but the amount of warming
+varies by model and emissions scenario. Precipitation increases and
+decreases are predicted by different models.
+
+## Why write the cft package?
+
+The amount of data generated by downscaled GCMs can be quite large
+(e.g., daily data at a few km spatial resolution). The Climate Futures
+Toolbox was developed to help users access and use smaller subsets.
+
+Data is acquired from the [Northwest Knowledge Server of the University
+of
+Idaho](http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_CMIP5_macav2_catalog2.html).
