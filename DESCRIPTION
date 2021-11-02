@@ -41,12 +41,13 @@ Depends:
     stars,
     epitools,
     raster,
-    climateR,
     ggplot2
 Imports:
     knitr,
     rmarkdown,
     ggthemes,
     testthat (>= 2.1.0)
+Suggests:
+   climateR
 VignetteBuilder: knitr
 RoxygenNote: 7.1.2

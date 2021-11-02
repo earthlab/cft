@@ -8,7 +8,7 @@ output:
 
 This vignette provides a walk-through of a common use case of the cft package:
 understanding climate futures for a region of interest. 
-We'll use Wind Cave National Park, located in South Dakota, USA as a case study.
+We'll use Yellowstone National Park, located in Wyoming, USA as a case study.
 
 ### What you'll learn
 
@@ -50,7 +50,7 @@ Leaving these arguments empty will results in a download of all available data
 for that location.
 
 # Loading the cft package from github
-```{r install cft, warning=FALSE, message=FALSE}
+```{r install cft, warning=FALSE, message=FALSE, eval=FALSE}
 library(devtools)
 install_github("earthlab/cft")
 ```
@@ -70,21 +70,27 @@ ls(pos="package:cft")
 
 # Use read-only mode to find available data without initiating a full download.
 ```{r available data, cache=TRUE}
+start_time <- Sys.time()
 inputs <- cft::available_data()
+end_time <- Sys.time()
+
+end_time - start_time
+
 ```
 
 # Filter the results from available_data() to specify which data to actually download.
-## Filter time
-```{r filter time, cache=TRUE}
-# Year 2034
-time_min <- 72048
-time_max <- 73048
+  Downloads from the API are limited to 500mb per request. A request for a large area of interest combined with a long time series will return a cryptic runtime error informing you that your request was too large.
 
-input_times <- inputs$available_times %>% add_column(index = 0) 
-input_times[which(inputs$available_times[,1] > time_min & inputs$available_times[,1] < time_max ),3] <- 1
+This error may look like this:
+"CURL Error: Transferred a partial file
+Error in Rsx_nc4_get_vara_int: NetCDF: DAP failure
+Var: pr_CCSM4_r6i1p1_rcp85 Ndims: 3 Start: 0,444,511 Count: 34333,2,3
+Error in ncvar_get_inner(ncid2use, varid2use, nc$var[[li]]$missval, addOffset, :
+C function Rsx_nc4_get_var_int returned error"
 
-tail(input_times)
-```
+The solution to this problem is to subset your requests to make them fit within the boundaries of the API. You can achieve this by balancing the size of your requested spatial extent and the length of your requested time period. For a small national park, it's possible to pull the entire time series from the API but larger parks will require you to request shorter time window or stitch multiple time windows together.  
+
+
 
 ## Filter variable names
 ```{r filter variables, cache=TRUE}
@@ -100,14 +106,8 @@ input_variables
 
 # Establish area of interst (AOI) by bounding box
 ```{r bounding box, cache=TRUE}
-bb <- getbb("yellowstone")
-bb_manual <- bb
-bb_manual[1,1] <- -111.15594815937659
-bb_manual[1,2] <- -109.8305463801207
-bb_manual[2,1] <- 44.12354048271325
-bb_manual[2,2] <- 45.11911641599412
-
-my_boundary <- opq(bb_manual) %>% 
+bb <- getbb("hot springs")
+my_boundary <- opq(bb) %>% 
   add_osm_feature(key = "boundary", value = "national_park") %>% 
 osmdata_sf() 
 
@@ -131,20 +131,32 @@ basemap
 
 # Download data by AOI, filtered times, and filtered variable list
 ```{r pulled data, cache=TRUE}
+start_time <- Sys.time()
 
 Pulled_data <- inputs$src %>% 
   hyper_filter(lat = lat <= c(pulled_bb[4]+0.05) & lat >= c(pulled_bb[2]-0.05)) %>% 
   hyper_filter(lon = lon <= c(pulled_bb[3]+0.05) & lon >= c(pulled_bb[1]-0.05)) %>% 
-  hyper_filter(time =  input_times[,3] == 1) %>% 
   hyper_tibble(select_var = input_variables
     ) %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
-## should time be in here?
+
+
+
+end_time <- Sys.time()
+end_time - start_time
+
+
 head(Pulled_data)
+tail(Pulled_data)
+```
+### Time extent plot
+Check this plot to make sure you downloaded your entire time series. 
+```{r}
+plot(Pulled_data$time, Pulled_data$`pr_HadGEM2-ES365_r1i1p1_rcp85`)
 ```
 
-
-
+### Spatial extent plot
+Check here to make sure you downloaded the proper spatial extent. 
 ```{r check pulled data, cache=TRUE, fig.height=8}
 check_filter <- Pulled_data %>% filter(time == min(Pulled_data$time))
 
@@ -153,6 +165,115 @@ ggplot() +
  geom_sf(data = check_filter, color = "red", size=0.5) +
   coord_sf(crs = 4326) 
 ```
+
+
+
+
+## If you encounter an error suggesting that you are pulling too much data, you will need to stitch a few requests together to keep each call below the 500mb limit. 
+
+```{r bounding box, cache=TRUE}
+bb <- getbb("yellowstone")
+bb_manual <- bb
+bb_manual[1,1] <- -111.15594815937659
+bb_manual[1,2] <- -109.8305463801207
+bb_manual[2,1] <- 44.12354048271325
+bb_manual[2,2] <- 45.11911641599412
+
+my_boundary <- opq(bb_manual) %>% 
+  add_osm_feature(key = "boundary", value = "national_park") %>% 
+osmdata_sf() 
+
+my_boundary
+```
+
+
+```{r pulled bounding box, cache=TRUE}
+boundaries <- my_boundary$osm_multipolygons
+pulled_bb <- st_bbox(boundaries)
+pulled_bb
+```
+
+## Filter time
+```{r filter time, cache=TRUE}
+# Year 2034
+time_min <- 38716
+time_max <- 73048
+
+input_times <- inputs$available_times %>% 
+  add_column(index = 0) %>% 
+  add_column(first_half = 0) %>% 
+  add_column(second_half = 0) 
+input_times[which(inputs$available_times[,1] >= time_min & inputs$available_times[,1] <= time_max ),3] <- 1
+
+
+med <- median(row_number(input_times[,3])) 
+input_times[which(as.numeric(row.names(input_times)) <= med),4] <- 1
+input_times[which(as.numeric(row.names(input_times)) > med),5] <- 1
+
+
+
+head(input_times)
+tail(input_times)
+```
+
+```{r stitch_pull, cache=TRUE}
+start_time <- Sys.time()
+
+
+Pulled_data_sub1 <- inputs$src %>% 
+  hyper_filter(lat = lat <= c(pulled_bb[4]+0.05) & lat >= c(pulled_bb[2]-0.05)) %>% 
+  hyper_filter(lon = lon <= c(pulled_bb[3]+0.05) & lon >= c(pulled_bb[1]-0.05)) %>% 
+  hyper_filter(time =  input_times[,4] == 1) %>% 
+  hyper_tibble(select_var = input_variables
+    ) %>%
+  st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
+## should time be in here?
+
+
+Pulled_data_sub2 <- inputs$src %>% 
+  hyper_filter(lat = lat <= c(pulled_bb[4]+0.05) & lat >= c(pulled_bb[2]-0.05)) %>% 
+  hyper_filter(lon = lon <= c(pulled_bb[3]+0.05) & lon >= c(pulled_bb[1]-0.05)) %>% 
+  hyper_filter(time =  input_times[,5] == 1) %>% 
+  hyper_tibble(select_var = input_variables
+    ) %>%
+  st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
+## should time be in here?
+
+end_time <- Sys.time()
+end_time - start_time
+
+
+
+tail(Pulled_data_sub1)
+tail(Pulled_data_sub2)
+```
+
+```{r rbind multi results}
+start_time <- Sys.time()
+
+Pulled_data_stitch <- bind_rows(Pulled_data_sub1, Pulled_data_sub2)
+
+end_time <- Sys.time()
+end_time - start_time
+```
+
+### Time extent plot
+Check this plot to make sure you downloaded your entire time series. 
+```{r, cache=TRUE}
+plot(Pulled_data_stitch$time, Pulled_data_stitch$`pr_HadGEM2-ES365_r1i1p1_rcp85`)
+```
+
+### Spatial extent plot
+Check here to make sure you downloaded the proper spatial extent. 
+```{r check pulled data, cache=TRUE, fig.height=8}
+check_filter <- Pulled_data_stitch %>% filter(time == min(Pulled_data_stitch$time))
+
+ggplot() +
+  geom_sf(data = boundaries, fill = "cornflowerblue") +
+ geom_sf(data = check_filter, color = "red", size=0.5) +
+  coord_sf(crs = 4326) 
+```
+
 
 # Melt downloaded points into a raster before aggretation
 ```{r rasterize with stars, cache=TRUE, fig.height=7}
