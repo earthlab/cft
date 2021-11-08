@@ -18,10 +18,10 @@ data for visualization and analysis that drive insight.
 # What you'll find here
 This vignette provides a walk-through of a common use case of the cft package, which is, to
 help users download, organize, and visualize past and future climate data.
-1) How to download and install the cft package
-2) How to see the menu of available data and choose items from that menu
-3) How to request data from the API using those menu choices
-4) How to aggregate those data in differeent ways to drive insight.  
+- 1) How to download and install the cft package
+- 2) How to see the menu of available data and choose items from that menu
+- 3) How to request data from the API using those menu choices
+- 4) How to aggregate those data in differeent ways to drive insight.  
 
 ## Why write the cft package?
 
@@ -434,7 +434,6 @@ plot(rast)
 ```
 
 
-# GridMET data
 ```{r GridMet view, include=FALSE, eval=FALSE}
 param_meta$gridmet
 ```

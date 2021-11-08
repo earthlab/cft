@@ -16,10 +16,10 @@ accommodate more functionality.
 
 This vignette provides a walk-through of a common use case of the cft
 package, which is, to help users download, organize, and visualize past
-and future climate data. 1) How to download and install the cft package
-2) How to see the menu of available data and choose items from that menu
-3) How to request data from the API using those menu choices 4) How to
-aggregate those data in differeent ways to drive insight.
+and future climate data. - 1) How to download and install the cft
+package - 2) How to see the menu of available data and choose items from
+that menu - 3) How to request data from the API using those menu choices
+- 4) How to aggregate those data in differeent ways to drive insight.
 
 ## Why write the cft package?
 
@@ -394,7 +394,7 @@ end_time <- Sys.time()
 print(end_time - start_time)
 ```
 
-    ## Time difference of 4.703485 mins
+    ## Time difference of 3.939142 mins
 
 ``` r
 head(Pulled_data_single_space_single_timepoint)
@@ -784,8 +784,6 @@ plot(rast)
 ``` r
 #Pulled_data %>% as.data.frame() %>% brick()
 ```
-
-# GridMET data
 
 #Aggregate downloaded data to different spatial objects
 
