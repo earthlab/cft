@@ -1,7 +1,7 @@
 Package: cft
 Type: Package
 Title: Climate Futures Toolbox
-Version: 0.6.1
+Version: 1.0.0
 Authors@R: c(
     person(given = "Ty",
            family = "Tuff",
@@ -32,7 +32,6 @@ LazyData: true
 Depends:
     R (>= 3.5.0),
     dplyr,
-    tibble,
     tidync,
     tidyr,
     lubridate,
@@ -49,5 +48,6 @@ Imports:
     testthat (>= 2.1.0)
 Suggests:
    climateR
+   tibble
 VignetteBuilder: knitr
 RoxygenNote: 7.1.2
