@@ -47,7 +47,7 @@ Imports:
     ggthemes,
     testthat (>= 2.1.0)
 Suggests:
-   climateR
+   climateR,
    tibble
 VignetteBuilder: knitr
 RoxygenNote: 7.1.2
