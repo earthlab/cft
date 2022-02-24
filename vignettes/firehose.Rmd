@@ -1,0 +1,282 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(multidplyr)
+library(cft)
+```
+
+
+```{r}
+web_link = "https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future"
+src <- tidync::tidync(web_link)
+  
+variable_names <- src$variable %>% dplyr::select(name) 
+variable_names[2,]
+
+
+
+```
+
+```{r available data, cache=TRUE}
+start_time <- Sys.time()
+inputs <- cft::available_data()
+end_time <- Sys.time()
+
+end_time - start_time
+```
+
+
+
+```{r filter variables many, cache=TRUE}
+input_variables <- inputs$variable_names %>% 
+  filter(Variable %in% c("Maximum Relative Humidity", 
+                       "Maximum Temperature", 
+                       "Minimum Relative Humidity",          
+                       "Minimum Temperature",                 
+                       "Precipitation")) %>% 
+  filter(Scenario %in% c( "RCP 8.5", "RCP 4.5")) %>% 
+  filter(Model %in% c(
+    "Beijing Climate Center - Climate System Model 1.1",
+    "Beijing Normal University - Earth System Model",
+    "Canadian Earth System Model 2",                                                                
+  "Centre National de Recherches Météorologiques - Climate Model 5",                              
+  "Commonwealth Scientific and Industrial Research Organisation - Mk3.6.0",                       
+  "Community Climate System Model 4",                                                             
+  "Geophysical Fluid Dynamics Laboratory - Earth System Model 2 Generalized Ocean Layer Dynamics",
+  "Geophysical Fluid Dynamics Laboratory - Earth System Model 2 Modular Ocean",                   
+  "Hadley Global Environment Model 2 - Climate Chemistry 365 (day) ",                             
+ "Hadley Global Environment Model 2 - Earth System 365 (day)",                                   
+ "Institut Pierre Simon Laplace (IPSL) - Climate Model 5A - Low Resolution",                     
+ "Institut Pierre Simon Laplace (IPSL) - Climate Model 5A - Medium Resolution",                  
+ "Institut Pierre Simon Laplace (IPSL) - Climate Model 5B - Low Resolution",                     
+ "Institute of Numerical Mathematics Climate Model 4",                                           
+ "Meteorological Research Institute - Coupled Global Climate Model 3",                           
+ "Model for Interdisciplinary Research On Climate - Earth System Model",                         
+ "Model for Interdisciplinary Research On Climate - Earth System Model - Chemistry",             
+ "Model for Interdisciplinary Research On Climate 5",                                            
+ "Norwegian Earth System Model 1 - Medium Resolution"  )) %>%
+  
+  pull("Available variable")
+
+input_variables
+```
+
+```{r bounding box small, cache=TRUE}
+bb <- getbb("Hot Springs")
+my_boundary <- opq(bb) %>% 
+  add_osm_feature(key = "boundary", value = "national_park") %>% 
+osmdata_sf() 
+
+my_boundary
+```
+
+
+```{r plot of area of interest small, cache=TRUE, warning=FALSE, fig.height=8}
+boundaries <- my_boundary$osm_multipolygons[1,] #change to multipolygons
+pulled_bb <- st_bbox(boundaries)
+pulled_bb
+
+
+
+
+
+basemap <- ggplot(data = boundaries) +
+  geom_sf(fill = "cornflowerblue") +
+  geom_sf_text(aes(label = boundaries$name)) 
+
+basemap
+```
+
+
+
+
+```{r}
+# check_filter <- Pulled_data_single_space_single_timepoint %>% filter(time == min(Pulled_data_single_space_single_timepoint$time))
+# library(nngeo)
+# nn <- unlist(st_nn( st_centroid(boundaries), check_filter))
+# cc <- check_filter[nn,]
+
+bb <- getbb("Hot Springs")
+my_boundary <- opq(bb) %>% 
+  add_osm_feature(key = "boundary", value = "national_park") %>% 
+osmdata_sf() 
+
+my_boundary
+
+boundaries <- my_boundary$osm_multipolygons[1,] #change to multipolygons
+pulled_bb <- st_bbox(boundaries)
+pulled_bb
+
+
+pt <- st_coordinates(st_centroid(boundaries))
+
+
+```
+
+
+
+
+```{r}
+
+lat_pt <- pt[1,2]
+lon_pt <- pt[1,1]
+
+lons <- src %>% activate("D2") %>% hyper_tibble()
+lats <- src %>% activate("D1") %>% hyper_tibble()
+
+new_lon <- lons[which(abs(lons-lon_pt)==min(abs(lons-lon_pt))),]
+new_lat <- lats[which(abs(lats-lat_pt)==min(abs(lats-lat_pt))),]
+
+which(new_lon$lon == lons)
+
+chosen_pt <- st_as_sf(cbind(new_lon,new_lat), coords = c("lon", "lat"), crs = "WGS84", agr = "constant")
+
+ggplot() +
+  geom_sf(data = boundaries, fill = "cornflowerblue") +
+ geom_sf(data = chosen_pt, color = "red", size=0.5) +
+  coord_sf(crs = 4326) 
+```
+
+
+
+
+
+```{r}
+library(RCurl)
+library(curl)
+library(future)
+library(furrr)
+library(doParallel)
+library(rlist)
+#doParallel::registerDoParallel(cores = 3)
+
+n_cores <- availableCores() - 1
+plan(multiprocess, workers = n_cores)
+```
+
+
+
+```{r}
+
+
+OISST_load <- function(column){
+  
+
+ 
+  
+  #%>%  # up to 38
+  #st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant") 
+
+  
+  tryCatch({
+    web_link = "https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future"
+  src <- tidync::tidync(web_link)
+  
+     Pulled_data_single_space_single_timepoint <- inputs$src %>% 
+  hyper_filter(lat = lat == c(new_lat)) %>% 
+  hyper_filter(lon = lon == c(new_lon)) %>%
+  #hyper_filter(time = times$`Available times` ==  44558) %>% 
+  hyper_tibble(select_var = input_variables[column]) %>%
+    as.data.frame() 
+     
+      return(Pulled_data_single_space_single_timepoint[,c(1,4)])
+    },
+    error = function(e){
+      Pulled_data_single_space_single_timepoint <-     
+        data.frame( matrix(rep(NA, 34333) ))
+      colnames(Pulled_data_single_space_single_timepoint) <- input_variables[column]
+      return(Pulled_data_single_space_single_timepoint)
+    })
+  
+  
+  
+     
+}
+
+
+# Load the data in parallel
+#OISST_dat <- plyr::ldply(.data = 10:12, .fun = OISST_load, .parallel = T)
+
+#
+
+
+#OISST_dat %>%  # up to 38
+#  st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant") 
+
+
+```
+
+
+https://towardsdatascience.com/parallel-web-scraping-and-api-connection-a-way-to-save-lots-of-time-part-i-r-bf740f6cfbd0 
+
+```{r}
+
+  length(input_variables)
+  start_time <- Sys.time()
+  
+  mp <- future_map(1:181 ,OISST_load, .progress=TRUE)
+  mp
+  
+  end_time <- Sys.time()
+  print(end_time - start_time)
+
+need_rerun <- mp %>%
+  list.filter(ncol(.) == 1) %>%
+  list.cbind() 
+need_rerun
+rr <- future_map(which( input_variables %in% colnames(need_rerun) ),OISST_load, .progress=TRUE)
+
+
+
+
+str(mp)
+
+
+```
+
+
+```{r}
+
+library(rlist)
+library(dplyr)
+library(plyr)
+library(pipeR)
+
+mps <- mp %>>% list.filter( nrow(.) == 34333 & ncol(.) == 2) %>>% list.cbind()
+rrs <- rr %>>% list.filter( nrow(.) == 34333& ncol(.) == 2) %>>% list.cbind()
+
+first_pass <- cbind(mps, rrs) %>% as.data.frame()
+
+
+all(first_pass[,which(names(first_pass) == "time")])
+all(first_pass[,which(names(first_pass) == "lon")])
+all(first_pass[,which(names(first_pass) == "lat")])
+
+first_pass_clean <- first_pass[ , !duplicated(colnames(first_pass))] 
+
+
+odd_balls <- mp %>>% list.filter( nrow(.) != 34333 & ncol(.) == 2) 
+
+dfs <- list(first_pass_clean)
+outs <- join_all(append(dfs, odd_balls)) 
+
+lat_lon <- data.frame(cbind( rep(as.numeric(new_lon), nrow(outs)), rep(as.numeric(new_lat), nrow(outs))))
+colnames(lat_lon) <- c("lon", "lat")
+outs_spatial <- cbind(outs,lat_lon)
+
+
+pulled_data_sf <- st_as_sf(outs_spatial, coords = c("lon", "lat"), crs = "WGS84", agr = "constant")
+pulled_data_sf
+```
+
+```{r}
+ggplot() +
+  geom_sf(data = boundaries, fill = "cornflowerblue") +
+ geom_sf(data = pulled_data_sf, color = "red", size=0.5) +
+  coord_sf(crs = 4326) 
+```
+

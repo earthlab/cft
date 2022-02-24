@@ -40,7 +40,12 @@ Depends:
     stars,
     epitools,
     raster,
-    ggplot2
+    ggplot2,
+    future,
+    furrr,
+    rlist,
+    plyr,
+    pipeR
 Imports:
     knitr,
     rmarkdown,

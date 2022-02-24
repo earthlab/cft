@@ -63,6 +63,9 @@ install_github("earthlab/cft", force = TRUE)
 
 ## Attach cft and check the list of available functions
 ```{r}
+#install.packages("sp")
+#install.packages("multidplyr")
+library(multidplyr)
 library(cft)
 ls(pos="package:cft")
 ```
@@ -156,11 +159,21 @@ osmdata_sf()
 
 my_boundary
 ```
+```{r bounding box colorado, cache=TRUE}
+bb <- getbb("Colorado")
+my_boundary <- opq(bb) %>% 
+  add_osm_feature(key = "admin_level", value = "4") %>% 
+osmdata_sf() 
+
+my_boundary
+```
+
+
 Here you re-calibrate the bounding box relative to the actual shapefiles you downloaded. The bounding box above was pulled from the osm database, this bounding box is for the polygons you actually used. These two boxes may be the same or they may be different but the one derived from your downloaded shapefile is reproducible. 
 
 Notice that we specify osm_multipolygons instead of osm_polygons. This is a case-specific choice. When you download a shapefile from OSM, if will include a number of different spatial object types and you can choose several of those options to move forward. We chose multipolygons because they best matched our area of interest. Use the quick plot below to visualize your area of interest before continuing. 
 ```{r pulled bounding box small, cache=TRUE}
-boundaries <- my_boundary$osm_multipolygons
+boundaries <- my_boundary$osm_multipolygons[4,] #change to multipolygons
 pulled_bb <- st_bbox(boundaries)
 pulled_bb
 ```
@@ -188,9 +201,9 @@ times <- inputs$available_times
 Pulled_data_single_space_single_timepoint <- inputs$src %>% 
   hyper_filter(lat = lat <= c(center_point[4]+0.05) & lat >= c(center_point[2]-0.05)) %>% 
   hyper_filter(lon = lon <= c(center_point[3]+0.05) & lon >= c(center_point[1]-0.05)) %>%
-   hyper_filter(time = times$`Available times` ==  73048) %>% 
-  hyper_tibble(select_var = input_variables) %>%
-  st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
+  hyper_filter(time = times$`Available times` ==  44558) %>% 
+  hyper_tibble(select_var = input_variables[1:38]) %>%
+  st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant") 
 
 end_time <- Sys.time()
 print(end_time - start_time)
@@ -214,7 +227,7 @@ center_point <- st_centroid(boundaries) %>% st_bbox(center_point)
 Pulled_data_single_space_all_timepoints <- inputs$src %>% 
   hyper_filter(lat = lat <= c(center_point[4]+0.05) & lat >= c(center_point[2]-0.05)) %>% 
   hyper_filter(lon = lon <= c(center_point[3]+0.05) & lon >= c(center_point[1]-0.05)) %>%
-  # hyper_filter(time = input_times$`Available times` ==  73048) %>% 
+  hyper_filter(time = input_times$`Available times` ==  44558) %>% 
   hyper_tibble(select_var = input_variables) %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
 
