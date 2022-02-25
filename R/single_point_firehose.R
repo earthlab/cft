@@ -167,4 +167,4 @@ single_point_firehose <- function(input_variables, lat, lon,
 
 
 
-out <- single_point_firehose(input_variables, new_lat, new_lon )
+#out <- single_point_firehose(input_variables, new_lat, new_lon )
