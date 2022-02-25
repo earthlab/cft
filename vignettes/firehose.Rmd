@@ -5,30 +5,26 @@ output: html_notebook
 
 
 ```{r}
-library(multidplyr)
 library(cft)
 ```
 
+```{r}
+n_cores <- availableCores() - 1
+plan(multiprocess, workers = n_cores)
+```
 
 ```{r}
 web_link = "https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future"
 src <- tidync::tidync(web_link)
-  
-variable_names <- src$variable %>% dplyr::select(name) 
-variable_names[2,]
-
-
 
 ```
 
 ```{r available data, cache=TRUE}
-start_time <- Sys.time()
+
 inputs <- cft::available_data()
-end_time <- Sys.time()
+inputs[[1]]
 
-end_time - start_time
 ```
-
 
 
 ```{r filter variables many, cache=TRUE}
@@ -65,62 +61,27 @@ input_variables <- inputs$variable_names %>%
 input_variables
 ```
 
-```{r bounding box small, cache=TRUE}
-bb <- getbb("Hot Springs")
-my_boundary <- opq(bb) %>% 
-  add_osm_feature(key = "boundary", value = "national_park") %>% 
-osmdata_sf() 
-
-my_boundary
-```
-
-
-```{r plot of area of interest small, cache=TRUE, warning=FALSE, fig.height=8}
-boundaries <- my_boundary$osm_multipolygons[1,] #change to multipolygons
-pulled_bb <- st_bbox(boundaries)
-pulled_bb
-
-
-
-
-
-basemap <- ggplot(data = boundaries) +
-  geom_sf(fill = "cornflowerblue") +
-  geom_sf_text(aes(label = boundaries$name)) 
-
-basemap
-```
-
 
 
 
 ```{r}
-# check_filter <- Pulled_data_single_space_single_timepoint %>% filter(time == min(Pulled_data_single_space_single_timepoint$time))
-# library(nngeo)
-# nn <- unlist(st_nn( st_centroid(boundaries), check_filter))
-# cc <- check_filter[nn,]
-
-bb <- getbb("Hot Springs")
-my_boundary <- opq(bb) %>% 
-  add_osm_feature(key = "boundary", value = "national_park") %>% 
-osmdata_sf() 
+aoi_name <- "colorado"
+bb <- getbb(aoi_name)
+my_boundary <- opq(bb) %>%
+  add_osm_feature(key = "boundary", value = "national_park") %>%
+  osmdata_sf()
 
 my_boundary
 
+#boundaries <- my_boundary$osm_polygons[1,]
 boundaries <- my_boundary$osm_multipolygons[1,] #change to multipolygons
-pulled_bb <- st_bbox(boundaries)
+pulled_bb <-  st_bbox(boundaries)
 pulled_bb
 
 
 pt <- st_coordinates(st_centroid(boundaries))
 
 
-```
-
-
-
-
-```{r}
 
 lat_pt <- pt[1,2]
 lon_pt <- pt[1,1]
@@ -131,109 +92,14 @@ lats <- src %>% activate("D1") %>% hyper_tibble()
 new_lon <- lons[which(abs(lons-lon_pt)==min(abs(lons-lon_pt))),]
 new_lat <- lats[which(abs(lats-lat_pt)==min(abs(lats-lat_pt))),]
 
-which(new_lon$lon == lons)
 
 chosen_pt <- st_as_sf(cbind(new_lon,new_lat), coords = c("lon", "lat"), crs = "WGS84", agr = "constant")
 
 ggplot() +
   geom_sf(data = boundaries, fill = "cornflowerblue") +
- geom_sf(data = chosen_pt, color = "red", size=0.5) +
-  coord_sf(crs = 4326) 
-```
+  geom_sf(data = st_centroid(boundaries), color = "red", size=0.5) +
+  geom_sf(data = chosen_pt, color = "green", size=0.5)
 
-
-
-
-
-```{r}
-library(RCurl)
-library(curl)
-library(future)
-library(furrr)
-library(doParallel)
-library(rlist)
-#doParallel::registerDoParallel(cores = 3)
-
-n_cores <- availableCores() - 1
-plan(multiprocess, workers = n_cores)
-```
-
-
-
-```{r}
-
-
-OISST_load <- function(column){
-  
-
- 
-  
-  #%>%  # up to 38
-  #st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant") 
-
-  
-  tryCatch({
-    web_link = "https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future"
-  src <- tidync::tidync(web_link)
-  
-     Pulled_data_single_space_single_timepoint <- inputs$src %>% 
-  hyper_filter(lat = lat == c(new_lat)) %>% 
-  hyper_filter(lon = lon == c(new_lon)) %>%
-  #hyper_filter(time = times$`Available times` ==  44558) %>% 
-  hyper_tibble(select_var = input_variables[column]) %>%
-    as.data.frame() 
-     
-      return(Pulled_data_single_space_single_timepoint[,c(1,4)])
-    },
-    error = function(e){
-      Pulled_data_single_space_single_timepoint <-     
-        data.frame( matrix(rep(NA, 34333) ))
-      colnames(Pulled_data_single_space_single_timepoint) <- input_variables[column]
-      return(Pulled_data_single_space_single_timepoint)
-    })
-  
-  
-  
-     
-}
-
-
-# Load the data in parallel
-#OISST_dat <- plyr::ldply(.data = 10:12, .fun = OISST_load, .parallel = T)
-
-#
-
-
-#OISST_dat %>%  # up to 38
-#  st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant") 
-
-
-```
-
-
-https://towardsdatascience.com/parallel-web-scraping-and-api-connection-a-way-to-save-lots-of-time-part-i-r-bf740f6cfbd0 
-
-```{r}
-
-  length(input_variables)
-  start_time <- Sys.time()
-  
-  mp <- future_map(1:181 ,OISST_load, .progress=TRUE)
-  mp
-  
-  end_time <- Sys.time()
-  print(end_time - start_time)
-
-need_rerun <- mp %>%
-  list.filter(ncol(.) == 1) %>%
-  list.cbind() 
-need_rerun
-rr <- future_map(which( input_variables %in% colnames(need_rerun) ),OISST_load, .progress=TRUE)
-
-
-
-
-str(mp)
 
 
 ```
@@ -241,37 +107,11 @@ str(mp)
 
 ```{r}
 
-library(rlist)
-library(dplyr)
-library(plyr)
-library(pipeR)
 
-mps <- mp %>>% list.filter( nrow(.) == 34333 & ncol(.) == 2) %>>% list.cbind()
-rrs <- rr %>>% list.filter( nrow(.) == 34333& ncol(.) == 2) %>>% list.cbind()
-
-first_pass <- cbind(mps, rrs) %>% as.data.frame()
-
-
-all(first_pass[,which(names(first_pass) == "time")])
-all(first_pass[,which(names(first_pass) == "lon")])
-all(first_pass[,which(names(first_pass) == "lat")])
-
-first_pass_clean <- first_pass[ , !duplicated(colnames(first_pass))] 
-
-
-odd_balls <- mp %>>% list.filter( nrow(.) != 34333 & ncol(.) == 2) 
-
-dfs <- list(first_pass_clean)
-outs <- join_all(append(dfs, odd_balls)) 
-
-lat_lon <- data.frame(cbind( rep(as.numeric(new_lon), nrow(outs)), rep(as.numeric(new_lat), nrow(outs))))
-colnames(lat_lon) <- c("lon", "lat")
-outs_spatial <- cbind(outs,lat_lon)
-
-
-pulled_data_sf <- st_as_sf(outs_spatial, coords = c("lon", "lat"), crs = "WGS84", agr = "constant")
-pulled_data_sf
+out <- single_point_firehose(input_variables, new_lat, new_lon )
+out
 ```
+
 
 ```{r}
 ggplot() +

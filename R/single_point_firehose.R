@@ -94,7 +94,7 @@ single_point_firehose <- function(input_variables, lat, lon,
   mps <- mp %>>% list.filter( nrow(.) == 34333 & ncol(.) == 2) %>>% list.cbind()
   rrs <- rr %>>% list.filter( nrow(.) == 34333& ncol(.) == 2) %>>% list.cbind()
   
-  if(ncol(rrs) == 0){
+  if(length(rrs) == 0){
     first_pass <- mps %>% as.data.frame()
   }else{
     first_pass <- cbind(mps, rrs) %>% as.data.frame()
@@ -125,46 +125,3 @@ single_point_firehose <- function(input_variables, lat, lon,
   return(pulled_data_sf)
 }
 
-
-# 
-# aoi_name <- "colorado"
-# bb <- getbb(aoi_name)
-# my_boundary <- opq(bb) %>% 
-#   add_osm_feature(key = "boundary", value = "national_park") %>% 
-#   osmdata_sf() 
-# 
-# my_boundary
-# 
-# #boundaries <- my_boundary$osm_polygons[1,]
-# boundaries <- my_boundary$osm_multipolygons[1,] #change to multipolygons
-# pulled_bb <-  st_bbox(boundaries)
-# pulled_bb
-# 
-# 
-# pt <- st_coordinates(st_centroid(boundaries))
-# 
-# 
-# 
-# lat_pt <- pt[1,2]
-# lon_pt <- pt[1,1]
-# 
-# lons <- src %>% activate("D2") %>% hyper_tibble() 
-# lats <- src %>% activate("D1") %>% hyper_tibble() 
-# 
-# new_lon <- lons[which(abs(lons-lon_pt)==min(abs(lons-lon_pt))),]
-# new_lat <- lats[which(abs(lats-lat_pt)==min(abs(lats-lat_pt))),]
-# 
-# which(new_lon == lons)
-# 
-# chosen_pt <- st_as_sf(cbind(new_lon,new_lat), coords = c("lon", "lat"), crs = "WGS84", agr = "constant")
-# 
-# ggplot() +
-#   geom_sf(data = boundaries, fill = "cornflowerblue") +
-#   geom_sf(data = st_centroid(boundaries), color = "red", size=0.5) +
-#   geom_sf(data = chosen_pt, color = "green", size=0.5) 
-# 
-# readline(prompt="Please check the map to confirm that we have identified the correct point. Press [enter] to continue")
-
-
-
-#out <- single_point_firehose(input_variables, new_lat, new_lon )

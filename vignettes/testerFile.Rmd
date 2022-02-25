@@ -64,6 +64,7 @@ ls(pos="package:cft")
 ## Look at the documentation for those functions
 ```{r}
 ?available_data
+?single_point_firehose
 ```
 
 
