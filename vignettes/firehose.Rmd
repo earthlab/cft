@@ -105,7 +105,7 @@ ggplot() +
 ```
 
 
-```{r}
+```{r, eval=FALSE}
 
 
 out <- single_point_firehose(input_variables, new_lat, new_lon )
