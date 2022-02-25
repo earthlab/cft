@@ -194,6 +194,11 @@ my_boundary <- opq(bb) %>%
 ```
 
 ```
+## Error in curl::curl_fetch_memory(url, handle = handle): HTTP/2 stream 0 was not closed cleanly: PROTOCOL_ERROR (err 1)
+## Request failed [ERROR]. Retrying in 1 seconds...
+```
+
+```
 ## Error in check_for_error(doc): General overpass server error; returned:
 ## The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "query" at line 5 after 26 seconds.
 ```
@@ -271,11 +276,9 @@ out
 ```r
 ggplot() +
   geom_sf(data = boundaries, fill = "cornflowerblue") +
- geom_sf(data = pulled_data_sf, color = "red", size=0.5) +
+ geom_sf(data = out, color = "red", size=0.5) +
   coord_sf(crs = 4326) 
 ```
 
-```
-## Error in fortify(data): object 'pulled_data_sf' not found
-```
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png)
 

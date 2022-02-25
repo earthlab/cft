@@ -116,7 +116,7 @@ out
 ```{r}
 ggplot() +
   geom_sf(data = boundaries, fill = "cornflowerblue") +
- geom_sf(data = pulled_data_sf, color = "red", size=0.5) +
+ geom_sf(data = out, color = "red", size=0.5) +
   coord_sf(crs = 4326) 
 ```
 
