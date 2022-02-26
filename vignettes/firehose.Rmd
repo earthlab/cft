@@ -1,6 +1,8 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 
@@ -113,7 +115,7 @@ out
 ```
 
 
-```{r}
+```{r, eval=FALSE}
 ggplot() +
   geom_sf(data = boundaries, fill = "cornflowerblue") +
  geom_sf(data = out, color = "red", size=0.5) +
