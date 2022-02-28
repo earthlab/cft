@@ -1,26 +1,35 @@
 ---
 title: "R Notebook"
 output:
-  html_document:
-    df_print: paged
+  github_document:
+    html_preview: true
 ---
+# Welcome to the Climate Futures Toolbox's Firehose function
 
+This vignette provides a walk-through of a common use case of the Firehose function.
 
-```{r}
+The purpose of the Firehose functions is to download the data as quickly as possible by distribution tasks across multiple processors. The more cores you use, the faster this process will go. 
+
+Load the cft package. If you need to install cft, see the main cft tutorial on our github page for instructions.
+```{r, warning=FALSE, message=FALSE}
 library(cft)
 ```
 
-```{r}
+We will start by setting up our computer to run code on multiple cores instead of just one. The availableCores() function first checks your local computer to see how many cores are available and then subtracts one so that you still have an available core for running your operating system. The plan() function then starts a back-end structure where tasks can be assigned. *These backend systems can sometimes have difficulty shutting down after the process is done, especially if you force quite an operation in the works. If you find your code stalling without good explanation, it's good to restart your computer to clear any of these structures that may be stuck in memory.  
+
+```{r, warning=FALSE, message=FALSE}
 n_cores <- availableCores() - 1
 plan(multiprocess, workers = n_cores)
 ```
 
+We pull all of our data from the internet and internet connections can be a little variable. We try to make a strong link between our computer and the data server by creating an src object. Run this code to establish the connection and then use the src object you created to call on that connection for information. Because this src object is a connection, it will need to be reconnected each time you want to use it. You cannot make it once and then use if forever. 
 ```{r}
 web_link = "https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future"
 src <- tidync::tidync(web_link)
 
 ```
 
+After a connection is made to the server, we can run the available_data() function to check that server and see what data it has available to us. The available_data() function produces three outputs: (1) a raw list of available data, (2) a table of date times available, (3) a table summarizing available variables and the attributes of those variables. Here we print that list of variables. This may take up to a minutes as you retrieve the information from the server. 
 ```{r available data, cache=TRUE}
 
 inputs <- cft::available_data()
@@ -66,7 +75,7 @@ input_variables
 
 
 
-```{r}
+```{r, warning=FALSE, message=FALSE, cache=TRUE}
 aoi_name <- "colorado"
 bb <- getbb(aoi_name)
 my_boundary <- opq(bb) %>%
