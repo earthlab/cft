@@ -1,13 +1,22 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  github_document:
+    html_preview: true
 ---
+# Welcome to the Climate Futures Toolbox's Firehose function
 
+This vignette provides a walk-through of a common use case of the Firehose function.
 
+The purpose of the Firehose functions is to download the data as quickly as possible by distribution tasks across multiple processors. The more cores you use, the faster this process will go. 
+
+Load the cft package. If you need to install cft, see the main cft tutorial on our github page for instructions.
 
 ```r
 library(cft)
 ```
+
+We will start by setting up our computer to run code on multiple cores instead of just one. The availableCores() function first checks your local computer to see how many cores are available and then subtracts one so that you still have an available core for running your operating system. The plan() function then starts a back-end structure where tasks can be assigned. *These backend systems can sometimes have difficulty shutting down after the process is done, especially if you force quite an operation in the works. If you find your code stalling without good explanation, it's good to restart your computer to clear any of these structures that may be stuck in memory.  
 
 
 ```r
@@ -15,6 +24,7 @@ n_cores <- availableCores() - 1
 plan(multiprocess, workers = n_cores)
 ```
 
+We pull all of our data from the internet and internet connections can be a little variable. We try to make a strong link between our computer and the data server by creating an src object. Run this code to establish the connection and then use the src object you created to call on that connection for information. Because this src object is a connection, it will need to be reconnected each time you want to use it. You cannot make it once and then use if forever. 
 
 ```r
 web_link = "https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future"
@@ -32,6 +42,7 @@ src <- tidync::tidync(web_link)
 ## Connection succeeded.
 ```
 
+After a connection is made to the server, we can run the available_data() function to check that server and see what data it has available to us. The available_data() function produces three outputs: (1) a raw list of available data, (2) a table of date times available, (3) a table summarizing available variables and the attributes of those variables. Here we print that list of variables. This may take up to a minutes as you retrieve the information from the server. 
 
 ```r
 inputs <- cft::available_data()
@@ -191,35 +202,9 @@ bb <- getbb(aoi_name)
 my_boundary <- opq(bb) %>%
   add_osm_feature(key = "boundary", value = "national_park") %>%
   osmdata_sf()
-```
 
-```
-## Error in curl::curl_fetch_memory(url, handle = handle): HTTP/2 stream 0 was not closed cleanly: PROTOCOL_ERROR (err 1)
-## Request failed [ERROR]. Retrying in 1 seconds...
-```
-
-```
-## Error in check_for_error(doc): General overpass server error; returned:
-## The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "query" at line 5 after 26 seconds.
-```
-
-```r
 my_boundary
-```
 
-```
-## Object of class 'osmdata' with:
-##                  $bbox : 36.992426,-109.0601879,41.0034002,-102.041585
-##         $overpass_call : The call submitted to the overpass API
-##                  $meta : metadata including timestamp and version numbers
-##            $osm_points : 'sf' Simple Features Collection with 39511 points
-##             $osm_lines : 'sf' Simple Features Collection with 276 linestrings
-##          $osm_polygons : 'sf' Simple Features Collection with 38 polygons
-##        $osm_multilines : NULL
-##     $osm_multipolygons : 'sf' Simple Features Collection with 21 multipolygons
-```
-
-```r
 #boundaries <- my_boundary$osm_polygons[1,]
 boundaries <- my_boundary$osm_multipolygons[1,] #change to multipolygons
 pulled_bb <-  st_bbox(boundaries)
@@ -233,13 +218,9 @@ pulled_bb
 
 ```r
 pt <- st_coordinates(st_centroid(boundaries))
-```
 
-```
-## Warning in st_centroid.sf(boundaries): st_centroid assumes attributes are constant over geometries of x
-```
 
-```r
+
 lat_pt <- pt[1,2]
 lon_pt <- pt[1,1]
 
@@ -258,11 +239,7 @@ ggplot() +
   geom_sf(data = chosen_pt, color = "green", size=0.5)
 ```
 
-```
-## Warning in st_centroid.sf(boundaries): st_centroid assumes attributes are constant over geometries of x
-```
-
-![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png)
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
 
 
 
@@ -279,6 +256,4 @@ ggplot() +
  geom_sf(data = out, color = "red", size=0.5) +
   coord_sf(crs = 4326) 
 ```
-
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png)
 
