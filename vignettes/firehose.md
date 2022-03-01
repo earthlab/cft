@@ -92,7 +92,7 @@ inputs[[1]]
 ## # … with 340 more rows
 ```
 
-
+From the table that was returned, we want to decide which variables we would like to request. If you are using the Firehose function, you likely have a long list of variables you'd like to download in their entirely. Use the filter() function to select the variables you'd like to download. Store those choices in an object called input_variables to pass on to the Firehose function. 
 
 ```r
 input_variables <- inputs$variable_names %>% 
@@ -124,7 +124,11 @@ input_variables <- inputs$variable_names %>%
  "Norwegian Earth System Model 1 - Medium Resolution"  )) %>%
   
   pull("Available variable")
+```
 
+You can check the object you created to see that it is a list of formatted variable names ready to send to the server. 
+
+```r
 input_variables
 ```
 
@@ -193,8 +197,8 @@ input_variables
 ```
 
 
-
-
+# Set your area of interest
+  The Firehose function downloads all the requested variables, for all available time points, for a SINGLE geographic location. The underlying data are summarized to points on a grid and don't include every concievable point you could enter. You need to first suggest a lat/long pair and then find the aggregated download point that is closest to your suggested point. In the code here, we use Open Street Map to download a polygon for Rocky Mountain National Park and then find the centroid as our suggested point. 
 
 ```r
 aoi_name <- "colorado"
@@ -218,9 +222,22 @@ pulled_bb
 
 ```r
 pt <- st_coordinates(st_centroid(boundaries))
+```
 
+So, our suggested point is pt.
 
+```r
+pt
+```
 
+```
+##           X        Y
+## 1 -105.6973 40.35543
+```
+
+Now we can check to see which point in the dataset most closely resembles our suggested point. 
+
+```r
 lat_pt <- pt[1,2]
 lon_pt <- pt[1,1]
 
@@ -232,16 +249,47 @@ new_lat <- lats[which(abs(lats-lat_pt)==min(abs(lats-lat_pt))),]
 
 
 chosen_pt <- st_as_sf(cbind(new_lon,new_lat), coords = c("lon", "lat"), crs = "WGS84", agr = "constant")
+```
 
+The chosen point is relatively close to the suggested point. 
+
+```r
+chosen_pt
+```
+
+```
+## Simple feature collection with 1 feature and 0 fields
+## Geometry type: POINT
+## Dimension:     XY
+## Bounding box:  xmin: -105.6891 ymin: 40.3545 xmax: -105.6891 ymax: 40.3545
+## Geodetic CRS:  WGS 84
+##                    geometry
+## 1 POINT (-105.6891 40.3545)
+```
+
+
+A plot of the suggested point and the available point next to eachother for perspective. You can see that there is an available data slice very near our suggested point. 
+
+```r
 ggplot() +
   geom_sf(data = boundaries, fill = "cornflowerblue") +
   geom_sf(data = st_centroid(boundaries), color = "red", size=0.5) +
   geom_sf(data = chosen_pt, color = "green", size=0.5)
 ```
 
-![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
+```
+## Warning in st_centroid.sf(boundaries): st_centroid assumes attributes are constant over geometries of x
+```
+
+![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-1.png)
 
 
+# Run the Firehose function
+You will need to supply the Firehose function with three things for it to work properly: (1) A parallelization object produced by the plan() function to specify how many cores you want the function to us, (2) an input_variable object specifying the properly formatted list of variables you want to download, (3) the latitude and longitude coordinates for the available data point you want to extract. Provide those three things to the single_point_firehose() function and it will download your data as fast as possible, organize those data into an sf spatial dataframe, and return that dataframe. 
+
+Some notes of caution. When you use numerous cores to make a lot of simultanious requests, the server occasionally mistakes you for a DDOS attach and kills your connection. The firehose function deals with this uncertainty, and other forms of network disruption, by conducting two phases of downloads. It first tried to download everything you requested through a ton of independent api requests, it then scans all of the downloads to see which ones failed and organizes a follow-up download run to recapture downloads that failed on your first attempt. Do not worry if you see the progress bar get disrupted during either one of these passes, it will hopefully capture all of the errors and retry those downloads. 
+
+This function will run faster if you provide it more cores and a faster internet connection. In our test runs with 11 cores on a 12 core laptop and 800mb/s internet took 40-80 minutes to download 181 variables. The variance was largely driven by our network connection speed and error rate (because they require a second try to download).
 
 ```r
 out <- single_point_firehose(input_variables, new_lat, new_lon )
@@ -249,6 +297,7 @@ out
 ```
 
 
+It is good practice to plot the downloaded data to confirm that they are from the correct location.
 
 ```r
 ggplot() +
