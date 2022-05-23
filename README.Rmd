@@ -1,10 +1,8 @@
 ---
 title: "Climate Futures Toolbox"
 output:
-  html_document:
-    df_print: paged
-    toc: true
-    toc_depth: 2
+  github_document:
+    html_preview: True
 
 ---
 # Welcome to the Climate Futures Toolbox

@@ -1,4 +1,3 @@
-base
 rmarkdown
 usethis
 devtools
@@ -18,3 +17,9 @@ climateR
 ggplot2
 cft
 ggthemes
+multidplyr
+future
+furrr
+rlist
+plyr
+pipeR

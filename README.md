@@ -1,3 +1,6 @@
+Climate Futures Toolbox
+================
+
 # Welcome to the Climate Futures Toolbox
 
 This is a package developed as a collaboration between Earth lab and the
@@ -16,10 +19,13 @@ accommodate more functionality.
 
 This vignette provides a walk-through of a common use case of the cft
 package, which is, to help users download, organize, and visualize past
-and future climate data. - 1) How to download and install the cft
-package - 2) How to see the menu of available data and choose items from
-that menu - 3) How to request data from the API using those menu choices
-- 4) How to aggregate those data in differeent ways to drive insight.
+and future climate data.
+
+1.  How to download and install the cft package
+2.  How to see the menu of available data and choose items from that
+    menu
+3.  How to request data from the API using those menu choices
+4.  How to aggregate those data in different ways to drive insight.
 
 ## Why write the cft package?
 
@@ -37,8 +43,11 @@ To get the most out of this vignette, we assume you have:
 
 -   At least 500 MB of disk space
 -   Some familiarity with ggplot2
--   Some familiarity with dplyr (e.g., `filter()`, `group_by()`, and
-    `summarize()`)
+-   Some familiarity with dplyr (e.g.,
+    [`filter()`](https://www.rdocumentation.org/packages/dplyr/versions/0.7.8/topics/filter),
+    [`group_by()`](https://www.rdocumentation.org/packages/dplyr/versions/0.7.8/topics/group_by),
+    and
+    [`summarise()`](https://www.rdocumentation.org/packages/dplyr/versions/0.7.8/topics/summarise))
 
 ## About the data
 
@@ -62,11 +71,101 @@ install_github("earthlab/cft", force = TRUE)
 ## Attach cft and check the list of available functions
 
 ``` r
+library(multidplyr)
 library(cft)
+```
+
+    ## Loading required package: dplyr
+
+    ## 
+    ## Attaching package: 'dplyr'
+
+    ## The following objects are masked from 'package:stats':
+    ## 
+    ##     filter, lag
+
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     intersect, setdiff, setequal, union
+
+    ## Loading required package: tidync
+
+    ## Loading required package: tidyr
+
+    ## Loading required package: lubridate
+
+    ## 
+    ## Attaching package: 'lubridate'
+
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     date, intersect, setdiff, union
+
+    ## Loading required package: osmdata
+
+    ## Data (c) OpenStreetMap contributors, ODbL 1.0. https://www.openstreetmap.org/copyright
+
+    ## Loading required package: sf
+
+    ## Linking to GEOS 3.8.0, GDAL 3.0.4, PROJ 6.3.1; sf_use_s2() is TRUE
+
+    ## Loading required package: stars
+
+    ## Loading required package: abind
+
+    ## Loading required package: epitools
+
+    ## Loading required package: raster
+
+    ## Loading required package: sp
+
+    ## 
+    ## Attaching package: 'raster'
+
+    ## The following object is masked from 'package:dplyr':
+    ## 
+    ##     select
+
+    ## Loading required package: ggplot2
+
+    ## Loading required package: future
+
+    ## 
+    ## Attaching package: 'future'
+
+    ## The following object is masked from 'package:raster':
+    ## 
+    ##     values
+
+    ## Loading required package: furrr
+
+    ## Loading required package: rlist
+
+    ## Loading required package: plyr
+
+    ## ------------------------------------------------------------------------------
+
+    ## You have loaded plyr after dplyr - this is likely to cause problems.
+    ## If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+    ## library(plyr); library(dplyr)
+
+    ## ------------------------------------------------------------------------------
+
+    ## 
+    ## Attaching package: 'plyr'
+
+    ## The following objects are masked from 'package:dplyr':
+    ## 
+    ##     arrange, count, desc, failwith, id, mutate, rename, summarise,
+    ##     summarize
+
+    ## Loading required package: pipeR
+
+``` r
 ls(pos="package:cft")
 ```
 
-    ## [1] "available_data"
+    ## [1] "available_data"        "single_point_firehose"
 
 ## Look at the documentation for those functions
 
@@ -74,10 +173,13 @@ ls(pos="package:cft")
 ?available_data
 ```
 
+``` r
+?single_point_firehose
+```
+
 # Use read-only mode to find available data without initiating a full download.
 
 ``` r
-start_time <- Sys.time()
 inputs <- cft::available_data()
 ```
 
@@ -94,23 +196,28 @@ inputs <- cft::available_data()
 
     ## Converting into an R data.table
 
-``` r
-end_time <- Sys.time()
-
-end_time - start_time
-```
-
-    ## Time difference of 12.14435 secs
-
-# Filter the results from available_data() to specify which data to actually download.
+# Donwloading Data
 
 There are too many data available to download in a single download
-request. You will need limit your requests to 500mb. This is enough to
+request. You will need limit your requests to 500 MB. This is enough to
 download a single variable for a single spatial point for the full
-available time period, but not more than that. If you want to pull
-multiple variables and/or multiple spatial locations, you will need to
-submit multiple request for data and merge those tables together after
-download. We provide examples for both.
+available time period, but not more than that. This means that we must
+filter the results from available_data() to specify the data that we
+want to actually download. If you want to pull multiple variables and/or
+multiple spatial locations, you will need to submit multiple request for
+data and merge those tables together after download. We provide examples
+for both.
+
+Notice that if you want to download multiple variables in their entirety
+for several specific lat/long locations, single_point_firehose() will
+provide better functionality than available_data(). The
+single_point_firehose() function parallelizes the download requests,
+which allows it to download a large quantity of data much faster than
+the available_data() function. Additionally, the single_point_firehose()
+function combines the data from the parallelized download requests into
+a single sf spatial dataframe. A vignette walking through a common use
+of the single_point_firehose() function can be found at
+<https://github.com/earthlab/cft/blob/main/vignettes/firehose.md>
 
 ## We can look at just the unique variable types to get an idea of what’s available
 
@@ -118,27 +225,18 @@ download. We provide examples for both.
 levels(as.factor(inputs$variable_names$Variable))
 ```
 
-    ## [1] "Eastward Wind"                       "Maximum Relative Humidity"           "Maximum Temperature"                
-    ## [4] "Minimum Relative Humidity"           "Minimum Temperature"                 "Northward Wind"                     
-    ## [7] "Precipitation"                       "Specific Humidity"                   "Surface Downswelling Shortwave Flux"
+    ## [1] "Eastward Wind"                       "Maximum Relative Humidity"          
+    ## [3] "Maximum Temperature"                 "Minimum Relative Humidity"          
+    ## [5] "Minimum Temperature"                 "Northward Wind"                     
+    ## [7] "Precipitation"                       "Specific Humidity"                  
+    ## [9] "Surface Downswelling Shortwave Flux"
 
 ``` r
 levels(as.factor(inputs$variable_names$`Variable abbreviation`))
 ```
 
-    ## [1] "huss"   "pr"     "rhsmax" "rhsmin" "rsds"   "tasmax" "tasmin" "uas"    "vas"
-
-``` r
-levels(as.factor(inputs$variable_names$Scenario))
-```
-
-    ## [1] "RCP 4.5" "RCP 8.5"
-
-``` r
-levels(as.factor(inputs$variable_names$`Scenario abbreviation`))
-```
-
-    ## [1] "rcp45" "rcp85"
+    ## [1] "huss"   "pr"     "rhsmax" "rhsmin" "rsds"   "tasmax" "tasmin" "uas"   
+    ## [9] "vas"
 
 ``` r
 levels(as.factor(inputs$variable_names$Scenario))
@@ -180,14 +278,15 @@ levels(as.factor(inputs$variable_names$Model))
 levels(as.factor(inputs$variable_names$`Model abbreviation`))
 ```
 
-    ##  [1] "bcc-csm1-1"     "bcc-csm1-1-m"   "BNU-ESM"        "CanESM2"        "CCSM4"          "CNRM-CM5"      
-    ##  [7] "CSIRO-Mk3-6-0"  "GFDL-ESM2G"     "GFDL-ESM2M"     "HadGEM2-CC365"  "HadGEM2-ES365"  "inmcm4"        
-    ## [13] "IPSL-CM5A-LR"   "IPSL-CM5A-MR"   "IPSL-CM5B-LR"   "MIROC-ESM"      "MIROC-ESM-CHEM" "MIROC5"        
-    ## [19] "MRI-CGCM3"      "NorESM1-M"
+    ##  [1] "bcc-csm1-1"     "bcc-csm1-1-m"   "BNU-ESM"        "CanESM2"       
+    ##  [5] "CCSM4"          "CNRM-CM5"       "CSIRO-Mk3-6-0"  "GFDL-ESM2G"    
+    ##  [9] "GFDL-ESM2M"     "HadGEM2-CC365"  "HadGEM2-ES365"  "inmcm4"        
+    ## [13] "IPSL-CM5A-LR"   "IPSL-CM5A-MR"   "IPSL-CM5B-LR"   "MIROC-ESM"     
+    ## [17] "MIROC-ESM-CHEM" "MIROC5"         "MRI-CGCM3"      "NorESM1-M"
 
 ## But we prefer to use the table version so we can easily select combinations of variables that we want to pull together.
 
-Here you will use tidy notation to filter the avalable_data table to
+Here you will use tidy notation to filter the available_data table to
 only include the entries that you would like to download.
 
 ## Filter variable names
@@ -291,789 +390,71 @@ input_variables
     ## [178] "tasmin_bcc-csm1-1_r1i1p1_rcp45"     "tasmin_bcc-csm1-1_r1i1p1_rcp85"     "tasmin_inmcm4_r1i1p1_rcp45"        
     ## [181] "tasmin_inmcm4_r1i1p1_rcp85"
 
-# Establish area of interst (AOI) by bounding box
-
-You will need to specify an appropriate area of interest for downloading
-spatial data. We utilize the functionality of open street map to make it
-fast and easy to download shapefiles for any area of interest. Here I am
-using the open street map (OSM) protocol to retrive a shapefile for Hot
-Springs National Park. I choice this park because it is the smallest
-national park.
-
-This chunk of code is first using the getbb() function to retrive a
-bounding box matching a plain language search request. That bounding box
-is then fed into the API call that retrives the data and converts it
-into an r-specific spatial data format called sf.
-
-OSM uses a ‘key’ and ‘value’ system for organizing requests. You may
-want to spend some time familirizing yourself with the immense library
-of data you can access with this system.
-<https://wiki.openstreetmap.org/wiki/Tags>
-
-``` r
-bb <- getbb("Hot Springs")
-my_boundary <- opq(bb) %>% 
-  add_osm_feature(key = "boundary", value = "national_park") %>% 
-osmdata_sf() 
-
-my_boundary
-```
-
-    ## Object of class 'osmdata' with:
-    ##                  $bbox : 34.3438393,-93.2152437,34.6638393,-92.8952437
-    ##         $overpass_call : The call submitted to the overpass API
-    ##                  $meta : metadata including timestamp and version numbers
-    ##            $osm_points : 'sf' Simple Features Collection with 5591 points
-    ##             $osm_lines : 'sf' Simple Features Collection with 3 linestrings
-    ##          $osm_polygons : 'sf' Simple Features Collection with 263 polygons
-    ##        $osm_multilines : NULL
-    ##     $osm_multipolygons : 'sf' Simple Features Collection with 2 multipolygons
-
-Here you re-calibrate the bounding box relative to the actual shapefiles
-you downloaded. The bounding box above was pulled from the osm database,
-this bounding box is for the polygons you actually used. These two boxes
-may be the same or they may be different but the one derived from your
-downloaded shapefile is reproducible.
-
-Notice that we specify osm_multipolygons instead of osm_polygons. This
-is a case-specific choice. When you download a shapefile from OSM, if
-will include a number of different spatial object types and you can
-choose several of those options to move forward. We chose multipolygons
-because they best matched our area of interest. Use the quick plot below
-to visualize your area of interest before continuing.
-
-``` r
-boundaries <- my_boundary$osm_multipolygons
-pulled_bb <- st_bbox(boundaries)
-pulled_bb
-```
-
-    ##      xmin      ymin      xmax      ymax 
-    ## -94.97233  33.70692 -92.75465  35.07541
-
-This quick map allows you to check that the polygon you downloaded
-matches your expectations.
-
-``` r
-basemap <- ggplot(data = boundaries) +
-  geom_sf(fill = "cornflowerblue") +
-  geom_sf_text(aes(label = boundaries$name)) 
-
-basemap
-```
-
-![](README_files/figure-gfm/plot%20of%20area%20of%20interest%20small-1.png)<!-- -->
-
-# Download full time series from a single point
-
-WARNING: TIME CONSUMING STEPS AHEAD
-
-It’s time to download. Here is a simple and fast example of data from a
-single point (the centroid of our polygon) for one year (2099). On our
-local machine this takes \~3 seconds.
-
-``` r
-start_time <- Sys.time()
-
-center_point <- st_centroid(boundaries) %>% st_bbox(center_point)
-```
-
-    ## Warning in st_centroid.sf(boundaries): st_centroid assumes attributes are constant over geometries of x
-
-``` r
-times <- inputs$available_times
-
-Pulled_data_single_space_single_timepoint <- inputs$src %>% 
-  hyper_filter(lat = lat <= c(center_point[4]+0.05) & lat >= c(center_point[2]-0.05)) %>% 
-  hyper_filter(lon = lon <= c(center_point[3]+0.05) & lon >= c(center_point[1]-0.05)) %>%
-   hyper_filter(time = times$`Available times` ==  73048) %>% 
-  hyper_tibble(select_var = input_variables) %>%
-  st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
-
-end_time <- Sys.time()
-print(end_time - start_time)
-```
-
-    ## Time difference of 3.939142 mins
-
-``` r
-head(Pulled_data_single_space_single_timepoint)
-```
-
-    ## Simple feature collection with 6 features and 182 fields
-    ## Attribute-geometry relationship: 182 constant, 0 aggregate, 0 identity
-    ## Geometry type: POINT
-    ## Dimension:     XY
-    ## Bounding box:  xmin: -93.85599 ymin: 34.4796 xmax: -93.64764 ymax: 34.4796
-    ## Geodetic CRS:  WGS 84
-    ## # A tibble: 6 × 183
-    ##   `pr_BNU-ESM_r1i1p1_rcp45` `pr_BNU-ESM_r1i1p… pr_CCSM4_r6i1p1_… pr_CCSM4_r6i1p1_… `pr_CNRM-CM5_r1i… `pr_CNRM-CM5_r1i…
-    ##                       <dbl>              <dbl>             <dbl>             <dbl>             <dbl>             <dbl>
-    ## 1                        NA               8.30              8.10             0.500              16.4             0.500
-    ## 2                        NA               6.60              7.80             0.400              15.1             0.500
-    ## 3                        NA               6.70              7.80             0.500              15.6             0.600
-    ## 4                        NA               7.40              8.20             0.300              15.2             0.600
-    ## 5                        NA               7.70              8.10             0.300              15.5             0.600
-    ## 6                        NA               7.50              8.20             0.300              15.2             0.500
-    ## # … with 177 more variables: pr_CSIRO-Mk3-6-0_r1i1p1_rcp45 <dbl>, pr_CSIRO-Mk3-6-0_r1i1p1_rcp85 <dbl>,
-    ## #   pr_CanESM2_r1i1p1_rcp45 <dbl>, pr_CanESM2_r1i1p1_rcp85 <dbl>, pr_GFDL-ESM2G_r1i1p1_rcp45 <dbl>,
-    ## #   pr_GFDL-ESM2G_r1i1p1_rcp85 <dbl>, pr_GFDL-ESM2M_r1i1p1_rcp45 <dbl>, pr_GFDL-ESM2M_r1i1p1_rcp85 <dbl>,
-    ## #   pr_HadGEM2-CC365_r1i1p1_rcp45 <dbl>, pr_HadGEM2-CC365_r1i1p1_rcp85 <dbl>, pr_HadGEM2-ES365_r1i1p1_rcp45 <dbl>,
-    ## #   pr_HadGEM2-ES365_r1i1p1_rcp85 <dbl>, pr_IPSL-CM5A-LR_r1i1p1_rcp45 <dbl>, pr_IPSL-CM5A-LR_r1i1p1_rcp85 <dbl>,
-    ## #   pr_IPSL-CM5A-MR_r1i1p1_rcp45 <dbl>, pr_IPSL-CM5A-MR_r1i1p1_rcp85 <dbl>, pr_IPSL-CM5B-LR_r1i1p1_rcp45 <dbl>,
-    ## #   pr_IPSL-CM5B-LR_r1i1p1_rcp85 <dbl>, pr_MIROC-ESM-CHEM_r1i1p1_rcp45 <dbl>, pr_MIROC-ESM-CHEM_r1i1p1_rcp85 <dbl>, …
-
-Error note: an error like this is likely a connection error. Try again.
-Sometime you need to restart your R session to clear memory. “curl error
-details: Error in R_nc4_open: NetCDF: I/O failure Error in
-ncdf4::nc_open(x*s**o**u**r**c**e*source\[1\]) : Error in nc_open trying
-to open file
-<https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future>”
-
-Here we remove the time filter to download all the requested input
-variables for the entire timeperiod.
-
-NOTE: When you ask for a big download, that may exceed the API limit,
-the API asks you to confirm that you want to try. This will prompt a
-YES/NO question in your console that you need to answer if you want to
-continue. If you find this step taking a very long time, check that your
-console isn’t waiting for you to confirm that you want to try this
-request.
-
-``` r
-start_time <- Sys.time()
-center_point <- st_centroid(boundaries) %>% st_bbox(center_point)
-
-Pulled_data_single_space_all_timepoints <- inputs$src %>% 
-  hyper_filter(lat = lat <= c(center_point[4]+0.05) & lat >= c(center_point[2]-0.05)) %>% 
-  hyper_filter(lon = lon <= c(center_point[3]+0.05) & lon >= c(center_point[1]-0.05)) %>%
-  # hyper_filter(time = input_times$`Available times` ==  73048) %>% 
-  hyper_tibble(select_var = input_variables) %>%
-  st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
-
-end_time <- Sys.time()
-print(end_time - start_time)
-
-head(Pulled_data_single_space_all_timepoints)
-```
-
-## Error when you try to download too much data at one time
-
-This is where you will start seeing error returned from the API if you
-have requested too much data at one time.
-
-Downloads from the API are limited to 500mb per request. A request for a
-large area of interest combined with a long time series will return a
-cryptic runtime error informing you that your request was too large.
-
-This error may look like this: “CURL Error: Transferred a partial file
-Error in Rsx_nc4_get_vara_int: NetCDF: DAP failure Var:
-pr_CCSM4_r6i1p1_rcp85 Ndims: 3 Start: 0,444,511 Count: 34333,2,3 Error
-in ncvar_get_inner(ncid2use, varid2use,
-nc*v**a**r*\[\[*l**i*\]\]missval, addOffset, : C function
-Rsx_nc4_get_var_int returned error”
-
-The solution to this problem is to subset your requests to make them fit
-within the boundaries of the API. You can achieve this by balancing the
-size of your requested spatial extent and the length of your requested
-time period. For a small national park, it’s possible to pull the entire
-time series from the API but larger parks will require you to request
-shorter time window or stitch multiple time windows together.
-
-## Filter time
-
-Time is one of the easiest dimensions to filter along because the time
-data are organized by sequential number, so they are easy to cut up and
-reassemble without needing to reference outside tables. The request
-filter is sensitive to vector length so, we build in our filter indexes
-into the time dataframe to insure that they are all the same length.
-
-Here we are adding a generic index filled with 0’s that we can use in
-the future, a column with 1’s for the first half and 0’s for the second
-half, and a column with 0’s for the first half and 1’s for the second.
-
-``` r
-# Year 2034
-time_min <- 38716
-time_max <- 73048
-
-input_times <- inputs$available_times %>% 
-  add_column(index = 0) %>% 
-  add_column(first_half = 0) %>% 
-  add_column(second_half = 0) 
-input_times[which(inputs$available_times[,1] >= time_min & inputs$available_times[,1] <= time_max ),3] <- 1
-
-med <- median(row_number(input_times[,3])) 
-input_times[which(as.numeric(row.names(input_times)) <= med),4] <- 1
-input_times[which(as.numeric(row.names(input_times)) > med),5] <- 1
-
-tail(input_times)
-```
-
-    ##       Available times      dates index first_half second_half
-    ## 34328           73043 2099-12-26     1          0           1
-    ## 34329           73044 2099-12-27     1          0           1
-    ## 34330           73045 2099-12-28     1          0           1
-    ## 34331           73046 2099-12-29     1          0           1
-    ## 34332           73047 2099-12-30     1          0           1
-    ## 34333           73048 2099-12-31     1          0           1
-
-##Download full time series as a set of smaller downloads When your data
-request is too big for a single API request, it will need to be cut it
-into smaller requests. You can use the new index columns we created in
-the time table above to cut our single request into two requests. This
-leaves you with two data tables instead of one. You can bind these two
-tables back together, but it is time consuming to do so because the two
-tables have to take turns writting themselves to a new third table that
-they can occupy together. This takes a lot of short term memory and
-errors out some machines. It will save you time and effort if you can
-avoid binding them back together.
-
-``` r
-start_time <- Sys.time()
-
-Pulled_data_sub1 <- Pulled_data <- inputs$src %>% 
-  hyper_filter(lat = lat <= c(center_point[4]+0.05) & lat >= c(center_point[2]-0.05)) %>% 
-  hyper_filter(lon = lon <= c(center_point[3]+0.05) & lon >= c(center_point[1]-0.05)) %>% 
-  hyper_filter(time =  input_times[,4] == 1) %>% 
-  hyper_tibble(select_var = input_variables
-    )
-
-Pulled_data_sub2 <- Pulled_data <- inputs$src %>% 
-  hyper_filter(lat = lat <= c(center_point[4]+0.05) & lat >= c(center_point[2]-0.05)) %>% 
-  hyper_filter(lon = lon <= c(center_point[3]+0.05) & lon >= c(center_point[1]-0.05)) %>% 
-  hyper_filter(time =  input_times[,5] == 1) %>% 
-  hyper_tibble(select_var = input_variables
-    )
-
-end_time <- Sys.time()
-end_time - start_time
-
-tail(Pulled_data_sub1)
-tail(Pulled_data_sub2)
-```
-
-# Expanding to include a large area of interest
-
-In the previous examples, we pulled data from a single point in the
-center of a small national park. Now, we will show you how to download,
-analyze, and visualize these data over a large spatial extent.
-
-First, Let’s redefine our area of interest to include all the national
-parks that touch Yellowstone National Park. OSM provides a bounding box
-just like we used above for Hot Springs, Arkansas, but the national
-parks service also provides an official bounding box for this area of
-interest that we can enter manually if we like. This manually provided
-bounding box the specifies the area for extracting polygons from OSM but
-we still recalibarate that bounding box after download so it matches the
-downloaded polygons.
-
-``` r
-bb <- getbb("yellowstone")
-
-bb_manual <- bb
-bb_manual[1,1] <- -111.15594815937659
-bb_manual[1,2] <- -109.8305463801207
-bb_manual[2,1] <- 44.12354048271325
-bb_manual[2,2] <- 45.11911641599412
-
-my_boundary_yellow <- opq(bb_manual) %>% 
-  add_osm_feature(key = "boundary", value = "national_park") %>% 
-osmdata_sf() 
-
-my_boundary_yellow
-```
-
-    ## Object of class 'osmdata' with:
-    ##                  $bbox : 44.1235404827133,-111.155948159377,45.1191164159941,-109.830546380121
-    ##         $overpass_call : The call submitted to the overpass API
-    ##                  $meta : metadata including timestamp and version numbers
-    ##            $osm_points : 'sf' Simple Features Collection with 31368 points
-    ##             $osm_lines : 'sf' Simple Features Collection with 224 linestrings
-    ##          $osm_polygons : 'sf' Simple Features Collection with 11 polygons
-    ##        $osm_multilines : NULL
-    ##     $osm_multipolygons : 'sf' Simple Features Collection with 5 multipolygons
-
-``` r
-boundaries_large <- my_boundary_yellow$osm_multipolygons
-pulled_bb_large <- st_bbox(boundaries_large)
-pulled_bb_large
-```
-
-    ##       xmin       ymin       xmax       ymax 
-    ## -113.27781   41.90143 -108.69849   45.10896
-
-Let’s do another quickplot to make sure our area of interst matches our
-expectiaions.
-
-``` r
-basemap <- ggplot(data = boundaries_large) +
-  geom_sf(fill = "cornflowerblue") +
-  geom_sf_text(aes(label = boundaries_large$name)) 
-
-basemap
-```
-
-![](README_files/figure-gfm/plot%20of%20area%20of%20interest%20large-1.png)<!-- -->
-
-## Large area with few variables
-
-As you area of interest expands, you will need to cut you time and
-variable requests to accommodate more spatial points. Here we have cut
-our variables down to just “Precipitation”, our scenarios down to just
-“RCP 8.5”, and our models down to just “Model for Interdisciplinary
-Research On Climate 5”
-
-``` r
-input_variables <- inputs$variable_names %>% 
-  filter(Variable %in% c( "Precipitation")) %>% 
-  filter(Scenario %in% c( "RCP 8.5")) %>% 
-  filter(Model %in% c(
-             
- "Model for Interdisciplinary Research On Climate 5" )) %>%
-  
-  pull("Available variable")
-
-input_variables
-```
-
-    ## [1] "pr_MIROC5_r1i1p1_rcp85"
-
-# Download data by AOI, filtered times, and filtered variable list
-
-``` r
-start_time <- Sys.time()
-
-Pulled_data_large_area_few_variables <- inputs$src %>% 
-  hyper_filter(lat = lat <= c(pulled_bb_large[4]+0.05) & lat >= c(pulled_bb_large[2]-0.05)) %>% 
-  hyper_filter(lon = lon <= c(pulled_bb_large[3]+0.05) & lon >= c(pulled_bb_large[1]-0.05)) %>%
-  hyper_filter(time = input_times$`Available times` ==  73048) %>% 
-  hyper_tibble(select_var = input_variables
-    ) %>%
-  st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
-
-
-
-end_time <- Sys.time()
-end_time - start_time
-```
-
-    ## Time difference of 1.900902 secs
-
-``` r
-head(Pulled_data_large_area_few_variables)
-```
-
-    ## Simple feature collection with 6 features and 2 fields
-    ## Attribute-geometry relationship: 2 constant, 0 aggregate, 0 identity
-    ## Geometry type: POINT
-    ## Dimension:     XY
-    ## Bounding box:  xmin: -113.314 ymin: 41.85448 xmax: -113.1057 ymax: 41.85448
-    ## Geodetic CRS:  WGS 84
-    ## # A tibble: 6 × 3
-    ##   pr_MIROC5_r1i1p1_rcp85  time             geometry
-    ##                    <dbl> <dbl>          <POINT [°]>
-    ## 1                      0 73048  (-113.314 41.85448)
-    ## 2                      0 73048 (-113.2723 41.85448)
-    ## 3                      0 73048 (-113.2307 41.85448)
-    ## 4                      0 73048  (-113.189 41.85448)
-    ## 5                      0 73048 (-113.1473 41.85448)
-    ## 6                      0 73048 (-113.1057 41.85448)
-
-``` r
-tail(Pulled_data_large_area_few_variables)
-```
-
-    ## Simple feature collection with 6 features and 2 fields
-    ## Attribute-geometry relationship: 2 constant, 0 aggregate, 0 identity
-    ## Geometry type: POINT
-    ## Dimension:     XY
-    ## Bounding box:  xmin: -108.8974 ymin: 45.14609 xmax: -108.6891 ymax: 45.14609
-    ## Geodetic CRS:  WGS 84
-    ## # A tibble: 6 × 3
-    ##   pr_MIROC5_r1i1p1_rcp85  time             geometry
-    ##                    <dbl> <dbl>          <POINT [°]>
-    ## 1                  0     73048 (-108.8974 45.14609)
-    ## 2                  0     73048 (-108.8557 45.14609)
-    ## 3                  0     73048 (-108.8141 45.14609)
-    ## 4                  0     73048 (-108.7724 45.14609)
-    ## 5                  0.300 73048 (-108.7307 45.14609)
-    ## 6                  0.400 73048 (-108.6891 45.14609)
-
-### Time extent plot
-
-Check this plot to make sure you downloaded your entire time series.
-
-``` r
-plot(Pulled_data$time, Pulled_data$`pr_MIROC5_r1i1p1_rcp85`)
-```
-
-### Spatial extent plot
-
-Check here to make sure you downloaded the proper spatial extent.
-
-``` r
-check_filter <- Pulled_data_large_area_few_variables %>% filter(time == min(Pulled_data_large_area_few_variables$time))
-
-ggplot() +
-  geom_sf(data = boundaries_large, fill = "cornflowerblue") +
- geom_sf(data = check_filter, color = "red", size=0.5) +
-  coord_sf(crs = 4326) 
-```
-
-![](README_files/figure-gfm/check%20pulled%20data%20for%20large%20area-1.png)<!-- -->
-
-## If you encounter an error suggesting that you are pulling too much data, you will need to stitch a few requests together to keep each call below the 500mb limit.
-
-``` r
-start_time <- Sys.time()
-
-
-Pulled_data_sub1 <- inputs$src %>% 
-  hyper_filter(lat = lat <= c(pulled_bb[4]+0.05) & lat >= c(pulled_bb[2]-0.05)) %>% 
-  hyper_filter(lon = lon <= c(pulled_bb[3]+0.05) & lon >= c(pulled_bb[1]-0.05)) %>% 
-  hyper_filter(time =  input_times[,4] == 1) %>% 
-  hyper_tibble(select_var = input_variables) %>%  
-  st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
-## should time be in here?
-
-
-Pulled_data_sub2 <- inputs$src %>% 
-  hyper_filter(lat = lat <= c(pulled_bb[4]+0.05) & lat >= c(pulled_bb[2]-0.05)) %>% 
-  hyper_filter(lon = lon <= c(pulled_bb[3]+0.05) & lon >= c(pulled_bb[1]-0.05)) %>% 
-  hyper_filter(time =  input_times[,5] == 1) %>% 
-  hyper_tibble(select_var = input_variables) %>%
-  st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
-## should time be in here?
-
-end_time <- Sys.time()
-end_time - start_time
-
-
-
-tail(Pulled_data_sub1)
-tail(Pulled_data_sub2)
-```
-
-``` r
-start_time <- Sys.time()
-
-Pulled_data_stitch <- bind_rows(Pulled_data_sub1, Pulled_data_sub2)
-
-end_time <- Sys.time()
-end_time - start_time
-```
-
-### Time extent plot
-
-Check this plot to make sure you downloaded your entire time series.
-
-``` r
-plot(Pulled_data_stitch$time, Pulled_data_stitch$`pr_MIROC5_r1i1p1_rcp85`)
-```
-
-# Melt downloaded points into a raster before aggretation
-
-``` r
-rast <- st_rasterize(Pulled_data_large_area_few_variables) 
-plot(rast)
-```
-
-![](README_files/figure-gfm/rasterize%20with%20stars-1.png)<!-- -->
-
-``` r
-#Pulled_data %>% as.data.frame() %>% brick()
-```
-
-#Aggregate downloaded data to different spatial objects
-
-## Aggregate to polygon (faster method)
-
-``` r
-extracted <- st_extract(rast, boundaries_large$geometry) %>% st_as_sf()
-names(extracted)[1] <- "nn"
-ggplot(data=extracted) +
-  geom_sf(aes(fill = nn)) +
-  scale_fill_continuous(low="thistle2", high="darkred", 
-                       guide="colorbar",na.value="white")+
-  coord_sf(crs = 4326)
-```
-
-![](README_files/figure-gfm/aggregate%20to%20polygon-1.png)<!-- -->
-
-## Clip raster with polygon (slower method)
-
-``` r
-intersection <- st_intersection(x = Pulled_data_large_area_few_variables, y = boundaries_large$geometry)
-
-names(intersection)[1:2] <- c("Precipitation","b")
-```
-
-``` r
-library(ggthemes)
-ggplot() +
-  geom_sf(data = intersection, aes(color=Precipitation)) +
-  scale_color_continuous(low="thistle2", high="darkred", 
-                       guide="colorbar",na.value="white")+
-  geom_sf(data = boundaries_large, fill = NA, color = "white") +
-  theme_tufte()+
-  labs(title = "YELLOWSTONE NATIONAL PARK", subtitle = "Temperture in 2050")
-```
-
-![](README_files/figure-gfm/plot%20of%20raster%20mask-1.png)<!-- -->
-
-## Aggregate to River segment
-
-``` r
-river <- opq(bb_manual) %>%
-  add_osm_feature(key = "waterway", value = "river") %>%
-  osmdata_sf() 
-```
-
-    ## Request failed [504]. Retrying in 1.8 seconds...
-
-``` r
-river
-```
-
-    ## Object of class 'osmdata' with:
-    ##                  $bbox : 44.1235404827133,-111.155948159377,45.1191164159941,-109.830546380121
-    ##         $overpass_call : The call submitted to the overpass API
-    ##                  $meta : metadata including timestamp and version numbers
-    ##            $osm_points : 'sf' Simple Features Collection with 34185 points
-    ##             $osm_lines : 'sf' Simple Features Collection with 512 linestrings
-    ##          $osm_polygons : 'sf' Simple Features Collection with 0 polygons
-    ##        $osm_multilines : 'sf' Simple Features Collection with 16 multilinestrings
-    ##     $osm_multipolygons : NULL
-
-``` r
-river_sub <- st_buffer(river$osm_lines, 2200)
-extracted_river <- st_extract(rast,  river_sub$geometry ) %>% st_as_sf()
-head(extracted_river)
-```
-
-    ## Simple feature collection with 6 features and 2 fields
-    ## Geometry type: POLYGON
-    ## Dimension:     XY
-    ## Bounding box:  xmin: -112.9075 ymin: 42.75654 xmax: -110.8015 ymax: 44.68225
-    ## Geodetic CRS:  WGS 84
-    ##   pr_MIROC5_r1i1p1_rcp85  time                       geometry
-    ## 1                   0.00 73048 POLYGON ((-112.8874 42.7605...
-    ## 2                   2.85 73048 POLYGON ((-110.9755 44.6740...
-    ## 3                   2.90 73048 POLYGON ((-110.9755 44.6740...
-    ## 4                   2.60 73048 POLYGON ((-110.9809 44.6787...
-    ## 5                   2.85 73048 POLYGON ((-110.8453 44.6551...
-    ## 6                   2.90 73048 POLYGON ((-110.8306 44.5611...
-
-``` r
-#colnames(extracted_river)[1] <- "var1"
-colnames(extracted_river)[1] <- "pre"
-```
-
-``` r
-ggplot(data=extracted_river) +
-  geom_sf(aes(fill = pre), size=0) +
-   coord_sf(crs = 4326, xlim = c(pulled_bb_large[1], pulled_bb_large[3]), 
-           ylim = c(pulled_bb_large[2], pulled_bb_large[4]),
-           expand = FALSE) +
-  scale_fill_continuous(low="thistle2", high="darkred", 
-                       guide="colorbar",na.value="white")+
-  labs(title = "Rivers of Yellowstone",
-       subtitle = "Projected humidity in 2040", 
-       caption = "Data Source: Climate Futures...") + 
-  theme_tufte()
-```
-
-![](README_files/figure-gfm/plot%20river%20aggregation-1.png)<!-- -->
-
-## Aggregate to road segment
-
-``` r
-roads <- opq(pulled_bb_large) %>%
-  add_osm_feature(key = 'highway', value = 'primary') %>%
-  add_osm_feature(key = 'highway', value = 'secondary') %>%
-  osmdata_sf() 
-roads_sub <- st_buffer(roads$osm_lines, 2200)
-extracted_roads <- st_extract(rast,  roads_sub$geometry ) %>% st_as_sf()
-extracted_roads
-```
-
-    ## Simple feature collection with 1189 features and 2 fields
-    ## Geometry type: POLYGON
-    ## Dimension:     XY
-    ## Bounding box:  xmin: -113.3645 ymin: 41.67382 xmax: -108.5638 ymax: 45.16221
-    ## Geodetic CRS:  WGS 84
-    ## First 10 features:
-    ##    pr_MIROC5_r1i1p1_rcp85  time                       geometry
-    ## 1                       0 73048 POLYGON ((-112.8304 44.9871...
-    ## 2                       0 73048 POLYGON ((-109.0659 45.0697...
-    ## 3                       2 73048 POLYGON ((-110.9855 44.6672...
-    ## 4                       0 73048 POLYGON ((-113.034 41.96799...
-    ## 5                       0 73048 POLYGON ((-113.034 41.96799...
-    ## 6                       0 73048 POLYGON ((-111.8725 42.0181...
-    ## 7                       0 73048 POLYGON ((-111.9284 41.9804...
-    ## 8                       0 73048 POLYGON ((-111.9023 41.9950...
-    ## 9                       0 73048 POLYGON ((-111.9046 41.9954...
-    ## 10                      0 73048 POLYGON ((-111.8587 41.9957...
-
-``` r
-colnames(extracted_roads)[1] <- "pre"
-```
-
-``` r
-ggplot(data=extracted_roads) +
-  geom_sf(aes(fill = pre), size=0) +
-   coord_sf(crs = 4326) +
-  scale_fill_continuous(low="thistle2", high="darkred", 
-                       guide="colorbar",na.value="white")+
-  labs(title = "Roads of Yellowstone",
-       subtitle = "Projected humidity in 2040", 
-       caption = "Data Source: Climate Futures...") + 
-  theme_tufte()
-```
-
-![](README_files/figure-gfm/plot%20road%20aggregation-1.png)<!-- -->
-
-### Computing new daily climate variables
-
-Now that we have all of the climate parameters for our study region, we
-can compute functions of those variables. For example, it is common to
-compute the midpoint of the maximum and minimum daily temperature, which
-we can do using the `mutate` function:
-
-``` r
-df <- df %>%
-  mutate(tasmid = (tasmax + tasmin) / 2)
-```
-
-Now we have a new column called `tasmid` that is the midpoint of the
-maximum and minumum daily temperature!
-
-Wind speed provides another example of a derived parameter that can be
-computed for each day. By default, we have two wind-related parameters:
-the eastward wind component (called `uas`) and the northward wind
-component (called `vas`), both in units of meters per second (you can
-get this information from `cft::argument_reference`). Wind speed can be
-computed from `vas` and `uas` using the Pythagorean theorem:
-
-$\\text{Wind speed} = \\sqrt{v\_{as}^2 + u\_{as}^2}.$
-
-In code:
-
-``` r
-df <- df %>%
-  mutate(wind_speed = sqrt(vas^2 + uas^2))
-```
-
-### Computing new climate variable summaries
-
-Sometimes, there are new climate variables that summarize daily data.
-For example, you may want to compute:
-
--   Last Day of Frost (i.e., last day in spring when min. air temp. \<
-    0 C)
--   First Day of Frost (i.e., first day in fall when min. air temp. \<
-    0 C)
--   Number of days above or below some threshold (e.g., days with max.
-    air temperature over 40 C, or days with > 1mm of precipitation)
--   Growing season length (# days with air temperature > 0 C)
-
-All of these quantities summarize daily data, and require some
-aggregation time interval which in many cases will be one year. As an
-example, we will compute the growing season length for Wind Cave
-National Park across all models and emissions scenarios. To do this, we
-first need to define a new column for year, which we will use as a
-grouping variable:
-
-``` r
-df <- df %>%
-  mutate(year = year(date))
-```
-
-Now, we want to compute growing season length for each year, model,
-emissions scenario combination.
-
-``` r
-growing_seasons <- df %>%
-  group_by(rcp, model, year, ensemble) %>%
-  summarize(season_length = sum(tasmid > 273.15)) %>%
-  ungroup
-```
-
-Notice that we used our derived temperature midpoint column `tasmid`,
-and computed the total (`sum()`) number of days for each group where the
-temperature midpoint was greater than 0 C (or, 273.15 Kelvin, which are
-the units of the temperature data).
-
-``` r
-growing_seasons
-```
-
-Let’s visualize the growing season over time for each model and emission
-scenario:
-
-``` r
-growing_seasons %>%
-  ggplot(aes(year, season_length, color = rcp, group = model)) + 
-  geom_line(alpha = .3) + 
-  facet_wrap(~rcp, ncol = 1) + 
-  xlab("Year") + 
-  ylab("Growing season length (days)") + 
-  scale_color_manual(values = c("dodgerblue", "red")) + 
-  theme(legend.position = "none")
-```
-
-## Comparing climate in two time periods
-
-Use the tibble object that is returned from `cft_df()` as an input to
-`compare_periods()` to compare climate between a reference and target
-period. You may specify the function with which to aggregate your chosen
-variable as well as the yearly time period months of the year to include
-in this calculation.
-
-``` r
-comps <- compare_periods(df,
-                         var1 = "pr",
-                         var2 = "tasmax",
-                         agg_fun = "mean",
-                         target_period = c(2025, 2030),
-                         reference_period = c(2020, 2024),
-                         months1 = 5:8,
-                         months2 = 5:8,
-                         scenarios = c("rcp45", "rcp85"))
-```
-
-This provides a data frame that can be used to compare the values in the
-target and reference period.
-
-``` r
-glimpse(comps)
-```
-
-One useful plot shows the difference in the two variables between
-reference and target periods:
-
-``` r
-title <-  paste("Change from the historical vs. reference period:", 
-                comps$reference_period, comps$target_period, sep= "  vs  " )[1]
-
-comps %>%
-  dplyr::select(parameter, rcp, model, reference_period, target_period, difference) %>%
-  pivot_wider(names_from = parameter, values_from = difference) %>%
-  ungroup %>%
-  mutate(rcp = ifelse(rcp == "rcp45", "RCP 4.5", "RCP 8.5")) %>%
-  ggplot(aes(pr, tasmax, color = rcp)) + 
-  ggtitle(title) +
-  geom_point() + 
-  geom_hline(yintercept = 0, alpha = .2) + 
-  geom_vline(xintercept = 0, alpha = .2) +
-  geom_text_repel(aes(label = model), segment.size = .3, size = 3) + 
-  xlab("Difference in mean daily precipitation (mm)") + 
-  ylab("Difference in mean daily max. temperature (C)") + 
-  scale_color_manual(values = c("dodgerblue", "red"), 
-                     "Greenhouse gas\ntrajectory") 
-```
-
-So, nearly all model runs indicate warming, but the amount of warming
-varies by model and emissions scenario. Precipitation increases and
-decreases are predicted by different models.
+# Climate Futures Toolbox Functions
+
+As previously mentioned, the climate futures toolbox includes two
+functions: available_data() and single_point_firehose(). While both of
+these functions are used to download data from the MACA climate model,
+they have slightly different usage cases which will be described below.
+
+## Available Data Function
+
+The available_data() function can be used to download data from the MACA
+climate model. These downloads can include data about multiple variables
+for multiple emission scenarios and from multiple climate models over a
+desired length of time and over a desired spatial region. However, there
+is a 500 MB limit on the size of the download request when using
+available_data which limits the amount of data that can be requested in
+a download and successfully downloaded. It is possible to submit a
+download request that exceeds the 500 MB limit, but the download will
+not finish and an error message will be produced, as mentioned above.
+Notice that there is no singular cut-off on the number of variables,
+emissions scenarios, and climate models can be requested for a given
+time period and a given spatial region. If you need to download more
+than 500 MB of data, you can either make multiple download requests by
+calling available_data multiple times and stitching the data obtained
+from those download requests together or you can use the
+single_point_firehose function which parallelizes download requests and
+combines the data into a single spatial dataframe. An example of how to
+make multiple download requests using available_data is shown in the
+available_data vignette at:
+<https://github.com/earthlab/cft/blob/main/vignettes/available-data.md>.
+As is mentioned in the available_data vignette, it is computationally
+expensive to stitch the data from multiple download requests using
+availabe_data together, so it is easier and more computationally
+efficient to use the single_point_firehose function if you encounter
+errors when trying to download data using the available_data function.
+
+**Overall, the available_data function works best for downloading MACA
+climate model for several climate variables from several climate models
+for any number of emission scenarios over a relatively small spatial
+region and over a relatively short time period.**
+
+## Firehose Function
+
+The single_point_firehose() function is also used to download data from
+the MACA climate model. Unlike the available_data function, however, the
+single_point_firehose function parallelizes multiple download requests
+across the cores of your computer. This allows for faster downloading of
+data from the MACA climate model and permits users to request data about
+multiple climate variables from multiple models and emission scenarios
+in their entirety because the download requests are broken up such that
+no download request exceeds the 500 MB limit. After the data are
+downloaded from the MACA climate model from these parallelized download
+requests, the single_point_firehose function combines the data into a
+single spatial dataframe. It is important to note that the
+single_point_firehose function obtains data from the MACA climate model
+for multiple climate variables from multiple models and emission
+scenarios in their entirety **for a single lat/long location**. If you
+need MACA climate model data for multiple climate variables from
+multiple models and emission scenarios in their entirety at multiple
+lat/long locations, you will need to make multiple calls to the
+single_point_firehose function and combine the data from those requests.
+An example of how to use the single_point_firehose function to download
+MACA climate model data is shown in the firehose vignette at
+<https://github.com/earthlab/cft/blob/main/vignettes/firehose.md>.
+
+**Therefore, the single_point_firehose function works best for
+downloading MACA climate model data for multiple climate variables from
+multiple climate models and emission scenarios in their entirety for a
+single lat/long location.**
