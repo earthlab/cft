@@ -67,6 +67,15 @@ ls(pos="package:cft")
 ?single_point_firehose
 ```
 
+## Test API connection
+```{r}
+web_link = "https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future"
+
+# Change to "https://cida.usgs.gov/thredds/catalog.html?dataset=cida.usgs.gov/macav2metdata_daily_historical" for historical data. 
+
+src <- tidync::tidync(web_link)
+
+```
 
 # Use read-only mode to find available data without initiating a full download.
 ```{r available data, cache=TRUE}
@@ -92,12 +101,12 @@ tail(input_times)
 
 ## Filter variable names
 
-The following code creates a filter to select precipitation data from the emission scenario RCP 8.5 from the Beijing Normal University Earth System Model and the Hadley Global Environmental Model 2.  This is done by filtering by variable, by model, and by scenario using a separate call to the `filter()` function for each filtering step.  
+The following code creates a filter to select precipitation and maximum temperature data from the emission scenarios RCP 4.5 and RCP 8.5 from the Norwegian Earth System Model, the Hadley Global Environment Model 2, and the Community Climate System Model 4.  This is done by filtering by variable, by model, and by scenario using a separate call to the `filter()` function for each filtering step.  
 ```{r filter variables, cache=TRUE}
 input_variables <- inputs$variable_names %>% 
-  filter(Variable == "Precipitation") %>% 
-  filter(Model == c("Beijing Normal University - Earth System Model", "Hadley Global Environment Model 2 - Earth System 365 (day)")) %>%
-  filter(Scenario == c( "RCP 8.5")) %>% 
+  filter(Variable == c("Precipitation", "Maximum Temperature")) %>% 
+  filter(Model == c("Norwegian Earth System Model 1 - Medium Resolution", "Hadley Global Environment Model 2 - Earth System 365 (day)", "Community Climate System Model 4")) %>%
+  filter(Scenario == c("RCP 4.5", "RCP 8.5")) %>% 
   pull("Available variable")
 
 input_variables
@@ -105,6 +114,7 @@ input_variables
 
 
 # Establish area of interst (AOI) by bounding box
+<<<<<<< HEAD
 
 This code obtains the bounding box from Open Street Map (OSM) for the national parks adjacent to Yellowstone National Park and then manually updates the corners of the bounding box for this region to match the official bounding box from the National Parks Service.  This is done because the bounding box obtained from OSM is larger than the official bounding box from the National Parks Service so this adjustment makes sure that the bounding box for our area of interest matches our desired area of interest.    
 
@@ -121,10 +131,13 @@ my_boundary <- opq(bb_manual) %>%
 osmdata_sf() 
 
 my_boundary
+my_boundary$osm_multipolygons
+my_boundary$osm_multipolygons[1,]
+
+boundaries <- my_boundary$osm_multipolygons[1,] 
 ```
 
 ```{r pulled bounding box, cache=TRUE}
-boundaries <- my_boundary$osm_multipolygons
 pulled_bb <- st_bbox(boundaries)
 pulled_bb
 ```
@@ -133,7 +146,7 @@ This code produces a map of the area of interest which can be used to ensure tha
 ```{r plot of area of interest, cache=TRUE, warning=FALSE, fig.height=8}
 basemap <- ggplot(data = boundaries) +
   geom_sf(fill = "cornflowerblue") +
-  geom_sf_text(aes(label = boundaries$name)) 
+  geom_sf_text(aes(label = boundaries$name), size=10) 
 
 basemap
 ```
@@ -147,7 +160,7 @@ Pulled_data <- inputs$src %>%
   hyper_filter(lat = lat <= c(pulled_bb[4]+0.05) & lat >= c(pulled_bb[2]-0.05)) %>% 
   hyper_filter(lon = lon <= c(pulled_bb[3]+0.05) & lon >= c(pulled_bb[1]-0.05)) %>% 
   hyper_filter(time =  input_times[,3] == 1) %>% 
-  hyper_tibble(select_var = input_variables
+  hyper_tibble(select_var = input_variables[1:50]
     ) %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
 
@@ -161,7 +174,7 @@ check_filter <- Pulled_data %>% filter(time == min(Pulled_data$time))
 
 ggplot() +
   geom_sf(data = boundaries, fill = "cornflowerblue") +
- geom_sf(data = check_filter, color = "red", size=0.5) +
+ geom_sf(data = check_filter, color = "red", size=5) +
   coord_sf(crs = 4326) 
 ```
 
@@ -170,7 +183,9 @@ ggplot() +
 rast <- st_rasterize(Pulled_data) 
 plot(rast)
 
+#Pulled_data %>% as.data.frame() %>% brick()
 ```
+
 
 #Aggregate downloaded data to different spatial objects
 
@@ -199,25 +214,26 @@ names(intersection)[1:2] <- c("Precipitation","b")
 ```{r plot of raster mask, cache=TRUE}
 library(ggthemes)
 ggplot() +
-  geom_sf(data = intersection, aes(color=Precipitation)) +
+  geom_sf(data = intersection, aes(color=Precipitation), size=3, shape=15) +
   scale_color_continuous(low="thistle2", high="darkred", 
                        guide="colorbar",na.value="white")+
   geom_sf(data = boundaries, fill = NA, color = "white") +
   theme_tufte()+
-  labs(title = "YELLOWSTONE NATIONAL PARK", subtitle = "Temperture in 2050")
+  labs(title = "ROCKY MOUNTAIN NATIONAL PARK", subtitle = "Precipitation in 2050")
+
 ```
 
 
 ## Aggregate to River segment
 ```{r pull river data, fig.height=10, cache=TRUE}
-river <- opq(bb_manual) %>%
+river <- opq(pulled_bb) %>%
   add_osm_feature(key = "waterway", value = "river") %>%
   osmdata_sf() 
 river
 ```
 
 ```{r aggregate data to river lines, cache=TRUE}
-river_sub <- st_buffer(river$osm_lines, 2200)
+river_sub <- st_buffer(river$osm_lines, 5000)
 extracted_river <- st_extract(rast,  river_sub$geometry ) %>% st_as_sf()
 head(extracted_river)
 
@@ -239,12 +255,12 @@ ggplot(data=extracted_river) +
 
 ## Aggregate to road segment
 ```{r pull road data, fig.height=8, cache=TRUE}
-roads <- opq(bb_manual) %>%
+roads <- opq(pulled_bb) %>%
   add_osm_feature(key = 'highway', value = 'primary') %>%
   add_osm_feature(key = 'highway', value = 'secondary') %>%
   osmdata_sf() 
-roads_sub <- st_buffer(roads$osm_lines, 2200)
-extracted_roads <- st_extract(rast,  roads_sub$geometry ) %>% st_as_sf()
+roads_sub <- st_buffer(roads$osm_points, 2200)
+extracted_roads <- st_extract(rast,  st_as_sfc(roads_sub) ) %>% st_as_sf()
 extracted_roads
 ```
 

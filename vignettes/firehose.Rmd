@@ -11,6 +11,13 @@ This vignette provides a walk-through of a common use case of the Firehose funct
 The purpose of the Firehose functions is to download the data as quickly as possible by distributing tasks across multiple processors. The more cores you use, the faster this process will go. 
 
 Load the cft package. If you need to install cft, see the main cft tutorial on our github page for instructions.
+
+# Loading the cft package from github
+```{r install cft, warning=FALSE, message=FALSE}
+library(devtools)
+install_github("earthlab/cft")
+```
+
 ```{r, warning=FALSE, message=FALSE}
 library(cft)
 ```
@@ -25,6 +32,9 @@ plan(multiprocess, workers = n_cores)
 We pull all of our data from the internet.  Since internet connections can be a little variable, we try to make a strong link between our computer and the data server by creating an src object. Run this code to establish the connection and then use the src object you created to call on that connection for information. Because this src object is a connection, it will need to be reconnected each time you want to use it. You cannot make it once and then use if forever. 
 ```{r}
 web_link = "https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future"
+
+# Change to "https://cida.usgs.gov/thredds/catalog.html?dataset=cida.usgs.gov/macav2metdata_daily_historical" for historical data. 
+
 src <- tidync::tidync(web_link)
 
 ```
@@ -37,7 +47,7 @@ After a connection is made to the server, we can run the available_data() functi
 
 Here we print that list of variables. This may take up to a minutes as you retrieve the information from the server. 
 ```{r available data, cache=TRUE}
-
+# This is your menu
 inputs <- cft::available_data()
 inputs[[1]]
 
@@ -78,6 +88,7 @@ input_variables <- inputs$variable_names %>%
 
 You can check the object you created to see that it is a list of formatted variable names ready to send to the server. 
 ```{r}
+# This is the list of things you would like to order off the menu
 input_variables
 ```
 
@@ -92,13 +103,25 @@ my_boundary <- opq(bb) %>%
   osmdata_sf()
 
 my_boundary
+my_boundary$osm_multipolygons
+my_boundary$osm_multipolygons[1,]
 
-boundaries <- my_boundary$osm_multipolygons[1,] #change to multipolygons
+boundaries <- my_boundary$osm_multipolygons[1,] 
+```
+
+```{r}
+ggplot() +
+  geom_sf(data = boundaries, fill = "cornflowerblue") 
+ 
+```
+
+```{r}
 pulled_bb <-  st_bbox(boundaries)
 pulled_bb
 
 pt <- st_coordinates(st_centroid(boundaries))
 ```
+
 
 So, our suggested point is pt.
 ```{r}
@@ -113,8 +136,8 @@ lon_pt <- pt[1,1]
 lons <- src %>% activate("D2") %>% hyper_tibble()
 lats <- src %>% activate("D1") %>% hyper_tibble()
 
-new_lon <- lons[which(abs(lons-lon_pt)==min(abs(lons-lon_pt))),]
-new_lat <- lats[which(abs(lats-lat_pt)==min(abs(lats-lat_pt))),]
+known_lon <- lons[which(abs(lons-lon_pt)==min(abs(lons-lon_pt))),]
+known_lat <- lats[which(abs(lats-lat_pt)==min(abs(lats-lat_pt))),]
 
 
 chosen_pt <- st_as_sf(cbind(new_lon,new_lat), coords = c("lon", "lat"), crs = "WGS84", agr = "constant")
@@ -150,7 +173,7 @@ When you use numerous cores to make a lot of simultaneous requests, the server o
 
 This function will run faster if you provide it more cores and a faster internet connection. In our test runs with 11 cores on a 12 core laptop and 800 MB/s internet it took 40-80 minutes to download 181 variables. The variance was largely driven by our network connection speed and error rate (because they require a second try to download).
 ```{r, eval=FALSE}
-out <- single_point_firehose(input_variables, new_lat, new_lon )
+out <- single_point_firehose(input_variables, known_lat, known_lon )
 out
 ```
 
