@@ -1,0 +1,12 @@
+---
+title: "R Notebook"
+output: 
+  github_document:
+    html_preview: True
+---
+
+# Welcome to the Climate Future Toolbox's Unite Cubes function
+
+This vignette will provide a walk-through of a common use case of the Unite Cubes function.
+
+

@@ -8,28 +8,34 @@ output:
 
 This vignette provides a walk-through of a common use case of the Firehose function.
 
-The purpose of the Firehose functions is to download the data as quickly as possible by distribution tasks across multiple processors. The more cores you use, the faster this process will go. 
+The purpose of the Firehose functions is to download the data as quickly as possible by distributing tasks across multiple processors. The more cores you use, the faster this process will go. 
 
 Load the cft package. If you need to install cft, see the main cft tutorial on our github page for instructions.
 ```{r, warning=FALSE, message=FALSE}
 library(cft)
 ```
 
-We will start by setting up our computer to run code on multiple cores instead of just one. The availableCores() function first checks your local computer to see how many cores are available and then subtracts one so that you still have an available core for running your operating system. The plan() function then starts a back-end structure where tasks can be assigned. *These backend systems can sometimes have difficulty shutting down after the process is done, especially if you force quite an operation in the works. If you find your code stalling without good explanation, it's good to restart your computer to clear any of these structures that may be stuck in memory.  
+We will start by setting up our computer to run code on multiple cores instead of just one. The availableCores() function first checks your local computer to see how many cores are available and then subtracts one so that you still have an available core for running your operating system. The plan() function then starts a back-end structure where tasks can be assigned. **These backend systems can sometimes have difficulty shutting down after the process is done, especially if you force quite an operation in the works. If you find your code stalling without good explanation, it's good to restart your computer to clear any of these structures that may be stuck in memory.**  
 
 ```{r, warning=FALSE, message=FALSE}
 n_cores <- availableCores() - 1
 plan(multiprocess, workers = n_cores)
 ```
 
-We pull all of our data from the internet and internet connections can be a little variable. We try to make a strong link between our computer and the data server by creating an src object. Run this code to establish the connection and then use the src object you created to call on that connection for information. Because this src object is a connection, it will need to be reconnected each time you want to use it. You cannot make it once and then use if forever. 
+We pull all of our data from the internet.  Since internet connections can be a little variable, we try to make a strong link between our computer and the data server by creating an src object. Run this code to establish the connection and then use the src object you created to call on that connection for information. Because this src object is a connection, it will need to be reconnected each time you want to use it. You cannot make it once and then use if forever. 
 ```{r}
 web_link = "https://cida.usgs.gov/thredds/dodsC/macav2metdata_daily_future"
 src <- tidync::tidync(web_link)
 
 ```
 
-After a connection is made to the server, we can run the available_data() function to check that server and see what data it has available to us. The available_data() function produces three outputs: (1) a raw list of available data, (2) a table of date times available, (3) a table summarizing available variables and the attributes of those variables. Here we print that list of variables. This may take up to a minutes as you retrieve the information from the server. 
+After a connection is made to the server, we can run the available_data() function to check that server and see what data it has available to us. The available_data() function produces three outputs: 
+
+1. a raw list of available data
+2. a table of date times available
+3. a table summarizing available variables and the attributes of those variables 
+
+Here we print that list of variables. This may take up to a minutes as you retrieve the information from the server. 
 ```{r available data, cache=TRUE}
 
 inputs <- cft::available_data()
@@ -37,7 +43,7 @@ inputs[[1]]
 
 ```
 
-From the table that was returned, we want to decide which variables we would like to request. If you are using the Firehose function, you likely have a long list of variables you'd like to download in their entirely. Use the filter() function to select the variables you'd like to download. Store those choices in an object called input_variables to pass on to the Firehose function. 
+From the table that was returned, we want to decide which variables we would like to request. If you are using the Firehose function, you likely have a long list of variables you'd like to download in their entirety. Use the [filter()](https://www.rdocumentation.org/packages/dplyr/versions/0.7.8/topics/filter) function to select the variables you'd like to download. Store those choices in an object called input_variables to pass on to the Firehose function. 
 ```{r filter variables many, cache=TRUE}
 input_variables <- inputs$variable_names %>% 
   filter(Variable %in% c("Maximum Relative Humidity", 
@@ -77,7 +83,7 @@ input_variables
 
 
 # Set your area of interest
-  The Firehose function downloads all the requested variables, for all available time points, for a SINGLE geographic location. The underlying data are summarized to points on a grid and don't include every concievable point you could enter. You need to first suggest a lat/long pair and then find the aggregated download point that is closest to your suggested point. In the code here, we use Open Street Map to download a polygon for Rocky Mountain National Park and then find the centroid as our suggested point. 
+  The Firehose function downloads all the requested variables, for all available time points, for a SINGLE geographic location. The underlying data are summarized to points on a grid and don't include every conceivable point you could enter. You need to first suggest a lat/long pair and then find the aggregated download point that is closest to your suggested point. In the code here, we use Open Street Map to download a polygon for Rocky Mountain National Park and then find the centroid as our suggested point. 
 ```{r, warning=FALSE, message=FALSE, cache=TRUE}
 aoi_name <- "colorado"
 bb <- getbb(aoi_name)
@@ -87,7 +93,6 @@ my_boundary <- opq(bb) %>%
 
 my_boundary
 
-#boundaries <- my_boundary$osm_polygons[1,]
 boundaries <- my_boundary$osm_multipolygons[1,] #change to multipolygons
 pulled_bb <-  st_bbox(boundaries)
 pulled_bb
@@ -131,11 +136,19 @@ ggplot() +
 
 
 # Run the Firehose function
-You will need to supply the Firehose function with three things for it to work properly: (1) A parallelization object produced by the plan() function to specify how many cores you want the function to us, (2) an input_variable object specifying the properly formatted list of variables you want to download, (3) the latitude and longitude coordinates for the available data point you want to extract. Provide those three things to the single_point_firehose() function and it will download your data as fast as possible, organize those data into an sf spatial dataframe, and return that dataframe. 
+You will need to supply the Firehose function with three things for it to work properly: 
 
-Some notes of caution. When you use numerous cores to make a lot of simultanious requests, the server occasionally mistakes you for a DDOS attach and kills your connection. The firehose function deals with this uncertainty, and other forms of network disruption, by conducting two phases of downloads. It first tried to download everything you requested through a ton of independent api requests, it then scans all of the downloads to see which ones failed and organizes a follow-up download run to recapture downloads that failed on your first attempt. Do not worry if you see the progress bar get disrupted during either one of these passes, it will hopefully capture all of the errors and retry those downloads. 
+1. a parallelization object produced by the plan() function to specify how many cores you want the function to use
+2. an input_variable object specifying the properly formatted list of variables you want to download
+3. the latitude and longitude coordinates for the available data point you want to extract 
 
-This function will run faster if you provide it more cores and a faster internet connection. In our test runs with 11 cores on a 12 core laptop and 800mb/s internet took 40-80 minutes to download 181 variables. The variance was largely driven by our network connection speed and error rate (because they require a second try to download).
+Provide those three things to the single_point_firehose() function and it will download your data as fast as possible, organize those data into an sf spatial dataframe, and return that dataframe. 
+
+**Some notes of caution.** 
+
+When you use numerous cores to make a lot of simultaneous requests, the server occasionally mistakes you for a DDOS attack and kills your connection. The firehose function deals with this uncertainty, and other forms of network disruption, by conducting two phases of downloads. It first tries to download everything you requested through a ton of independent api requests, it then scans all of the downloads to see which ones failed and organizes a follow-up download run to recapture downloads that failed on your first attempt. Do not worry if you see the progress bar get disrupted during either one of these passes, it will hopefully capture all of the errors and retry those downloads. 
+
+This function will run faster if you provide it more cores and a faster internet connection. In our test runs with 11 cores on a 12 core laptop and 800 MB/s internet it took 40-80 minutes to download 181 variables. The variance was largely driven by our network connection speed and error rate (because they require a second try to download).
 ```{r, eval=FALSE}
 out <- single_point_firehose(input_variables, new_lat, new_lon )
 out

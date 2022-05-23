@@ -25,7 +25,7 @@ To get the most out of this vignette, we assume you have:
 
 - At least 500 MB of disk space
 - Some familiarity with ggplot2
-- Some familiarity with dplyr (e.g., `filter()`, `group_by()`, and `summarize()`)
+- Some familiarity with dplyr (e.g., [`filter()`](https://www.rdocumentation.org/packages/dplyr/versions/0.7.8/topics/filter), [`group_by()`](https://www.rdocumentation.org/packages/dplyr/versions/0.7.8/topics/group_by), and [`summarise()`](https://www.rdocumentation.org/packages/dplyr/versions/0.7.8/topics/summarise))
 
 ## About the data
 
@@ -46,7 +46,7 @@ This package was originally written with the National Park Service in mind, so
 it has the option to use the name of any park (or monument, preserve, etc.) within
 the NPS. Use the `cftdata()` function to specify a range of years, a set of models,
 a set of parameters, and a set of representative concentration pathways to return. 
-Leaving these arguments empty will results in a download of all available data 
+Leaving these arguments empty will result in a download of all available data 
 for that location.
 
 # Loading the cft package from github
@@ -68,7 +68,6 @@ ls(pos="package:cft")
 ```
 
 
-
 # Use read-only mode to find available data without initiating a full download.
 ```{r available data, cache=TRUE}
 inputs <- cft::available_data()
@@ -76,7 +75,11 @@ inputs <- cft::available_data()
 
 # Filter the results from available_data() to specify which data to actually download.
 ## Filter time
+
+The following code is used to create a filter which will select data from the year 2034.  This filter creates an index which is given the value of 0 for times that are not in year 2034 and a value of 1 for times that are in the year 2034.   
 ```{r filter time, cache=TRUE}
+library(tibble)
+
 # Year 2034
 time_min <- 72048
 time_max <- 73048
@@ -88,6 +91,8 @@ tail(input_times)
 ```
 
 ## Filter variable names
+
+The following code creates a filter to select precipitation data from the emission scenario RCP 8.5 from the Beijing Normal University Earth System Model and the Hadley Global Environmental Model 2.  This is done by filtering by variable, by model, and by scenario using a separate call to the `filter()` function for each filtering step.  
 ```{r filter variables, cache=TRUE}
 input_variables <- inputs$variable_names %>% 
   filter(Variable == "Precipitation") %>% 
@@ -100,6 +105,9 @@ input_variables
 
 
 # Establish area of interst (AOI) by bounding box
+
+This code obtains the bounding box from Open Street Map (OSM) for the national parks adjacent to Yellowstone National Park and then manually updates the corners of the bounding box for this region to match the official bounding box from the National Parks Service.  This is done because the bounding box obtained from OSM is larger than the official bounding box from the National Parks Service so this adjustment makes sure that the bounding box for our area of interest matches our desired area of interest.    
+
 ```{r bounding box, cache=TRUE}
 bb <- getbb("yellowstone")
 bb_manual <- bb
@@ -121,7 +129,7 @@ pulled_bb <- st_bbox(boundaries)
 pulled_bb
 ```
 
-
+This code produces a map of the area of interest which can be used to ensure that the bounding box that was previously defined for the data matches our desired area of interest.
 ```{r plot of area of interest, cache=TRUE, warning=FALSE, fig.height=8}
 basemap <- ggplot(data = boundaries) +
   geom_sf(fill = "cornflowerblue") +
@@ -131,6 +139,8 @@ basemap
 ```
 
 # Download data by AOI, filtered times, and filtered variable list
+
+This code downloads precipitation data from the Beijing Normal University Earth System Model and the Hadley Global Environmental Model 2 for emission scenario RCP 8.5 for the year 2034 in the national parks that touch Yellowstone National Park.  First, the `hyper_filter()` function is used to select data from the national parks that touch Yellowstone National Park by filtering both the latitude and longitude coordinates to coordinates within a small delta of the minimum and maximum coordinates of the bounding box that was previously defined.  Then the `hyper_filter()` function is used to filter the data to data from the year 2034 using the time filter that was defined above.  Finally, the `hyper_tibble()` function is used to select the precipitation data from the Beijing Normal University Earth System Model and the Hadley Global Environmental Model 2 for emission scenario RCP 8.5 using the filter that was defined above.   
 ```{r pulled data, cache=TRUE}
 
 Pulled_data <- inputs$src %>% 
@@ -140,12 +150,12 @@ Pulled_data <- inputs$src %>%
   hyper_tibble(select_var = input_variables
     ) %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
-## should time be in here?
+
 head(Pulled_data)
 ```
 
 
-
+This plot shows the data that were downloaded as red dots for the earliest time in year 2034 over the map of the national parks that touch Yellowstone National Park.  The data are shown for the earliest time in year 2034 because data were downloaded for multiple times so filtering to a single point in time shows the spatial distribution of the downloaded data without having to include each of the times for which data were downloaded. 
 ```{r check pulled data, cache=TRUE, fig.height=8}
 check_filter <- Pulled_data %>% filter(time == min(Pulled_data$time))
 
@@ -155,55 +165,12 @@ ggplot() +
   coord_sf(crs = 4326) 
 ```
 
-# Melt downloaded points into a raster before aggretation
+# Melt downloaded points into a raster before aggregation
 ```{r rasterize with stars, cache=TRUE, fig.height=7}
 rast <- st_rasterize(Pulled_data) 
 plot(rast)
 
-#Pulled_data %>% as.data.frame() %>% brick()
 ```
-
-
-# GridMET data
-```{r GridMet view}
-param_meta$gridmet
-```
-
-
-```{r GridMet, eval=FALSE,fig.height=8}
-subed_times <- input_times %>% filter(index == 1) 
-GM <- getGridMET(st_as_sfc(st_bbox(boundaries)), "tmax", startDate = "1997-04-06", endDate = "1999-12-30")
-SM_stars <- GM$gridmet_tmax %>% brick() %>%  st_as_stars()
-#st_set_dimensions(SM_stars, 3, values = X1997.04.06, names = "tmax")
-
-ggplot() +
-  geom_sf(data = SM_stars, fill = "cornflowerblue") +
- geom_sf(data = check_filter, color = "red", size=0.5) +
-  coord_sf(crs = 4326) 
-```
-
-```{r, eval=FALSE}
-st_get_dimension_values(rast)
-#combo <- st_extract(rast, SM_stars) %>% st_as_sf()
-combo <- c(SM_stars,rast , along_crs=TRUE, along=c(1,2))
-class(combo) 
-class(SM_stars)
-plot(combo$X2000.01.01)
-```
-
-```{r, eval=FALSE}
-plot(combo$X2000.01.01)
-
-#extracted_GridMET <- st_extract(rast, SM_stars) %>% st_as_sf()
-ggplot(data=combo) +
-  geom_sf(aes(fill = X2000.01.01)) +
-  scale_fill_continuous(low="thistle2", high="darkred", 
-                       guide="colorbar",na.value="white")+
-  coord_sf(crs = 4326)
-
-```
-
-
 
 #Aggregate downloaded data to different spatial objects
 
@@ -217,12 +184,6 @@ ggplot(data=extracted) +
   scale_fill_continuous(low="thistle2", high="darkred", 
                        guide="colorbar",na.value="white")+
   coord_sf(crs = 4326)
-```
-
-
-```{r, eval=FALSE}
-cube <- src_slc %>% hyper_tbl_cube(select_var = c("pr_HadGEM2-ES365_r1i1p1_rcp85"))
-cube
 ```
 
 ## Clip raster with polygon (slower method)
@@ -259,7 +220,6 @@ river
 river_sub <- st_buffer(river$osm_lines, 2200)
 extracted_river <- st_extract(rast,  river_sub$geometry ) %>% st_as_sf()
 head(extracted_river)
-#colnames(extracted_river)[1] <- "var1"
 
 ```
 
@@ -309,6 +269,8 @@ For example, it is common to compute the midpoint of the maximum and minimum
 daily temperature, which we can do using the `mutate` function: 
 
 ```{r temp-midpoint, eval=FALSE}
+df <- data.frame(tasmax, tasmin)
+
 df <- df %>%
   mutate(tasmid = (tasmax + tasmin) / 2)
 ```
@@ -323,7 +285,9 @@ By default, we have two wind-related parameters: the eastward wind component
 meters per second (you can get this information from `cft::argument_reference`). 
 Wind speed can be computed from `vas` and `uas` using the Pythagorean theorem: 
 
+```{=latex}
 $\text{Wind speed} = \sqrt{v_{as}^2 + u_{as}^2}.$
+```
 
 In code: 
 
