@@ -11,6 +11,8 @@ This vignette provides a walk-through of a common use case of the Available Data
 understanding climate futures for a region of interest. 
 We'll use Hot Springs National Park, located in Arkansas, USA and Yellowstone National Park, located in Wyoming, USA, as case studies.
 
+Note that the available_data function is best used for downloading MACA climate model data for several climate variables from several climate models for any number of emission scenarios over a relatively small spatial region and over a relatively short time period.  If you would like to download MACA climate model data for several climate variables from several climate models and any number of emission scenarios in their entirety for a single lat/long location, you should use the single_point_firehose function in the cft pacakge.  A vignette on how to use the firehose function in the cft package is available at https://github.com/earthlab/cft/blob/main/vignettes/firehose.md.
+
 ### What you'll learn
 
 This vignette will show you how to: 
@@ -386,7 +388,6 @@ Check this plot to make sure you downloaded your entire time series.
 plot(Pulled_data_stitch$time, Pulled_data_stitch$`pr_MIROC5_r1i1p1_rcp85`)
 ```
 
-
 # Melt downloaded points into a raster before aggregation
 ```{r rasterize with stars, cache=TRUE, fig.height=7}
 rast <- st_rasterize(Pulled_data_large_area_few_variables) 
@@ -394,38 +395,42 @@ plot(rast)
 
 ```
 
+
 # Aggregate downloaded data to different spatial objects
 
 
 ## Aggregate to polygon (faster method)
-```{r aggregate to polygon, cache=TRUE, eval=FALSE}
-extracted <- st_extract(rast, boundaries_large$geometry) %>% st_as_sf()
+In order to aggregate our downloaded data into a polygon, we will use the terra and tidyterra packages to convert the raster of downloaded points into a Spatial Raster.  
+```{r, eval=TRUE}
+library(terra)
+library(tidyterra)
+
+data <- rast(rast)
+```
+
+We will now obtain the geometry of the boundary points for Yellowstone National Park and its adjacent national parks and convert them to a spatial object.  We will then convert that spatial object into a Spatial Vector.  Once we have a Spatial Vector of the boundary points for Yellowstone National Park and its adjacent national parks, we will extract data for those boundary points from the Spatial Raster and set xy=TRUE in order to obtain the lat/long coordinates of these points.  
+```{r, eval=TRUE}
+points <- vect(as_Spatial(boundaries_large$geometry))
+
+extracted <- extract(data, points, xy=TRUE)
+```
+
+This code changes the name of the first column in the dataframe of extracted data at the boundary points for Yellowstone National Park and its adjacent national parks to 'nn'.  
+```{r, eval=TRUE}
 names(extracted)[1] <- "nn"
-ggplot(data=extracted) +
-  geom_sf(aes(fill = nn)) +
-  scale_fill_continuous(low="thistle2", high="darkred", 
-                       guide="colorbar",na.value="white")+
-  coord_sf(crs = 4326)
 ```
 
+We will now convert the dataframe of extracted data at the boundary points for Yellowstone National Park and its adjacent national parks to a Spatial Vector using the lat/long coordinates of the points that we defined when we extracted the data from the Spatial Raster.  
+```{r, eval=TRUE}
+boundary_data <- vect(extracted, geom=c("x", "y"), crs="")
 
-## Clip raster with polygon (slower method)
-```{r cut out raster with polygon, cache=TRUE, eval=FALSE}
-intersection <- st_intersection(x = Pulled_data_large_area_few_variables, y = boundaries_large$geometry)
-
-names(intersection)[1:2] <- c("Precipitation","b")
+boundary_data
 ```
 
-
-```{r plot of raster mask, cache=TRUE, eval=FALSE}
-library(ggthemes)
-ggplot() +
-  geom_sf(data = intersection, aes(color=Precipitation)) +
-  scale_color_continuous(low="thistle2", high="darkred", 
-                       guide="colorbar",na.value="white")+
-  geom_sf(data = boundaries_large, fill = NA, color = "white") +
-  theme_tufte()+
-  labs(title = "YELLOWSTONE NATIONAL PARK", subtitle = "Temperature in 2050")
+We will now use the plot and points functions from the terra package to produce a spatial plot of the downloaded precipitation data for the bounding box of Yellowstone National Park and to plot the data that were extracted along the boundary points of Yellowstone National Park and its adjacent national parks.  
+```{r, eval=TRUE}
+plot(data$pr_MIROC5_r1i1p1_rcp85_lyr.1, main="Projected Humidity in 2040 in Yellowstone National Park")
+points(boundary_data, col = 'blue', alpha=0.1)
 ```
 
 # Filter the results from available_data() to specify which data to actually download.
@@ -514,7 +519,7 @@ head(Pulled_data)
 
 
 This plot shows the data that were downloaded as red dots for the earliest time in year 2034 over the map of the national parks that touch Yellowstone National Park.  The data are shown for the earliest time in year 2034 because data were downloaded for multiple times so filtering to a single point in time shows the spatial distribution of the downloaded data without having to include each of the times for which data were downloaded. 
-```{r check pulled data, cache=TRUE, fig.height=8}
+```{r check pulled data, cache=TRUE, fig.height=8, eval=TRUE}
 check_filter <- Pulled_data %>% filter(time == min(Pulled_data$time))
 
 ggplot() +
@@ -595,6 +600,92 @@ head(df)
 
 ### Computing new climate variable summaries
 
+For this section, we will start by downloading data about the maximum temperature and precipitation from 2020 through the end of 2024 for both emission scenarios for the middle of Yellowstone National Park from the Model for Interdisciplinary Research On Climate - Earth System Model and the Norwegian Earth System Model 1.  In order to do so, we will first create a filter for time, as shown in the code cells below.  
+```{r, eval=TRUE}
+time_min <- inputs$available_times[which(inputs$available_times[,2] == '2019-12-31'),1]
+time_max <- inputs$available_times[which(inputs$available_times[,2] == '2025-01-01'),1]
+```
+
+```{r, eval=TRUE}
+input_times <- inputs$available_times
+
+input_times$index <- rep(0, length(input_times$dates))
+
+input_times[which(inputs$available_times[,1] > time_min & inputs$available_times[,1] < time_max ),3] <- 1
+
+head(input_times)
+```
+
+We will now create a filter for the variables, emission scenarios, and models that we want to download.  
+```{r, eval=TRUE}
+vars <- inputs$variable_names %>% 
+  filter(Variable %in% c("Minimum Temperature", "Maximum Temperature")) %>% 
+  filter(Scenario %in% c("RCP 8.5", "RCP 4.5")) %>% 
+  filter(Model %in% c("Model for Interdisciplinary Research On Climate - Earth System Model", "Norwegian Earth System Model 1 - Medium Resolution")) %>%
+  pull("Available variable")
+
+vars
+```
+
+This code uses both the time filter and the variable/model/emission scenario filter to download the desired data from the MACA climate model.  
+```{r, eval=TRUE}
+growing_data <- inputs$src %>% 
+  hyper_filter(lat = lat <= c(44.5+0.05) & lat >= c(44.5-0.05)) %>% 
+  hyper_filter(lon = lon <= c(-110.5+0.05) & lon >= c(-110.5-0.05)) %>% 
+  hyper_filter(time =  input_times[,3] == 1) %>% 
+  hyper_tibble(select_var = vars
+    ) %>%
+  st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
+
+head(growing_data)
+```
+
+We want to convert the downloaded data into a dataframe with columns for maximum temperature (tasmax), minimum temperature (tasmin), year, emission scenario (rcp), and model.  In order to do so, we will start by determining how many values need to be in each of these vectors
+```{r}
+length(growing_data$time)
+```
+
+Create a vector of year values for the data in the dataframe
+```{r}
+year <- rep(c(rep(2020, 4*366), rep(2021, 4*365), rep(2022, 4*365), rep(2023, 4*365), rep(2024, 4*366)), 4)
+
+length(year)
+```
+This code produces a vector of emission scenarios for the data in the dataframe
+```{r}
+rcp <- c(rep('rcp45', 7308), rep('rcp85', 7308), rep('rcp45', 7308), rep('rcp85', 7308))
+
+length(rcp)
+```
+
+The following code produces a vector of model abbreviations for the data in the datafame
+```{r}
+model <- c(rep('MIROC-ESM', 2*7308), rep('NorESM1-M', 2*7308))
+
+length(model)
+```
+We will now create a vector of maximum temperature data by combining the maximum temperature data from each emission scenario and model together.  We then repeat this process to produces a vector of minimum temperature data by combining the minimum temperature data from each emission scenario and model.  
+```{r}
+tasmax <- c(growing_data$`tasmax_MIROC-ESM_r1i1p1_rcp45`, growing_data$`tasmax_MIROC-ESM_r1i1p1_rcp85`, growing_data$`tasmax_NorESM1-M_r1i1p1_rcp45`, growing_data$`tasmax_NorESM1-M_r1i1p1_rcp85`)
+
+tasmin <- c(growing_data$`tasmin_MIROC-ESM_r1i1p1_rcp45`, growing_data$`tasmin_MIROC-ESM_r1i1p1_rcp85`, growing_data$`tasmin_NorESM1-M_r1i1p1_rcp45`, growing_data$`tasmin_NorESM1-M_r1i1p1_rcp85`)
+```
+
+Now that we have created all of the vectors of data that we need, we will create a dataframe out of these vectors using the following code.
+```{r, eval=TRUE}
+df <- data.frame(tasmin, tasmax, year, rcp, model)
+
+head(df)
+```
+
+In order to determine the length of the growing season, we need to find the midpoint temperature, meaning the average of the minimum and maximum temperature.  The following code computes the midpoint temperature for each value in the dataframe and adds a column to our existing dataframe containing these values.  
+```{r, eval=TRUE}
+df <- df %>%
+  mutate(tasmid = (tasmax + tasmin) / 2)
+
+head(df)
+```
+
 Sometimes, there are new climate variables that summarize daily data. 
 For example, you may want to compute: 
 
@@ -616,7 +707,7 @@ Now, we want to compute growing season length for each year, model, emissions sc
 
 ```{r grow-season, eval=FALSE}
 growing_seasons <- df %>%
-  group_by(rcp, model, year, ensemble) %>%
+  group_by(rcp, model, year) %>%
   summarize(season_length = sum(tasmid > 273.15)) %>%
   ungroup
 ```
@@ -631,9 +722,8 @@ Let's visualize the growing season over time for each model and emission scenari
 
 ```{r plot-grow-season, fig.height = 5, fig.width = 6, eval=FALSE}
 growing_seasons %>%
-  ggplot(aes(year, season_length, color = rcp, group = model)) + 
+  ggplot(aes(x = year, y = season_length, color = rcp, group = model)) + 
   geom_line(alpha = .3) + 
-  facet_wrap(~rcp, ncol = 1) + 
   xlab("Year") + 
   ylab("Growing season length (days)") + 
   scale_color_manual(values = c("dodgerblue", "red")) + 
@@ -642,6 +732,86 @@ growing_seasons %>%
 
 
 ## Comparing climate in two time periods
+
+We now want to compare the climate in the middle of Yellowstone National Park between two time periods, 2020-2025 and 2025-2030.  We will begin by creating a time filter using the following two code chunks.  This time filter will select data between 2020 and 2030.  
+```{r, eval=TRUE}
+time_min <- inputs$available_times[which(inputs$available_times[,2] == '2019-12-31'),1]
+time_max <- inputs$available_times[which(inputs$available_times[,2] == '2031-01-01'),1]
+```
+
+```{r, eval=TRUE}
+input_times <- inputs$available_times
+
+input_times$index <- rep(0, length(input_times$dates))
+
+input_times[which(inputs$available_times[,1] > time_min & inputs$available_times[,1] < time_max ),3] <- 1
+
+tail(input_times)
+```
+
+We will now create a filter for the variables, emission scenarios, and models for which we want data from the MACA climate model.  Here we are selecting precipitation and maximum temperature data for emission scenarios RCP 4.5 and RCP 8.5 from the Model for Interdisciplinary Research on Climate - Earth System Model and the medium resolution Norwegian Earth System Model 1.  
+```{r, eval=TRUE}
+vars <- inputs$variable_names %>% 
+  filter(Variable %in% c("Precipitation", "Maximum Temperature")) %>% 
+  filter(Scenario %in% c("RCP 8.5", "RCP 4.5")) %>% 
+  filter(Model %in% c("Model for Interdisciplinary Research On Climate - Earth System Model", "Norwegian Earth System Model 1 - Medium Resolution")) %>%
+  pull("Available variable")
+
+vars
+```
+
+This code uses the variable, emission scenario, and climate model filter and the time filter that we defined previously to select and download data from the middle of Yellowstone National Park from the MACA climate model data.
+```{r, eval=TRUE}
+climate_data <- inputs$src %>% 
+  hyper_filter(lat = lat <= c(44.5+0.05) & lat >= c(44.5-0.05)) %>% 
+  hyper_filter(lon = lon <= c(-110.5+0.05) & lon >= c(-110.5-0.05)) %>% 
+  hyper_filter(time =  input_times[,3] == 1) %>% 
+  hyper_tibble(select_var = vars
+    ) %>%
+  st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
+
+head(climate_data)
+```
+
+We now want to convert the data into a dataframe that has columns for the year, emission scenario (rcp), and climate model (model).
+```{r}
+length(climate_data$time)
+```
+The following code creates a vector of year values for the downloaded data.
+```{r}
+year <- rep(c(rep(2020, 4*366), rep(2021, 4*365), rep(2022, 4*365), rep(2023, 4*365), rep(2024, 4*366), rep(2025, 4*365), rep(2026, 4*365), rep(2027, 4*365), rep(2028, 4*366), rep(2029, 4*365), rep(2030, 4*365)), 4)
+
+length(year)
+```
+
+This code produces a vector of rcp emission scenarios for the downloaded data.
+```{r}
+rcp <- c(rep('rcp45', 16072), rep('rcp85', 16072), rep('rcp45', 16072), rep('rcp85', 16072))
+
+length(rcp)
+```
+
+The following code generates a vector of climate model abbreviations for the downloaded data.
+```{r}
+model <- c(rep('MIROC-ESM', 2*16072), rep('NorESM1-M', 2*16072))
+
+length(model)
+```
+
+This code produces a vector of precipitation data, grouping first by model and then by emission scenario.  
+```{r}
+pr <- c(climate_data$`pr_MIROC-ESM_r1i1p1_rcp45`, climate_data$`pr_MIROC-ESM_r1i1p1_rcp85`, climate_data$`pr_NorESM1-M_r1i1p1_rcp45`, climate_data$`pr_NorESM1-M_r1i1p1_rcp85`)
+
+length(pr)
+```
+
+The following code produces a vector of maximum temperature data by first grouping by model and then grouping by emission scenario.
+```{r}
+tasmax <- c(climate_data$`tasmax_MIROC-ESM_r1i1p1_rcp45`, climate_data$`tasmax_MIROC-ESM_r1i1p1_rcp85`, climate_data$`tasmax_NorESM1-M_r1i1p1_rcp45`, climate_data$`tasmax_NorESM1-M_r1i1p1_rcp85`)
+
+length(tasmax)
+```
+
 
 Use the tibble object that is returned from `cft_df()` as an input to
 `compare_periods()` to compare climate between a reference and target period. You
@@ -655,8 +825,6 @@ comps <- compare_periods(df,
                          agg_fun = "mean",
                          target_period = c(2025, 2030),
                          reference_period = c(2020, 2024),
-                         months1 = 5:8,
-                         months2 = 5:8,
                          scenarios = c("rcp45", "rcp85"))
 ```
 
@@ -705,55 +873,109 @@ river <- opq(bb_manual) %>%
   osmdata_sf() 
 river
 ```
-The following code extracts the raster data along the river geometry for Yellowstone National Park and its adjacent parks and converts it to a spatial format in R.  
-```{r aggregate data to river lines, cache=TRUE, eval=FALSE}
+
+The following code obtains a subset of the Open Street Map river geometry for Yellowstone National Park and its adjacent national parks and then converts it into a Spatial Vector format.  In the final line of this code chunk, we use the extract function from the terra package to extract data from our Spatial Raster along the river geometry and store the lat/long coordinates of these points in an xy format in the resulting dataframe.   
+
+```{r, eval=TRUE}
 river_sub <- st_buffer(river$osm_lines, 2200)
-extracted_river <- st_extract(rast,  river_sub$geometry ) %>% st_as_sf()
+
+river_points <- vect(as_Spatial(river_sub))
+
+extracted_river <- extract(data, river_points, xy=TRUE)
+```
+
+```{r, eval=TRUE}
 head(extracted_river)
 colnames(extracted_river)[1] <- "pre"
-
 ```
+
+We will now convert the extracted river geometry from a spatial object into a Spatial Vector where x and y define the spatial coordinates of the data points.
+```{r, eval=TRUE}
+river_data <- vect(extracted_river, geom=c("x", "y"), crs="")
+
+river_data
+```
+
+We will now use the plot and points functions from the terra package to plot the Spatial Raster data and overlay the humidity data along the rivers in Yellowstone National Park and its adjacent parks.  This produces a plot of the projected humidity in 2040 along the rivers in Yellowstone National Park and its adjacent national parks.   
+```{r, eval=TRUE}
+plot(data$pr_MIROC5_r1i1p1_rcp85_lyr.1, main="Rivers of Yellowstone \n Projected humidity in 2040")
+points(river_data, col = river_data$pre)
+```
+
+If we want to remove the background Spatial Raster data from the above plot, we will need to define and empty Spatial Raster object.  The first step in defining an empty Spatial Raster object is to obtain the extent of our Spatial Raster data, which is done using the following code. 
+```{r, eval=TRUE}
+data_extent <- ext(data)
+
+data_extent
+```
+
+Using the extent of the Spatial Raster data, we will obtain the minimum and maximum x and y values using the code below.  
+```{r, eval=TRUE}
+xmin <- data_extent$xmin[[1]]
+xmax <- data_extent$xmax[[1]]
+
+ymin <- data_extent$ymin[[1]]
+ymax <- data_extent$ymax[[1]]
+```
+
+We will now select the x and y resolution of the Spatial Raster data.
+```{r, eval=TRUE}
+resy <- yres(data)
+resx <- xres(data)
+```
+
+Using the minimum and maximum x and y values and the x and y resolution of the points in our Spatial Raster of data, we will create an empty Spatial Raster with the same extent, resolution, and projection as our Spatial Raster of data.  
+```{r, eval=TRUE}
+template <- rast(crs = "WGS84", xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, resolution = resx)
+
+template
+```
+
+We will now use our empty Spatial Raster to create a plot of the projected humidity in 2040 along the rivers in Yellowstone National Park and its adjacent national parks using the plot and points functions from the terra package.  
+```{r, eval=TRUE}
+plot(template, main="Rivers of Yellowstone \n Projected humidity in 2040")
+points(river_data, col = river_data$pre)
+```
+
 
 This code generates a plot of the projected humidity in 2040 along the rivers in Yellowstone National Park and its adjacent parks. 
-```{r plot river aggregation, fig.height=8, cache=TRUE, eval=FALSE}
-ggplot(data=extracted_river) +
-  geom_sf(aes(fill = pre), size=0) +
-   coord_sf(crs = 4326, xlim = c(pulled_bb_large[1], pulled_bb_large[3]), 
-           ylim = c(pulled_bb_large[2], pulled_bb_large[4]),
-           expand = FALSE) +
-  scale_fill_continuous(low="thistle2", high="darkred", 
-                       guide="colorbar",na.value="white")+
-  labs(title = "Rivers of Yellowstone",
-       subtitle = "Projected humidity in 2040", 
-       caption = "Data Source: Climate Futures...") + 
-  theme_tufte()
-```
+
 
 ## Aggregate to road segment
 
-This code is aggregating to road segments in Yellowstone National Park and its adjacent parks in a similar manner to the aggregation to rivers that was performed above.  First, we obtain the Open Street Map data of road segments in Yellowstone National Park and its adjacent parks and convert the open street map data into a spatial format.  Then the humidity data from the raster is extracted along the road segment geometry in Yellowstone National Park and its adjacent parks and this data is converted to a spatial format.  
-```{r pull road data, fig.height=8, cache=TRUE, eval=FALSE}
+This code is aggregating to road segments in Yellowstone National Park and its adjacent parks in a similar manner to the aggregation to rivers that was performed above.  First, we obtain the Open Street Map data of road segments in Yellowstone National Park and its adjacent parks and convert the open street map data into a spatial format.  We then obtain a subset of the Open Street Map road segment data and convert it to a Spatial Vector.  Then the humidity data is extracted from the Spatial Raster of data along the road segment geometry in Yellowstone National Park and its adjacent parks with the lat/long coordinates of the extracted road data being stored in xy format in the resulting dataframe.  
+
+```{r, eval=TRUE}
 roads <- opq(pulled_bb_large) %>%
   add_osm_feature(key = 'highway', value = 'primary') %>%
   add_osm_feature(key = 'highway', value = 'secondary') %>%
   osmdata_sf() 
 roads_sub <- st_buffer(roads$osm_lines, 2200)
-extracted_roads <- st_extract(rast,  roads_sub$geometry ) %>% st_as_sf()
-extracted_roads
+
+road_points <- vect(as_Spatial(roads_sub))
+
+extracted_roads <- extract(data, road_points, xy=TRUE)
 
 colnames(extracted_roads)[1] <- "pre"
 ```
 
-The following code produces a plot of the projected humidity in 2040 along the road segments in Yellowstone National Park and its adjacent parks.
-```{r plot road aggregation, fig.height=8, cache=TRUE, eval=FALSE}
-ggplot(data=extracted_roads) +
-  geom_sf(aes(fill = pre), size=0) +
-   coord_sf(crs = 4326) +
-  scale_fill_continuous(low="thistle2", high="darkred", 
-                       guide="colorbar",na.value="white")+
-  labs(title = "Roads of Yellowstone",
-       subtitle = "Projected humidity in 2040", 
-       caption = "Data Source: Climate Futures...") + 
-  theme_tufte()
+The extracted Spatial Raster data along the road segment geometry for Yellowstone National Park and its adjacent national parks is converted to a Spatial Vector using the x and y coordinates in the dataframe of extracted data.
+```{r, eval=TRUE}
+road_data <- vect(extracted_roads, geom=c("x", "y"), crs="")
+
+road_data
 ```
+
+We will now use the plot and points functions from the terra package to plot the Spatial Raster data and overlay the humidity data along the road segments in Yellowstone National Park and its adjacent parks.  This produces a plot of the projected humidity in 2040 along the road segments in Yellowstone National Park and its adjacent national parks.  
+```{r, eval=TRUE}
+plot(data$pr_MIROC5_r1i1p1_rcp85_lyr.1, main="Roads of Yellowstone \n Projected humidity in 2040")
+points(road_data, col = road_data$pre)
+```
+
+We will now use the empty Spatial Raster defined previously to plot the projected humidity in 2040 along the road segments in Yellowstone National Park and its adjacent national parks.  
+```{r, eval=TRUE}
+plot(template, main="Roads of Yellowstone \n Projected humidity in 2040")
+points(road_data, col = road_data$pre)
+```
+
 

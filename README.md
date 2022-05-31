@@ -24,8 +24,8 @@ and future climate data.
 1.  How to download and install the cft package
 2.  How to see the menu of available data and choose items from that
     menu
-3.  How to request data from the API using those menu choices
-4.  How to aggregate those data in different ways to drive insight.
+3.  A description of both functions available in the cft package and
+    their primary usage cases
 
 ## Why write the cft package?
 
@@ -426,9 +426,9 @@ efficient to use the single_point_firehose function if you encounter
 errors when trying to download data using the available_data function.
 
 **Overall, the available_data function works best for downloading MACA
-climate model for several climate variables from several climate models
-for any number of emission scenarios over a relatively small spatial
-region and over a relatively short time period.**
+climate model data for several climate variables from several climate
+models for any number of emission scenarios over a relatively small
+spatial region and over a relatively short time period.**
 
 ## Firehose Function
 

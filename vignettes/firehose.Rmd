@@ -10,6 +10,9 @@ This vignette provides a walk-through of a common use case of the Firehose funct
 
 The purpose of the Firehose functions is to download the data as quickly as possible by distributing tasks across multiple processors. The more cores you use, the faster this process will go. 
 
+Note that the Firehose function is best used for downloading  MACA climate model data for multiple climate variables from multiple climate models and emission scenarios in their entirety for a **single lat/long location**.  If you want to download data about multiple variables from multiple models and emission scenarios over a larger geographic region and a shorter time period, you should use the available_data function.  A vignette about how to use the available_data function is available at 
+https://github.com/earthlab/cft/blob/main/vignettes/available-data.md.
+
 Load the cft package. If you need to install cft, see the main cft tutorial on our github page for instructions.
 
 # Loading the cft package from github
@@ -140,7 +143,7 @@ known_lon <- lons[which(abs(lons-lon_pt)==min(abs(lons-lon_pt))),]
 known_lat <- lats[which(abs(lats-lat_pt)==min(abs(lats-lat_pt))),]
 
 
-chosen_pt <- st_as_sf(cbind(new_lon,new_lat), coords = c("lon", "lat"), crs = "WGS84", agr = "constant")
+chosen_pt <- st_as_sf(cbind(known_lon,known_lat), coords = c("lon", "lat"), crs = "WGS84", agr = "constant")
 ```
 
 The chosen point is relatively close to the suggested point. 
