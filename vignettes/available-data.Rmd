@@ -707,9 +707,8 @@ Now, we want to compute growing season length for each year, model, emissions sc
 
 ```{r grow-season, eval=FALSE}
 growing_seasons <- df %>%
-  group_by(rcp, model, year) %>%
-  summarize(season_length = sum(tasmid > 273.15)) %>%
-  ungroup
+  group_by(year) %>%
+  mutate(season_length = sum(tasmid > 273.15))
 ```
 
 Notice that we used our derived temperature midpoint column `tasmid`, and computed the total (`sum()`) number of days for each group where the temperature midpoint was greater than 0 C (or, 273.15 Kelvin, which are the units of the temperature data).
@@ -722,7 +721,7 @@ Let's visualize the growing season over time for each model and emission scenari
 
 ```{r plot-grow-season, fig.height = 5, fig.width = 6, eval=FALSE}
 growing_seasons %>%
-  ggplot(aes(x = year, y = season_length, color = rcp, group = model)) + 
+  ggplot(aes(x = year, y = season_length, color = rcp)) + 
   geom_line(alpha = .3) + 
   xlab("Year") + 
   ylab("Growing season length (days)") + 
