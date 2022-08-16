@@ -25,8 +25,7 @@ single_point_firehose <- function(input_variables, lat, lon,
   require(furrr)
   
   require(rlist)
-  
-  
+
   require(plyr)
   require(pipeR)
   require(cft)
