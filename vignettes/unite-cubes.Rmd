@@ -7,6 +7,8 @@ output:
 
 # Welcome to the Climate Future Toolbox's Unite Cubes function
 
-This vignette will provide a walk-through of a common use case of the Unite Cubes function.
+This vignette will provide a walk-through of a common use case of the unite cubes function.
 
+The unite cubes function is used to combine two arbitrary spatiotemporal data cubes using kriging.  If you have two data cubes containing only spatial data or two data cubes containing only a single time slice, you should use the unite_cubes_spatial function in the CFT package instead.  
 
+Currently, the unite cubes function only supports combining data cubes which each have a single dependent variable.  
