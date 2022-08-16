@@ -699,8 +699,8 @@ As an example, we will compute the growing season length for Wind Cave National 
 To do this, we first need to define a new column for year, which we will use as a grouping variable: 
 
 ```{r get-year, eval=FALSE}
-df <- df %>%
-  mutate(year = year(date))
+#df <- df %>%
+  #mutate(year = year(date))
 ```
 
 Now, we want to compute growing season length for each year, model, emissions scenario combination. 
@@ -818,44 +818,44 @@ may specify the function with which to aggregate your chosen variable as well
 as the yearly time period months of the year to include in this calculation.
 
 ```{r comps, eval=FALSE}
-comps <- compare_periods(df,
-                         var1 = "pr",
-                         var2 = "tasmax",
-                         agg_fun = "mean",
-                         target_period = c(2025, 2030),
-                         reference_period = c(2020, 2024),
-                         scenarios = c("rcp45", "rcp85"))
+#comps <- compare_periods(df,
+                         #var1 = "pr",
+                         #var2 = "tasmax",
+                         #agg_fun = "mean",
+                         #target_period = c(2025, 2030),
+                         #reference_period = c(2020, 2024),
+                         #scenarios = c("rcp45", "rcp85"))
 ```
 
 This provides a data frame that can be used to compare the values in the target
 and reference period.
 
 ```{r glimpse-comps, eval=FALSE}
-glimpse(comps)
+#glimpse(comps)
 ```
 
 One useful plot shows the difference in the two variables between reference and
 target periods:
 
 ```{r plot-comps, fig.height = 6, fig.width = 9, eval=FALSE}
-title <-  paste("Change from the historical vs. reference period:", 
-                comps$reference_period, comps$target_period, sep= "  vs  " )[1]
+#title <-  paste("Change from the historical vs. reference period:", 
+                #comps$reference_period, comps$target_period, sep= "  vs  " )[1]
 
-comps %>%
-  dplyr::select(parameter, rcp, model, reference_period, target_period, difference) %>%
-  pivot_wider(names_from = parameter, values_from = difference) %>%
-  ungroup %>%
-  mutate(rcp = ifelse(rcp == "rcp45", "RCP 4.5", "RCP 8.5")) %>%
-  ggplot(aes(pr, tasmax, color = rcp)) + 
-  ggtitle(title) +
-  geom_point() + 
-  geom_hline(yintercept = 0, alpha = .2) + 
-  geom_vline(xintercept = 0, alpha = .2) +
-  geom_text_repel(aes(label = model), segment.size = .3, size = 3) + 
-  xlab("Difference in mean daily precipitation (mm)") + 
-  ylab("Difference in mean daily max. temperature (C)") + 
-  scale_color_manual(values = c("dodgerblue", "red"), 
-                     "Greenhouse gas\ntrajectory") 
+#comps %>%
+  #dplyr::select(parameter, rcp, model, reference_period, target_period, difference) %>%
+  #pivot_wider(names_from = parameter, values_from = difference) %>%
+  #ungroup %>%
+  #mutate(rcp = ifelse(rcp == "rcp45", "RCP 4.5", "RCP 8.5")) %>%
+  #ggplot(aes(pr, tasmax, color = rcp)) + 
+  #ggtitle(title) +
+  #geom_point() + 
+  #geom_hline(yintercept = 0, alpha = .2) + 
+  #geom_vline(xintercept = 0, alpha = .2) +
+  #geom_text_repel(aes(label = model), segment.size = .3, size = 3) + 
+  #xlab("Difference in mean daily precipitation (mm)") + 
+  #ylab("Difference in mean daily max. temperature (C)") + 
+  #scale_color_manual(values = c("dodgerblue", "red"), 
+                     #"Greenhouse gas\ntrajectory") 
 ```
 
 So, nearly all model runs indicate warming, but the amount of warming varies by 

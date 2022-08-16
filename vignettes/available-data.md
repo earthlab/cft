@@ -499,7 +499,7 @@ end_time <- Sys.time()
 print(end_time - start_time)
 ```
 
-    ## Time difference of 1.033533 mins
+    ## Time difference of 1.097081 mins
 
 ``` r
 head(Pulled_data_single_space_single_timepoint)
@@ -1297,7 +1297,7 @@ component (called `vas`), both in units of meters per second (you can
 get this information from `cft::argument_reference`). Wind speed can be
 computed from `vas` and `uas` using the Pythagorean theorem:
 
-![\\text{Wind speed} = \\sqrt{v\_{as}^2 + u\_{as}^2}.](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Ctext%7BWind%20speed%7D%20%3D%20%5Csqrt%7Bv_%7Bas%7D%5E2%20%2B%20u_%7Bas%7D%5E2%7D. "\text{Wind speed} = \sqrt{v_{as}^2 + u_{as}^2}.")
+![\text{Wind speed} = \sqrt{v\_{as}^2 + u\_{as}^2}.](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Ctext%7BWind%20speed%7D%20%3D%20%5Csqrt%7Bv_%7Bas%7D%5E2%20%2B%20u_%7Bas%7D%5E2%7D. "\text{Wind speed} = \sqrt{v_{as}^2 + u_{as}^2}.")
 
 In code:
 
@@ -1498,13 +1498,13 @@ head(df)
 Sometimes, there are new climate variables that summarize daily data.
 For example, you may want to compute:
 
--   Last Day of Frost (i.e., last day in spring when min. air temp. \<
-    0 C)
--   First Day of Frost (i.e., first day in fall when min. air temp. \<
-    0 C)
+-   Last Day of Frost (i.e., last day in spring when min. air temp. \< 0
+    C)
+-   First Day of Frost (i.e., first day in fall when min. air temp. \< 0
+    C)
 -   Number of days above or below some threshold (e.g., days with max.
-    air temperature over 40 C, or days with > 1mm of precipitation)
--   Growing season length (# days with air temperature > 0 C)
+    air temperature over 40 C, or days with \> 1mm of precipitation)
+-   Growing season length (# days with air temperature \> 0 C)
 
 All of these quantities summarize daily data, and require some
 aggregation time interval which in many cases will be one year. As an
@@ -1514,8 +1514,8 @@ first need to define a new column for year, which we will use as a
 grouping variable:
 
 ``` r
-df <- df %>%
-  mutate(year = year(date))
+#df <- df %>%
+  #mutate(year = year(date))
 ```
 
 Now, we want to compute growing season length for each year, model,
@@ -1523,9 +1523,8 @@ emissions scenario combination.
 
 ``` r
 growing_seasons <- df %>%
-  group_by(rcp, model, year) %>%
-  summarize(season_length = sum(tasmid > 273.15)) %>%
-  ungroup
+  group_by(year) %>%
+  mutate(season_length = sum(tasmid > 273.15))
 ```
 
 Notice that we used our derived temperature midpoint column `tasmid`,
@@ -1542,7 +1541,7 @@ scenario:
 
 ``` r
 growing_seasons %>%
-  ggplot(aes(x = year, y = season_length, color = rcp, group = model)) + 
+  ggplot(aes(x = year, y = season_length, color = rcp)) + 
   geom_line(alpha = .3) + 
   xlab("Year") + 
   ylab("Growing season length (days)") + 
@@ -1710,44 +1709,44 @@ variable as well as the yearly time period months of the year to include
 in this calculation.
 
 ``` r
-comps <- compare_periods(df,
-                         var1 = "pr",
-                         var2 = "tasmax",
-                         agg_fun = "mean",
-                         target_period = c(2025, 2030),
-                         reference_period = c(2020, 2024),
-                         scenarios = c("rcp45", "rcp85"))
+#comps <- compare_periods(df,
+                         #var1 = "pr",
+                         #var2 = "tasmax",
+                         #agg_fun = "mean",
+                         #target_period = c(2025, 2030),
+                         #reference_period = c(2020, 2024),
+                         #scenarios = c("rcp45", "rcp85"))
 ```
 
 This provides a data frame that can be used to compare the values in the
 target and reference period.
 
 ``` r
-glimpse(comps)
+#glimpse(comps)
 ```
 
 One useful plot shows the difference in the two variables between
 reference and target periods:
 
 ``` r
-title <-  paste("Change from the historical vs. reference period:", 
-                comps$reference_period, comps$target_period, sep= "  vs  " )[1]
+#title <-  paste("Change from the historical vs. reference period:", 
+                #comps$reference_period, comps$target_period, sep= "  vs  " )[1]
 
-comps %>%
-  dplyr::select(parameter, rcp, model, reference_period, target_period, difference) %>%
-  pivot_wider(names_from = parameter, values_from = difference) %>%
-  ungroup %>%
-  mutate(rcp = ifelse(rcp == "rcp45", "RCP 4.5", "RCP 8.5")) %>%
-  ggplot(aes(pr, tasmax, color = rcp)) + 
-  ggtitle(title) +
-  geom_point() + 
-  geom_hline(yintercept = 0, alpha = .2) + 
-  geom_vline(xintercept = 0, alpha = .2) +
-  geom_text_repel(aes(label = model), segment.size = .3, size = 3) + 
-  xlab("Difference in mean daily precipitation (mm)") + 
-  ylab("Difference in mean daily max. temperature (C)") + 
-  scale_color_manual(values = c("dodgerblue", "red"), 
-                     "Greenhouse gas\ntrajectory") 
+#comps %>%
+  #dplyr::select(parameter, rcp, model, reference_period, target_period, difference) %>%
+  #pivot_wider(names_from = parameter, values_from = difference) %>%
+  #ungroup %>%
+  #mutate(rcp = ifelse(rcp == "rcp45", "RCP 4.5", "RCP 8.5")) %>%
+  #ggplot(aes(pr, tasmax, color = rcp)) + 
+  #ggtitle(title) +
+  #geom_point() + 
+  #geom_hline(yintercept = 0, alpha = .2) + 
+  #geom_vline(xintercept = 0, alpha = .2) +
+  #geom_text_repel(aes(label = model), segment.size = .3, size = 3) + 
+  #xlab("Difference in mean daily precipitation (mm)") + 
+  #ylab("Difference in mean daily max. temperature (C)") + 
+  #scale_color_manual(values = c("dodgerblue", "red"), 
+                     #"Greenhouse gas\ntrajectory") 
 ```
 
 So, nearly all model runs indicate warming, but the amount of warming
@@ -1956,6 +1955,9 @@ roads <- opq(pulled_bb_large) %>%
     ## Error in curl::curl_fetch_memory(url, handle = handle): HTTP/2 stream 0 was not closed cleanly: PROTOCOL_ERROR (err 1)
     ## Request failed [ERROR]. Retrying in 1.6 seconds...
 
+    ## Error in curl::curl_fetch_memory(url, handle = handle): HTTP/2 stream 0 was not closed cleanly: PROTOCOL_ERROR (err 1)
+    ## Request failed [ERROR]. Retrying in 3.3 seconds...
+
 ``` r
 roads_sub <- st_buffer(roads$osm_lines, 2200)
 
@@ -1983,7 +1985,7 @@ road_data
 
     ##  class       : SpatVector 
     ##  geometry    : points 
-    ##  dimensions  : 2136, 3  (geometries, attributes)
+    ##  dimensions  : 2206, 3  (geometries, attributes)
     ##  extent      : -113.314, -109.8135, 41.8539, 45.02107  (xmin, xmax, ymin, ymax)
     ##  coord. ref. :  
     ##  names       :   pre pr_MIROC5_r1i1p1_rcp85_lyr.1 time_lyr.1
