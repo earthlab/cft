@@ -101,9 +101,9 @@ single_point_firehose <- function(input_variables, lat, lon,
   
   
   
-  all(first_pass[,which(names(first_pass) == "time")])
-  all(first_pass[,which(names(first_pass) == "lon")])
-  all(first_pass[,which(names(first_pass) == "lat")])
+  #all(first_pass[,which(names(first_pass) == "time")])
+  #all(first_pass[,which(names(first_pass) == "lon")])
+  #all(first_pass[,which(names(first_pass) == "lat")])
   
   first_pass_clean <- first_pass[ , !duplicated(colnames(first_pass))] 
   
