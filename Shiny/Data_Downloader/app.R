@@ -121,13 +121,13 @@ ui <- fluidPage(
   
   #actionButton("ob", "NASA Ocean Biogeochemistry Data"),
   
-  uiOutput("LP"),
+  #uiOutput("LP"),
   
-  uiOutput("user"),
+  #uiOutput("user"),
   
-  uiOutput("pass"),
+  #uiOutput("pass"),
   
-  uiOutput('lp_submit'),
+  #uiOutput('lp_submit'),
   
   uiOutput("var"),
   
@@ -172,16 +172,16 @@ server <- function(input, output){
                      "Vapor Pressure Deficit" = 16), selected = 1)
        }
        
-       else if (input$data_choice == 3){
-         selectInput("var", "Select a variable", choices = list("UN-adjusted Population Count" = 1, "UN-adjusted Population Density" = 2, "Land Cover Type" = 3, "Land Cover Dynamics" = 4,
-          "Leaf Area Index (LAI) and Fraction of Photosynthetically Active Radiation (FPAR)" = 5, "Bidirectional Reflectance Distribution Function (BRDF) and Albedo" = 6,
-          "Burned Area (fire)" = 7, "Surface Reflectance Bands 1-7" = 8, "Snow Cover" = 9, "Land Surface Temperature & Emissivity" = 10,
-          "Vegetation Indices (NDVI & EVI)" = 11, "Thermal Anomalies and Fire" = 12, "Evapotranspiration" = 13, "Net Evapotranspiration" = 14,
-          "Gross Primary Productivity (GPP)" = 15, "Net Primary Production (NPP)" = 16, "Temperature and Emissivity" = 17, "Vegetation Continuous Fields" = 18,
-          "Land/Water Mask" = 19, "Ocean Reflectance Bands 8-16" = 20, "Thermal Bands and Albedo" = 21, "Elevation" = 22, "Water Bodies Database Attributes" = 23,
-          "Water Bodies Database Elevation" = 24, "Surface Reflectance" = 25, "Global Land Surface Phenology (GLSP)" = 26, "BRDF-Albedo Model Parameters" = 27,
-          "BRDF-Albedo Quality" = 28, "Albedo" = 29, "Nadir BRDF-Adjusted Reflectance" = 30, "Daily Surface Weather Data for North America" = 31), selected = 1)
-       }
+       # else if (input$data_choice == 3){
+       #   selectInput("var", "Select a variable", choices = list("UN-adjusted Population Count" = 1, "UN-adjusted Population Density" = 2, "Land Cover Type" = 3, "Land Cover Dynamics" = 4,
+       #    "Leaf Area Index (LAI) and Fraction of Photosynthetically Active Radiation (FPAR)" = 5, "Bidirectional Reflectance Distribution Function (BRDF) and Albedo" = 6,
+       #    "Burned Area (fire)" = 7, "Surface Reflectance Bands 1-7" = 8, "Snow Cover" = 9, "Land Surface Temperature & Emissivity" = 10,
+       #    "Vegetation Indices (NDVI & EVI)" = 11, "Thermal Anomalies and Fire" = 12, "Evapotranspiration" = 13, "Net Evapotranspiration" = 14,
+       #    "Gross Primary Productivity (GPP)" = 15, "Net Primary Production (NPP)" = 16, "Temperature and Emissivity" = 17, "Vegetation Continuous Fields" = 18,
+       #    "Land/Water Mask" = 19, "Ocean Reflectance Bands 8-16" = 20, "Thermal Bands and Albedo" = 21, "Elevation" = 22, "Water Bodies Database Attributes" = 23,
+       #    "Water Bodies Database Elevation" = 24, "Surface Reflectance" = 25, "Global Land Surface Phenology (GLSP)" = 26, "BRDF-Albedo Model Parameters" = 27,
+       #    "BRDF-Albedo Quality" = 28, "Albedo" = 29, "Nadir BRDF-Adjusted Reflectance" = 30, "Daily Surface Weather Data for North America" = 31), selected = 1)
+       # }
        })
      
      output$model <- renderUI({
@@ -202,141 +202,141 @@ server <- function(input, output){
        }
      })
                  
-     output$LP <- renderUI({
-       if (input$data_choice == 3){
-         p("In order to access data from the LP DAAC, you must enter your NASA EarthData login credentials below.  If you do not have an EarthData account, you can create one", a("here", href = "https://urs.earthdata.nasa.gov/users/new"))
-       }
-     })
+     # output$LP <- renderUI({
+     #   if (input$data_choice == 3){
+     #     p("In order to access data from the LP DAAC, you must enter your NASA EarthData login credentials below.  If you do not have an EarthData account, you can create one", a("here", href = "https://urs.earthdata.nasa.gov/users/new"))
+     #   }
+     # })
+     # 
+     # output$user <- renderUI({
+     #   if (input$data_choice == 3){
+     #      textInput("ed_user", label="Enter your EarthData username")
+     #   }
+     # })
+     # 
+     # output$pass <- renderUI({
+     #   if (input$data_choice == 3){
+     #     passwordInput("ed_pass", label="Enter your EarthData password") 
+     #   }
+     # })
+     # 
+     # output$lp_submit <- renderUI({
+     #   if (input$data_choice == 3){
+     #     actionButton('lp_submit', 'Submit username and password')
+     #   }
+     # })
+     # 
+     # output$products <- renderUI({
+     #   if (input$data_choice == 3){
+     #     radioButtons('user_products', 'Select products:', choices = NULL)
+     #   }
+     # })
+     # 
+     # output$layers <- renderUI({
+     #   if (input$data_choice == 3){
+     #     radioButtons('user_layers', 'Select layers:', choices = NULL)
+     #   }
+     # })
      
-     output$user <- renderUI({
-       if (input$data_choice == 3){
-          textInput("ed_user", label="Enter your EarthData username")
-       }
-     })
-     
-     output$pass <- renderUI({
-       if (input$data_choice == 3){
-         passwordInput("ed_pass", label="Enter your EarthData password") 
-       }
-     })
-     
-     output$lp_submit <- renderUI({
-       if (input$data_choice == 3){
-         actionButton('lp_submit', 'Submit username and password')
-       }
-     })
-     
-     output$products <- renderUI({
-       if (input$data_choice == 3){
-         radioButtons('user_products', 'Select products:', choices = NULL)
-       }
-     })
-     
-     output$layers <- renderUI({
-       if (input$data_choice == 3){
-         radioButtons('user_layers', 'Select layers:', choices = NULL)
-       }
-     })
-     
-     observeEvent('submit', {
-       lp_vars = data.frame(c("UN-adjusted Population Count", "UN-adjusted Population Density", "Land Cover Type", "Land Cover Dynamics",
-                              "Leaf Area Index (LAI) and Fraction of Photosynthetically Active Radiation (FPAR)", "Bidirectional Reflectance Distribution Function (BRDF) and Albedo",
-                              "Burned Area (fire)", "Surface Reflectance Bands 1-7", "Snow Cover", "Land Surface Temperature & Emissivity",
-                              "Vegetation Indices (NDVI & EVI)", "Thermal Anomalies and Fire", "Evapotranspiration", "Net Evapotranspiration",
-                              "Gross Primary Productivity (GPP)", "Net Primary Production (NPP)", "Temperature and Emissivity", "Vegetation Continuous Fields",
-                              "Land/Water Mask", "Ocean Reflectance Bands 8-16", "Thermal Bands and Albedo", "Elevation", "Water Bodies Database Attributes",
-                              "Water Bodies Database Elevation", "Surface Reflectance", "Global Land Surface Phenology (GLSP)", "BRDF-Albedo Model Parameters",
-                              "BRDF-Albedo Quality", "Albedo", "Nadir BRDF-Adjusted Reflectance", "Daily Surface Weather Data for North America"))
-       
-       var <- lp_vars[input$var,]
-     
-       secret <- jsonlite::base64_enc(paste(input$ed_user, input$ed_pass, sep=":"))
-       
-       API_URL <- "https://appeears.earthdatacloud.nasa.gov/api/"
-       
-       response <- httr::POST(paste0(API_URL, "login"),
-                              add_headers("Authorization" = paste("Basic", gsub("\n", "", secret)),
-                                          "Content-Type" = "application/x-www-form-urlencoded;charset=UTF-8"),
-                              body = "grant_type=client_credentials")
-       
-       response_content <- content(response)
-       
-       token_response <- toJSON(response_content, auto_unbox = TRUE)
-       
-       remove(secret, response)
-       
-       prods_req <- GET(paste0(API_URL, "product"))
-       
-       prods_content <- content(prods_req)
-       
-       all_Prods <- toJSON(prods_content, auto_unbox = TRUE)
-       
-       remove(prods_req, prods_content)
-       
-       divided_products <- split(fromJSON(all_Prods), seq(nrow(fromJSON(all_Prods))))
-       
-       products <- setNames(divided_products, fromJSON(all_Prods)$ProductAndVersion)
-       
-       #prods <- matrix(nrow = length(products), ncol = 2)
-       
-       #i <- 1
-       
-       options <- list()
-       
-       for (p in products){
-         
-         #prods[i] <- c(p$ProductAndVersion, p$Description)
-         
-         if (grepl(var, p$Description)){
-           options <- append(options, p$ProductAndVersion)
-         }
-         
-         #i <- i + 1
-       }
-       
-       #prods <- as.data.frame(prods)
-       
-       #colnames(prods) <- c('Product', 'Description')
-       
-       #indices <- which(grepl(input$var, prods$Description))
-       
-       #user_prods <- prods[indices,1]
-       
-       updateRadioButtons('product_input', 'Select LP Products:', choices = options)
-     })
-     
-     observeEvent('submit', {
-       secret <- jsonlite::base64_enc(paste(input$ed_user, input$ed_pass, sep=":"))
-       
-       API_URL <- "https://appeears.earthdatacloud.nasa.gov/api/"
-       
-       response <- httr::POST(paste0(API_URL, "login"),
-                              add_headers("Authorization" = paste("Basic", gsub("\n", "", secret)),
-                                          "Content-Type" = "application/x-www-form-urlencoded;charset=UTF-8"),
-                              body = "grant_type=client_credentials")
-       
-       response_content <- content(response)
-       
-       token_response <- toJSON(response_content, auto_unbox = TRUE)
-       
-       remove(secret, response)
-       
-       layer_options <- c()
-       
-       for (i in 1:length(input$user_prods)){
-         req <- GET(paste0(API_URL, "product/", input$user_prods[i]))
-         
-         p_content <- content(req)
-         
-         response <- toJSON(p_content, auto_unbox = TRUE)
-         
-         remove(req, p_content)
-         
-         layer_options <- append(layer_options, names(fromJSON(response)))
-       }
-       
-       updateRadioButtons('layer_input', 'Select product layers:', choices = layer_options)
-     })
+     # observeEvent('submit', {
+     #   lp_vars = data.frame(c("UN-adjusted Population Count", "UN-adjusted Population Density", "Land Cover Type", "Land Cover Dynamics",
+     #                          "Leaf Area Index (LAI) and Fraction of Photosynthetically Active Radiation (FPAR)", "Bidirectional Reflectance Distribution Function (BRDF) and Albedo",
+     #                          "Burned Area (fire)", "Surface Reflectance Bands 1-7", "Snow Cover", "Land Surface Temperature & Emissivity",
+     #                          "Vegetation Indices (NDVI & EVI)", "Thermal Anomalies and Fire", "Evapotranspiration", "Net Evapotranspiration",
+     #                          "Gross Primary Productivity (GPP)", "Net Primary Production (NPP)", "Temperature and Emissivity", "Vegetation Continuous Fields",
+     #                          "Land/Water Mask", "Ocean Reflectance Bands 8-16", "Thermal Bands and Albedo", "Elevation", "Water Bodies Database Attributes",
+     #                          "Water Bodies Database Elevation", "Surface Reflectance", "Global Land Surface Phenology (GLSP)", "BRDF-Albedo Model Parameters",
+     #                          "BRDF-Albedo Quality", "Albedo", "Nadir BRDF-Adjusted Reflectance", "Daily Surface Weather Data for North America"))
+     #   
+     #   var <- lp_vars[input$var,]
+     # 
+     #   secret <- jsonlite::base64_enc(paste(input$ed_user, input$ed_pass, sep=":"))
+     #   
+     #   API_URL <- "https://appeears.earthdatacloud.nasa.gov/api/"
+     #   
+     #   response <- httr::POST(paste0(API_URL, "login"),
+     #                          add_headers("Authorization" = paste("Basic", gsub("\n", "", secret)),
+     #                                      "Content-Type" = "application/x-www-form-urlencoded;charset=UTF-8"),
+     #                          body = "grant_type=client_credentials")
+     #   
+     #   response_content <- content(response)
+     #   
+     #   token_response <- toJSON(response_content, auto_unbox = TRUE)
+     #   
+     #   remove(secret, response)
+     #   
+     #   prods_req <- GET(paste0(API_URL, "product"))
+     #   
+     #   prods_content <- content(prods_req)
+     #   
+     #   all_Prods <- toJSON(prods_content, auto_unbox = TRUE)
+     #   
+     #   remove(prods_req, prods_content)
+     #   
+     #   divided_products <- split(fromJSON(all_Prods), seq(nrow(fromJSON(all_Prods))))
+     #   
+     #   products <- setNames(divided_products, fromJSON(all_Prods)$ProductAndVersion)
+     #   
+     #   #prods <- matrix(nrow = length(products), ncol = 2)
+     #   
+     #   #i <- 1
+     #   
+     #   options <- list()
+     #   
+     #   for (p in products){
+     #     
+     #     #prods[i] <- c(p$ProductAndVersion, p$Description)
+     #     
+     #     if (grepl(var, p$Description)){
+     #       options <- append(options, p$ProductAndVersion)
+     #     }
+     #     
+     #     #i <- i + 1
+     #   }
+     #   
+     #   #prods <- as.data.frame(prods)
+     #   
+     #   #colnames(prods) <- c('Product', 'Description')
+     #   
+     #   #indices <- which(grepl(input$var, prods$Description))
+     #   
+     #   #user_prods <- prods[indices,1]
+     #   
+     #   updateRadioButtons('product_input', 'Select LP Products:', choices = options)
+     # })
+     # 
+     # observeEvent('submit', {
+     #   secret <- jsonlite::base64_enc(paste(input$ed_user, input$ed_pass, sep=":"))
+     #   
+     #   API_URL <- "https://appeears.earthdatacloud.nasa.gov/api/"
+     #   
+     #   response <- httr::POST(paste0(API_URL, "login"),
+     #                          add_headers("Authorization" = paste("Basic", gsub("\n", "", secret)),
+     #                                      "Content-Type" = "application/x-www-form-urlencoded;charset=UTF-8"),
+     #                          body = "grant_type=client_credentials")
+     #   
+     #   response_content <- content(response)
+     #   
+     #   token_response <- toJSON(response_content, auto_unbox = TRUE)
+     #   
+     #   remove(secret, response)
+     #   
+     #   layer_options <- c()
+     #   
+     #   for (i in 1:length(input$user_prods)){
+     #     req <- GET(paste0(API_URL, "product/", input$user_prods[i]))
+     #     
+     #     p_content <- content(req)
+     #     
+     #     response <- toJSON(p_content, auto_unbox = TRUE)
+     #     
+     #     remove(req, p_content)
+     #     
+     #     layer_options <- append(layer_options, names(fromJSON(response)))
+     #   }
+     #   
+     #   updateRadioButtons('layer_input', 'Select product layers:', choices = layer_options)
+     # })
      
      output$date_button <- renderUI({
        checkboxInput("date_button", "Click the button below to get the entire MACA record")
@@ -351,9 +351,9 @@ server <- function(input, output){
          dateRangeInput("dates", "Enter a range of dates", min = '1979-01-01', max = Sys.Date())
        }
        
-       else if (input$data_choice == 3){
-         dateRangeInput("dates", "Enter a range of dates")
-       }
+       # else if (input$data_choice == 3){
+       #   dateRangeInput("dates", "Enter a range of dates")
+       # }
      })
      
      output$max_lon <- renderUI({
@@ -371,9 +371,9 @@ server <- function(input, output){
        else if (input$data_choice == 2){
          actionButton('gm_submit', "Download")
        }
-       else if (input$data_choice == 3){
-         actionButton('lp_submit', "Download")
-       }
+       # else if (input$data_choice == 3){
+       #   actionButton('lp_submit', "Download")
+       # }
      })
      
      observeEvent(input$maca_submit, {
@@ -460,144 +460,144 @@ server <- function(input, output){
        write.csv(data, file = 'gm.csv')
      })
      
-     observeEvent(input$lp_submit, {
-       lp_vars = data.frame(c("UN-adjusted Population Count", "UN-adjusted Population Density", "Land Cover Type", "Land Cover Dynamics",
-                      "Leaf Area Index (LAI) and Fraction of Photosynthetically Active Radiation (FPAR)", "Bidirectional Reflectance Distribution Function (BRDF) and Albedo",
-                      "Burned Area (fire)", "Surface Reflectance Bands 1-7", "Snow Cover", "Land Surface Temperature & Emissivity",
-                      "Vegetation Indices (NDVI & EVI)", "Thermal Anomalies and Fire", "Evapotranspiration", "Net Evapotranspiration",
-                      "Gross Primary Productivity (GPP)", "Net Primary Production (NPP)", "Temperature and Emissivity", "Vegetation Continuous Fields",
-                      "Land/Water Mask", "Ocean Reflectance Bands 8-16", "Thermal Bands and Albedo", "Elevation", "Water Bodies Database Attributes",
-                      "Water Bodies Database Elevation", "Surface Reflectance", "Global Land Surface Phenology (GLSP)", "BRDF-Albedo Model Parameters",
-                      "BRDF-Albedo Quality", "Albedo", "Nadir BRDF-Adjusted Reflectance", "Daily Surface Weather Data for North America"))
-       
-       secret <- jsonlite::base64_enc(paste(input$ed_user, input$ed_pass, sep=":"))
-       
-       API_URL <- "https://appeears.earthdatacloud.nasa.gov/api/"
-       
-       response <- httr::POST(paste0(API_URL, "login"),
-                              add_headers("Authorization" = paste("Basic", gsub("\n", "", secret)),
-                                          "Content-Type" = "application/x-www-form-urlencoded;charset=UTF-8"),
-                              body = "grant_type=client_credentials")
-       
-       response_content <- content(response)
-       
-       token_response <- toJSON(response_content, auto_unbox = TRUE)
-       
-       remove(secret, response)
-       
-       prods_req <- GET(paste0(API_URL, "product"))
-       
-       prods_content <- content(prods_req)
-       
-       all_Prods <- toJSON(prods_content, auto_unbox = TRUE)
-       
-       remove(prods_req, prods_content)
-       
-       divided_products <- split(fromJSON(all_Prods), seq(nrow(fromJSON(all_Prods))))
-       
-       products <- setNames(divided_products, fromJSON(all_Prods)$ProductAndVersion)
-       
-       prods <- matrix(nrow = length(products), ncol = 2)
-       
-       for (i in 1:length(products)){
-         p <- products[i]
-         
-         prods[i] <- c(p$ProductAndVersion, p$Description)
-       }
-       
-       prods <- as.data.frame(prods)
-       
-       colnames(prods) <- c('Product', 'Description')
-       
-       indices <- which(grepl(input$var, prods$Description))
-       
-       user_prods <- prods[indices,1]
-       
-       
-       
-       layers <- c()
-       
-       for (p in user_prods){
-         req <- GET(paste0(API_URL, "product/", p))
-         
-         p_content <- content(req)
-         
-         response <- toJSON(p_content, auto_unbox = TRUE)
-         
-         remove(req, p_content)
-         
-         layers <- c(layers, names(fromJSON(response)))
-       }
-       
-       desired_layers <- input$user_layers
-       
-       desired_prods <- input$user_prods
-       
-       layers <- data.frame(product = desired_prods, layer = desired_layers)
-       
-       startDate <- input$dates[1]
-       
-       endDate <- input$dates[2]
-       
-       taskName <- 'LP Download'
-       
-       taskType <- 'point'
-       
-       date <- data.frame(startDate = startDate, endDate = endDate)
-       
-       task_info <- list(date, layers)
-       
-       names(task_info) <- c('dates', 'layers')
-       
-       task <- list(task_info, taskName, taskType)
-       
-       names(task) <- c('params', 'task_name', 'task_type')
-       
-       remove(date, layers, bbox, task_info)
-       
-       task_json <- toJSON(task, auto_unbox = TRUE)
-       
-       token <- paste("Bearer", fromJSON(token_response)$token)
-       
-       response <- POST(paste0(API_URL, "task"),
-                        body = task_json,
-                        encode = "json",
-                        add_headers(Authorization = token, "Content-Type" = "application/json"))
-       
-       task_content <- content(response)
-       
-       task_response <- prettify(toJSON(task_content, auto_unbox = TRUE))
-       
-       remove(response, task_content)
-       
-       task_id <- fromJSON(task_response)$task_id
-       
-       response <- GET(paste0(API_URL, "bundle/", task_id), add_headers(Authorization = token))
-       
-       response_content <- content(response)
-       
-       bundle_response <- toJSON(response_content, auto_unbox = TRUE)
-       
-       bundle <- fromJSON(bundle_response)$files
-       
-       for (id in bundle$file_id){
-         filename <- bundle[bundle$file_id == id,]$file_name
-         
-         filepath <- paste(outDir, filename, sep="/")
-         
-         suppressWarnings(dir.create(dirname(filepath)))
-         
-         response <- GET(paste0(API_URL, "bundle/", task_id, "/", id),
-                         write_disk(filepath, overwrite = TRUE),
-                         progress(),
-                         add_headers(Authorization = token))
-       }
-       
-       files <- list.files(outDir, '\.csv')
-       
-       df <- read_csv(paste0(outDir, "/", files), show_col_types = FALSE)
-       
-     })
+     # observeEvent(input$lp_submit, {
+     #   lp_vars = data.frame(c("UN-adjusted Population Count", "UN-adjusted Population Density", "Land Cover Type", "Land Cover Dynamics",
+     #                  "Leaf Area Index (LAI) and Fraction of Photosynthetically Active Radiation (FPAR)", "Bidirectional Reflectance Distribution Function (BRDF) and Albedo",
+     #                  "Burned Area (fire)", "Surface Reflectance Bands 1-7", "Snow Cover", "Land Surface Temperature & Emissivity",
+     #                  "Vegetation Indices (NDVI & EVI)", "Thermal Anomalies and Fire", "Evapotranspiration", "Net Evapotranspiration",
+     #                  "Gross Primary Productivity (GPP)", "Net Primary Production (NPP)", "Temperature and Emissivity", "Vegetation Continuous Fields",
+     #                  "Land/Water Mask", "Ocean Reflectance Bands 8-16", "Thermal Bands and Albedo", "Elevation", "Water Bodies Database Attributes",
+     #                  "Water Bodies Database Elevation", "Surface Reflectance", "Global Land Surface Phenology (GLSP)", "BRDF-Albedo Model Parameters",
+     #                  "BRDF-Albedo Quality", "Albedo", "Nadir BRDF-Adjusted Reflectance", "Daily Surface Weather Data for North America"))
+     #   
+     #   secret <- jsonlite::base64_enc(paste(input$ed_user, input$ed_pass, sep=":"))
+     #   
+     #   API_URL <- "https://appeears.earthdatacloud.nasa.gov/api/"
+     #   
+     #   response <- httr::POST(paste0(API_URL, "login"),
+     #                          add_headers("Authorization" = paste("Basic", gsub("\n", "", secret)),
+     #                                      "Content-Type" = "application/x-www-form-urlencoded;charset=UTF-8"),
+     #                          body = "grant_type=client_credentials")
+     #   
+     #   response_content <- content(response)
+     #   
+     #   token_response <- toJSON(response_content, auto_unbox = TRUE)
+     #   
+     #   remove(secret, response)
+     #   
+     #   prods_req <- GET(paste0(API_URL, "product"))
+     #   
+     #   prods_content <- content(prods_req)
+     #   
+     #   all_Prods <- toJSON(prods_content, auto_unbox = TRUE)
+     #   
+     #   remove(prods_req, prods_content)
+     #   
+     #   divided_products <- split(fromJSON(all_Prods), seq(nrow(fromJSON(all_Prods))))
+     #   
+     #   products <- setNames(divided_products, fromJSON(all_Prods)$ProductAndVersion)
+     #   
+     #   prods <- matrix(nrow = length(products), ncol = 2)
+     #   
+     #   for (i in 1:length(products)){
+     #     p <- products[i]
+     #     
+     #     prods[i] <- c(p$ProductAndVersion, p$Description)
+     #   }
+     #   
+     #   prods <- as.data.frame(prods)
+     #   
+     #   colnames(prods) <- c('Product', 'Description')
+     #   
+     #   indices <- which(grepl(input$var, prods$Description))
+     #   
+     #   user_prods <- prods[indices,1]
+     #   
+     #   
+     #   
+     #   layers <- c()
+     #   
+     #   for (p in user_prods){
+     #     req <- GET(paste0(API_URL, "product/", p))
+     #     
+     #     p_content <- content(req)
+     #     
+     #     response <- toJSON(p_content, auto_unbox = TRUE)
+     #     
+     #     remove(req, p_content)
+     #     
+     #     layers <- c(layers, names(fromJSON(response)))
+     #   }
+     #   
+     #   desired_layers <- input$user_layers
+     #   
+     #   desired_prods <- input$user_prods
+     #   
+     #   layers <- data.frame(product = desired_prods, layer = desired_layers)
+     #   
+     #   startDate <- input$dates[1]
+     #   
+     #   endDate <- input$dates[2]
+     #   
+     #   taskName <- 'LP Download'
+     #   
+     #   taskType <- 'point'
+     #   
+     #   date <- data.frame(startDate = startDate, endDate = endDate)
+     #   
+     #   task_info <- list(date, layers)
+     #   
+     #   names(task_info) <- c('dates', 'layers')
+     #   
+     #   task <- list(task_info, taskName, taskType)
+     #   
+     #   names(task) <- c('params', 'task_name', 'task_type')
+     #   
+     #   remove(date, layers, bbox, task_info)
+     #   
+     #   task_json <- toJSON(task, auto_unbox = TRUE)
+     #   
+     #   token <- paste("Bearer", fromJSON(token_response)$token)
+     #   
+     #   response <- POST(paste0(API_URL, "task"),
+     #                    body = task_json,
+     #                    encode = "json",
+     #                    add_headers(Authorization = token, "Content-Type" = "application/json"))
+     #   
+     #   task_content <- content(response)
+     #   
+     #   task_response <- prettify(toJSON(task_content, auto_unbox = TRUE))
+     #   
+     #   remove(response, task_content)
+     #   
+     #   task_id <- fromJSON(task_response)$task_id
+     #   
+     #   response <- GET(paste0(API_URL, "bundle/", task_id), add_headers(Authorization = token))
+     #   
+     #   response_content <- content(response)
+     #   
+     #   bundle_response <- toJSON(response_content, auto_unbox = TRUE)
+     #   
+     #   bundle <- fromJSON(bundle_response)$files
+     #   
+     #   for (id in bundle$file_id){
+     #     filename <- bundle[bundle$file_id == id,]$file_name
+     #     
+     #     filepath <- paste(outDir, filename, sep="/")
+     #     
+     #     suppressWarnings(dir.create(dirname(filepath)))
+     #     
+     #     response <- GET(paste0(API_URL, "bundle/", task_id, "/", id),
+     #                     write_disk(filepath, overwrite = TRUE),
+     #                     progress(),
+     #                     add_headers(Authorization = token))
+     #   }
+     #   
+     #   files <- list.files(outDir, '\.csv')
+     #   
+     #   df <- read_csv(paste0(outDir, "/", files), show_col_types = FALSE)
+     #   
+     # })
 }
 
 shinyApp(ui = ui, server = server)
